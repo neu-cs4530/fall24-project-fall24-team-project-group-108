@@ -82,6 +82,26 @@ export interface Question {
 }
 
 /**
+ * Interface representing the structure of a Message object.
+ *
+ * - messageText - The content of the message
+ * - messageDateTime - The date and time the message was sent
+ * - messageBy - The username of the user who sent the message
+ * - messageTo - A list of usernames of users who the message was sent to
+ */
+ export interface Message {
+  messageText: string,
+  messageDateTime: Date,
+  messageBy: string,
+  messageTo: string[]
+}
+
+export interface Correspondence {
+  messages: Message[],
+  messageMembers: string[]
+}
+
+/**
  * Type representing the possible responses for a Question-related operation.
  */
 export type QuestionResponse = Question | { error: string };

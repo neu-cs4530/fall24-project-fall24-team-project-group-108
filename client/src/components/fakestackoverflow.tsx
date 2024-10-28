@@ -6,6 +6,7 @@ import { FakeSOSocket, User } from '../types';
 import LoginContext from '../contexts/LoginContext';
 import UserContext from '../contexts/UserContext';
 import QuestionPage from './main/questionPage';
+import MessagePage from './main/messagePage';
 import TagPage from './main/tagPage';
 import NewQuestionPage from './main/newQuestion';
 import NewAnswerPage from './main/newAnswer';
@@ -50,6 +51,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             }>
             <Route path='/home' element={<QuestionPage />} />
             <Route path='tags' element={<TagPage />} />
+            <Route path='/messagePage' element={<MessagePage />} />
             <Route path='/question/:qid' element={<AnswerPage />} />
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
