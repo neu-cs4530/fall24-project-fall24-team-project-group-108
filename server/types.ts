@@ -96,6 +96,12 @@ export interface Question {
   messageTo: string[]
 }
 
+/**
+ * Interface representing the structure of a Correspondence object.
+ *
+ * - messages - A list of all Messages sent between the users in messsageMembers
+ * - messageMembers - A list of usernames of users involved in the messages
+ */
 export interface Correspondence {
   messages: Message[],
   messageMembers: string[]

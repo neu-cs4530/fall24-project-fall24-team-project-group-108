@@ -65,6 +65,23 @@ const useMessagePage = () => {
               },
             ],
           },
+          {
+            messageMembers: ['siqbal', 'bruth', 'lgehrig'],
+            messages: [
+              {
+                messageText: 'I just called my shot!',
+                messageDateTime: new Date(),
+                messageBy: 'bruth',
+                messageTo: ['lgehrig', 'siqbal'],
+              },
+              {
+                messageText: 'I just gave an inspirational speech :(',
+                messageDateTime: new Date(),
+                messageBy: 'lgehrig',
+                messageTo: ['bruth', 'siqbal'],
+              },
+            ],
+          },
         ]);
       } catch (error) {
         // eslint-disable-next-line no-console
