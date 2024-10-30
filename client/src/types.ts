@@ -148,3 +148,23 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
 }
+
+/**
+ * Interface representing the structure of a Badge object
+ *
+ * - _id - The unique identifier for the badge.
+ * - name - The name of the badge.
+ * - description - A brief description of how to obtain the badge.
+ * - tier - The tier of the badge (bronze, silver, etc).
+ * - category - The category of action that the badge falls under.
+ * - targetValue - The amount of times the user has to perform the category
+ *                 action to obtain the badge.
+ */
+export interface Badge {
+  _id?: string;
+  name: string;
+  description: string;
+  tier: string;
+  category: string;
+  targetValue: number;
+}

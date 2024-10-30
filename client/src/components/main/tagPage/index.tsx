@@ -9,7 +9,7 @@ import AskQuestionButton from '../askQuestionButton';
  * and provides functionality to handle tag clicks and ask a new question.
  */
 const TagPage = () => {
-  const { tlist, clickTag } = useTagPage();
+  const { tlist, clickTag, clickLeaderboard } = useTagPage();
 
   return (
     <>
@@ -20,7 +20,7 @@ const TagPage = () => {
       </div>
       <div className='tag_list right_padding'>
         {tlist.map((t, idx) => (
-          <TagView key={idx} t={t} clickTag={clickTag} />
+          <TagView key={idx} t={t} clickTag={clickTag} clickLeaderboard={clickLeaderboard} />
         ))}
       </div>
     </>

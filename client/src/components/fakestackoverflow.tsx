@@ -10,6 +10,10 @@ import TagPage from './main/tagPage';
 import NewQuestionPage from './main/newQuestion';
 import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
+import AccountPage from './main/accountPage';
+import BadgePage from './main/badgePage';
+import SingleBadgePage from './main/singleBadgePage';
+import LeaderboardPage from './main/leaderboardPage';
 
 const ProtectedRoute = ({
   user,
@@ -50,9 +54,13 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             }>
             <Route path='/home' element={<QuestionPage />} />
             <Route path='tags' element={<TagPage />} />
+            <Route path='tags/:tid' element={<LeaderboardPage />} />
+            <Route path='/account/:user' element={<AccountPage />} />
             <Route path='/question/:qid' element={<AnswerPage />} />
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
+            <Route path='/badges' element={<BadgePage />} />
+            <Route path='/badges/:badgeName' element={<SingleBadgePage />} />
           </Route>
         }
       </Routes>

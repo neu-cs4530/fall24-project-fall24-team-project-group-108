@@ -1,0 +1,40 @@
+.badge-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 120%;
+  background-color: white;
+}
+
+.page-title {
+  font-size: 30px;
+  margin-top: 4%;
+  margin-bottom: 4%;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-rows: 100px;
+  grid-auto-rows: 100px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6%;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding-left: 8%;
+  padding-right: 8%;
+  margin-bottom: 15%;
+}
+  
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 5%;
+  padding-bottom: 5%;
+  height: 100%;
+  width: 100%;
+}
+

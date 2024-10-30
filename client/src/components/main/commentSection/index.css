@@ -114,3 +114,7 @@
   display: block;
   margin-top: -0.5em;
 }
+
+.comment-author:hover {
+  text-decoration: underline; 
+}

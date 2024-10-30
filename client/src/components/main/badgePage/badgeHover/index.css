@@ -1,0 +1,23 @@
+.badge-hover {
+position: absolute;
+  background: #f6f6f6; 
+  border: 2px solid #ccc;
+  padding: 3%;
+  border-radius: 5px;
+  z-index: 1000; 
+  margin-top: 2%;
+  display: flex;
+  flex-direction: row;
+  gap: 12%;
+}
+
+.badge-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 20px;
+}
+
+.badge-info > :first-child {
+    font-weight: bold;
+    margin-bottom: 5%;
+}

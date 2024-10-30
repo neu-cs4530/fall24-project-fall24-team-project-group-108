@@ -1,0 +1,13 @@
+.badge_tab {
+  display: flex;               
+  justify-content: flex-end;  
+  align-items: flex-start;     
+}
+
+.all_badges_link {
+  color: #858585;
+}
+
+.all_badges_link:hover {
+  text-decoration: underline;
+}
