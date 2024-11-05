@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import StarIcon from '@mui/icons-material/Star';
 import { Card } from '@mui/material';
@@ -6,133 +6,44 @@ import { useNavigate } from 'react-router-dom';
 import { Badge } from '../../../types';
 import './index.css';
 import BadgeHover from './badgeHover';
+import getAllBadges from '../../../services/badgeService';
 
-type BadgeCategory = 'Answers' | 'Questions';
-type BadgeTier = 'Bronze' | 'Silver' | 'Gold';
+type BadgeCategory = 'answers' | 'questions';
+type BadgeTier = 'bronze' | 'silver' | 'gold';
 
 const BadgePage = () => {
   const navigate = useNavigate();
   const [hoveredBadge, setHoveredBadge] = useState<string | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
 
-  const dummyBadges: Badge[] = [
-    {
-      name: 'Helper',
-      description: 'Answer 5 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 5,
-      tier: 'Bronze' as BadgeTier,
-    },
-    {
-      name: 'Guide',
-      description: 'Answer 15 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 15,
-      tier: 'Silver' as BadgeTier,
-    },
-    {
-      name: 'Sage',
-      description: 'Answer 25 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 25,
-      tier: 'Gold' as BadgeTier,
-    },
-    {
-      name: 'Curious',
-      description: 'Ask 5 questions',
-      category: 'Questions' as BadgeCategory,
-      targetValue: 5,
-      tier: 'Bronze' as BadgeTier,
-    },
-    {
-      name: 'Inquirer',
-      description: 'Ask 15 questions',
-      category: 'Questions' as BadgeCategory,
-      targetValue: 15,
-      tier: 'Silver' as BadgeTier,
-    },
-    {
-      name: 'Investigator',
-      description: 'Ask 25 questions',
-      category: 'Questions' as BadgeCategory,
-      targetValue: 25,
-      tier: 'Gold' as BadgeTier,
-    },
-    {
-      name: 'Conversationalist',
-      description: 'Answer 5 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 5,
-      tier: 'Bronze' as BadgeTier,
-    },
-    {
-      name: 'Observer',
-      description: 'Answer 15 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 15,
-      tier: 'Silver' as BadgeTier,
-    },
-    {
-      name: 'Commentator',
-      description: 'Answer 25 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 25,
-      tier: 'Gold' as BadgeTier,
-    },
-    {
-      name: 'Debater',
-      description: 'Answer 5 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 5,
-      tier: 'Bronze' as BadgeTier,
-    },
-    {
-      name: 'Top Contributer',
-      description: 'Answer 15 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 15,
-      tier: 'Silver' as BadgeTier,
-    },
-    {
-      name: 'Master',
-      description: 'Answer 25 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 25,
-      tier: 'Gold' as BadgeTier,
-    },
-    {
-      name: 'Voter',
-      description: 'Answer 5 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 5,
-      tier: 'Bronze' as BadgeTier,
-    },
-    {
-      name: 'Critic',
-      description: 'Answer 15 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 15,
-      tier: 'Silver' as BadgeTier,
-    },
-    {
-      name: 'Curator',
-      description: 'Answer 25 questions',
-      category: 'Answers' as BadgeCategory,
-      targetValue: 25,
-      tier: 'Gold' as BadgeTier,
-    },
-  ];
+  useEffect(() => {
+    /**
+     * Function to fetch all badges from the db.
+     */
+    const fetchBadgeData = async () => {
+      try {
+        const res = await getAllBadges();
+        setBadges(res || []);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    };
+
+    fetchBadgeData();
+  }, []);
 
   // maps badge tier to its icon color
   const tierColors: { [key in BadgeTier]: string } = {
-    Bronze: '#cd7f32',
-    Silver: '#c0c0c0',
-    Gold: '#ffd700',
+    bronze: '#cd7f32',
+    silver: '#c0c0c0',
+    gold: '#ffd700',
   };
 
   // maps badge category to its icon image
   const iconMap: { [key in BadgeCategory]: JSX.Element } = {
-    Answers: <QuestionAnswerIcon sx={{ fontSize: '50px' }} />,
-    Questions: <StarIcon sx={{ fontSize: '50px' }} />,
+    answers: <QuestionAnswerIcon sx={{ fontSize: '50px' }} />,
+    questions: <StarIcon sx={{ fontSize: '50px' }} />,
   };
 
   // determine which badgeIcon to display based on its category and tier
@@ -150,7 +61,7 @@ const BadgePage = () => {
     <div className='badge-page'>
       <div className='page-title'>All Badges</div>
       <div className='badge-grid'>
-        {dummyBadges.map(badge => (
+        {badges.map(badge => (
           <Card
             key={badge.name}
             className='badge-item'

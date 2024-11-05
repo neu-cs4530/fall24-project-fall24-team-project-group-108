@@ -91,6 +91,24 @@ export interface Answer {
 }
 
 /**
+ * Interface represents a badge.
+ *
+ * name - The name of the badge.
+ * description - Description of the badge.
+ * category - The category of action required to get the badge.
+ * targetValue - The amount of times the action has to be done to obtain the badge.
+ * tier - The tier of branch in this category.
+ */
+export interface Badge {
+  name: string;
+  description: string;
+  category: string;
+  targetValue: number;
+  tier: string;
+  users: []; // add this later when merging w user branch
+}
+
+/**
  * Interface representing the structure of a Question object.
  *
  * - _id - The unique identifier for the question.
@@ -147,24 +165,4 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: Question) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
-}
-
-/**
- * Interface representing the structure of a Badge object
- *
- * - _id - The unique identifier for the badge.
- * - name - The name of the badge.
- * - description - A brief description of how to obtain the badge.
- * - tier - The tier of the badge (bronze, silver, etc).
- * - category - The category of action that the badge falls under.
- * - targetValue - The amount of times the user has to perform the category
- *                 action to obtain the badge.
- */
-export interface Badge {
-  _id?: string;
-  name: string;
-  description: string;
-  tier: string;
-  category: string;
-  targetValue: number;
 }

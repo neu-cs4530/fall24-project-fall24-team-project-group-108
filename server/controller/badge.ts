@@ -16,7 +16,8 @@ const badgeController = (socket: FakeSOSocket) => {
     !!req.body.name &&
     !!req.body.description &&
     (req.body.category === 'questions' || req.body.category === 'answers' || req.body.category === 'leaderboard' || req.body.category === 'comments' || req.body.category === 'votes') &&
-    !!req.body.targetValue;
+    !!req.body.targetValue &&
+    (req.body.tier === 'bronze' || req.body.tier === 'silver' || req.body.tier === 'gold');
 
 
   /**

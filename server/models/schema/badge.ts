@@ -8,6 +8,7 @@ import { Schema } from 'mongoose';
  * - `description`: The description of how the badge can be obtained.
  * - `category`: The category of action that must be performed to obtain the badge.
  * - `targetValue`: The amount of times the category of action must be performed to obtain the badge.
+ * - `tier`: The tier of this badge relative to other badges in the same category.
  * - `users`: The first 10 users to have obtained this badge. -- HAVE NOT ADDED THIS FIELD YET
  */
 const badgeSchema: Schema = new Schema(
@@ -24,6 +25,9 @@ const badgeSchema: Schema = new Schema(
     targetValue: {
         type: Number,
     },
+    tier: {
+      type: String,
+  },
     users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { collection: 'Badge' },

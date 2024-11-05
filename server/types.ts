@@ -188,6 +188,7 @@ export type CommentResponse = Comment | { error: string };
  * - description - The description of how to obtain the badge.
  * - category - The category of the badge, based on the action that needs to be performed to get it.
  * - targetValue - The amount of times the category action must be performed to get the badge.
+ * - tier - The tier of this badge relative to its cateory.
  *
  */
 export interface Badge {
@@ -196,6 +197,7 @@ export interface Badge {
   description: string;
   category: string;
   targetValue: number;
+  tier: string;
 }
 
 /**
@@ -210,6 +212,7 @@ export interface AddBadgeRequest extends Request {
     description: string;
     category: 'questions' | 'answers' | 'leaderboard' | 'votes' | 'comments';
     targetValue: number;
+    tier: 'bronze' | 'silver' | 'gold'
   };
 }
 
