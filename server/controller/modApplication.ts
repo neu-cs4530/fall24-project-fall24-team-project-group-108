@@ -1,7 +1,10 @@
 import express, { Response } from 'express';
-import { ObjectId } from 'mongodb';
-import { AddModApplicationRequest } from '../types';
-import { addModApplication, fetchModApplications } from '../models/application';
+import { AddModApplicationRequest, DeleteUserRequest } from '../types';
+import {
+  addModApplication,
+  fetchModApplications,
+  removeModApplication,
+} from '../models/application';
 
 export const modApplicationController = () => {
   const router = express.Router();
@@ -82,8 +85,23 @@ export const modApplicationController = () => {
     }
   };
 
+  const deleteModApplication = async (req: DeleteUserRequest, res: Response): Promise<void> => {
+    const { username } = req.body;
+    try {
+      const deleted = await removeModApplication(username);
+      res.json(deleted);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when deleting application: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when deleting application`);
+      }
+    }
+  };
+
   router.post('/createModApplication', createModApplication);
   router.get('/getModApplications', getModApplications);
+  router.delete('/deleteModApplication', deleteModApplication);
 
   return router;
 };

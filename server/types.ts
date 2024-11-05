@@ -80,7 +80,6 @@ export interface AddUserRequest extends Request {
 
 export interface MakeUserModeratorRequest extends Request {
   body: {
-    id: string
     username: string;
   }
 }
@@ -119,6 +118,12 @@ export interface ModApplication {
 export interface AddModApplicationRequest extends Request {
   body: {
     modApplication: ModApplication;
+  }
+}
+
+export interface DeleteUserRequest extends Request {
+  body: {
+    username: string
   }
 }
 

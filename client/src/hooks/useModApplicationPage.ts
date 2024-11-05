@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ModApplication } from '../types';
 import useUserContext from './useUserContext';
-import { getModApplications } from '../services/modApplicationService';
+import { deleteModApplication, getModApplications } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
 
 /**
@@ -34,29 +34,22 @@ const useModApplicationPage = () => {
     fetchData().catch(e => console.log(e));
   }, []);
 
-  const handleAccept = async (application: ModApplication) => {
+  const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
-      // make user moderator
       const { username } = application;
-      const id = application._id;
-      if (!id) {
-        setErr('Error finding application');
-        return;
+      if (isAccepted === true) {
+        const updatedUser = await makeUserModerator(username);
+        if (!updatedUser) {
+          setErr('Error accepting application');
+        }
       }
-      await makeUserModerator(id, username);
-      // delete from database
+      const removedApplication = await deleteModApplication(username);
+      if (removedApplication === false) {
+        setErr('Error accepting application');
+      }
       setApplications(prev => prev.filter(modApp => modApp._id !== application._id));
     } catch (error) {
-      setErr('Error accepting application');
-    }
-  };
-
-  const handleReject = async (application: ModApplication) => {
-    try {
-      // delete from database
-      setApplications(prev => prev.filter(modApp => modApp._id !== application._id));
-    } catch (error) {
-      setErr('Error rejecting application');
+      setErr('Error processing application');
     }
   };
 
@@ -80,8 +73,7 @@ const useModApplicationPage = () => {
   return {
     applications,
     err,
-    handleAccept,
-    handleReject,
+    handleApplicationDecision,
   };
 };
 

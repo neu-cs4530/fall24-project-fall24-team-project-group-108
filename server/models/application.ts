@@ -288,14 +288,11 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
   }
 };
 
-export const populateUser = async (
-  applicationid: string,
-  username: string,
-): Promise<UserResponse> => {
+export const populateUser = async (username: string): Promise<UserResponse> => {
   try {
     const result = await UserModel.findOneAndUpdate(
-      { _id: applicationid },
-      { $push: { isModerator: true } },
+      { username },
+      { $set: { isModerator: true } },
       { new: true },
     );
     if (result === null) {
@@ -304,6 +301,18 @@ export const populateUser = async (
     return result;
   } catch (error) {
     return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+export const removeModApplication = async (username: string): Promise<boolean> => {
+  try {
+    const result = await ModApplicationModel.findOneAndDelete({ username });
+    if (!result) {
+      throw new Error(`No application found`);
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Error when deleting the application: ${(error as Error).message}`);
   }
 };
 

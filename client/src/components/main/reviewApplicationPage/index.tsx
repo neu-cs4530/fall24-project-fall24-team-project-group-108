@@ -4,15 +4,7 @@ import ReviewModApplicationHeader from './header';
 import './index.css';
 
 const ReviewApplicationPage = () => {
-  const { applications, err, handleAccept, handleReject } = useModApplicationPage();
-
-  if (err) {
-    return (
-      <div className='container'>
-        <h2>{err}</h2>;
-      </div>
-    );
-  }
+  const { applications, err, handleApplicationDecision } = useModApplicationPage();
 
   if (!applications.length) {
     return (
@@ -32,15 +24,20 @@ const ReviewApplicationPage = () => {
           <div className='button-container'>
             <button
               className='application-button application-button-accept'
-              onClick={() => handleAccept(application)}>
+              onClick={() => handleApplicationDecision(application, true)}>
               Accept
             </button>
             <button
               className='application-button application-button-reject'
-              onClick={() => handleReject(application)}>
+              onClick={() => handleApplicationDecision(application, false)}>
               Reject
             </button>
           </div>
+          {err && (
+            <div>
+              <p>{err}</p>
+            </div>
+          )}
         </div>
       ))}
     </>

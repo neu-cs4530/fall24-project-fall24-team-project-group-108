@@ -77,13 +77,9 @@ export const userController = () => {
   };
 
   const makeUserModerator = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
-    const { id, username } = req.body;
+    const { username } = req.body;
     // if (!isUserBodyValid(username, password)) {
     //   res.status(400).send('Invalid user body');
-    //   return;
-    // }
-    // if (isModerator === true) {
-    //   res.status(400).send('User already a moderator');
     //   return;
     // }
     try {
@@ -94,7 +90,7 @@ export const userController = () => {
       // }
       // const authetnicatedUsername = authenticatedUser.username;
       // New users are automatically not a moderator, need to be approved to become a moderator.
-      const populatedUser = await populateUser(id, username);
+      const populatedUser = await populateUser(username);
       if (populatedUser && 'error' in populatedUser) {
         throw new Error(populatedUser.error);
       }
@@ -102,9 +98,9 @@ export const userController = () => {
       res.json(populatedUser);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        res.status(500).send(`Error when authenticating user: ${err.message}`);
+        res.status(500).send(`Error when updating user moderator status: ${err.message}`);
       } else {
-        res.status(500).send(`Error when authenticating user`);
+        res.status(500).send(`Error when updating user moderator status`);
       }
     }
   };

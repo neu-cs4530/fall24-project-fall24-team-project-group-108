@@ -38,8 +38,9 @@ const createUser = async (username: string, password: string): Promise<User> => 
   return res.data;
 };
 
-const makeUserModerator = async (id: string, username: string): Promise<User> => {
-  const data = { id, username };
+const makeUserModerator = async (username: string): Promise<User> => {
+  const data = { username };
+  console.log('hook', username);
   const res = await api.post(`${USER_API_URL}/makeUserModerator`, data);
   if (res.status !== 200) {
     throw new Error('Error while making user a moderator');

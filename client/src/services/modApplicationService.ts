@@ -32,8 +32,10 @@ const getModApplications = async (): Promise<ModApplication[]> => {
   return res.data;
 };
 
-const deleteModApplication = async (): Promise<void> => {
-  const res = await api.delete(`${MODAPPLICATION_API_URL}/deleteModApplication`);
+const deleteModApplication = async (username: string): Promise<boolean> => {
+  const res = await api.delete(`${MODAPPLICATION_API_URL}/deleteModApplication?`, {
+    data: { username },
+  });
   if (res.status !== 200) {
     throw new Error('Error while deleting mod applications');
   }
