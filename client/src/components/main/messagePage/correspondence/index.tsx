@@ -47,9 +47,11 @@ const CorrespondenceView = ({ correspondence }: CorrespondenceProps) => {
   return (
     <div className='question right_padding'>
       <div className='correspondenceTime'>
-        {getMetaData(
-          new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
-        )}
+        {correspondence.messages.length > 0
+          ? getMetaData(
+              new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
+            )
+          : null}
       </div>
       <div className='correspondenceData'>
         <div>
@@ -57,7 +59,11 @@ const CorrespondenceView = ({ correspondence }: CorrespondenceProps) => {
             <div key={idx}>{memberName}</div>
           ))}
         </div>
-        <div>{correspondence.messages[correspondence.messages.length - 1].messageText}</div>
+        <div>
+          {correspondence.messages.length > 0
+            ? correspondence.messages[correspondence.messages.length - 1].messageText
+            : null}
+        </div>
       </div>
     </div>
   );
