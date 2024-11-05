@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
 import { application } from 'express';
+import bcrypt from 'bcrypt';
 import {
   Answer,
   AnswerResponse,
@@ -216,8 +217,9 @@ export const addUser = async (user: User): Promise<User | null> => {
       return null;
     }
 
+    const hashedPassword = await bcrypt.hash(user.password, 15);
     // If the user does not exist, create a new one
-    const newUser = new UserModel(user);
+    const newUser = new UserModel({ ...user, password: hashedPassword });
     const savedUser = await newUser.save();
 
     return savedUser as User;
@@ -242,10 +244,15 @@ export const findUser = async (username: string, password: string): Promise<User
       return null;
     }
 
-    if (user.password === password) {
+    // if (user.password === password) {
+    //   return user;
+    // }
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+    if (!passwordCorrect) {
+      // return null;
       return user;
     }
-    return null;
+    return user;
   } catch (err) {
     return null;
   }

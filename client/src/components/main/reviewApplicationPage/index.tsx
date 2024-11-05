@@ -8,9 +8,12 @@ const ReviewApplicationPage = () => {
 
   if (!applications.length) {
     return (
-      <div className='container'>
-        <h2>You are all caught up! No applications left.</h2>;
-      </div>
+      <>
+        <ReviewModApplicationHeader modAppCount={applications.length} />
+        <div className='container'>
+          <h2>You are all caught up! No applications left.</h2>;
+        </div>
+      </>
     );
   }
 

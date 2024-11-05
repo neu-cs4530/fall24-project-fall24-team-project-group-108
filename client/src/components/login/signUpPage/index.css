@@ -1,10 +1,27 @@
-.container {
+.form-container {
+    padding: 10px auto;
+    border: 1px solid #ccc;
+    border-radius: 0.125rem;
+    background-color: #fefefe;
+    max-width: 390px;
+    width: 100%;
+    min-height: 410px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f7f7f7;
+  }
+
+  .container span {
+    font-size: 14px;
+    margin-top: -5px;
+    align-self: flex-end;
+    margin-right: 45px;
+    color: #007bff;
+  }
+
+  .container span:hover {
+    color: #0056b3;
   }
   
   .container h2,

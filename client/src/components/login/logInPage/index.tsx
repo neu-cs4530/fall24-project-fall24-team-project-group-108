@@ -28,35 +28,38 @@ const Login = () => {
 
   return (
     <div className='container'>
-      <h2>Welcome to FakeStackOverflow!</h2>
-      <h4>Please enter your username and password</h4>
-      <form onSubmit={handleSubmit}>
-        <input
-          type='text'
-          value={username}
-          onChange={handleInputChange}
-          placeholder='Enter your username'
-          required
-          className='input-text'
-          id={'usernameInput'}
-        />
-        <input
-          type='password'
-          value={password}
-          onChange={handlePasswordChange}
-          placeholder='Enter your password'
-          required
-          className='input-text'
-          id={'passwordInput'}
-        />
-        {loginErr && <p className='error-message'>*{loginErr}</p>}
-        <button type='submit' className='login-button'>
-          Log In
-        </button>
-        <button className='signup-page-button' onClick={() => navigate('/signup')}>
-          No Account? Sign Up!
-        </button>
-      </form>
+      <div className='form-container'>
+        <h2>Login</h2>
+        <h4>Welcome to FakeStackOverflow!</h4>
+        <form onSubmit={handleSubmit}>
+          <input
+            type='text'
+            value={username}
+            onChange={handleInputChange}
+            placeholder='Username'
+            required
+            className='input-text'
+            id={'usernameInput'}
+          />
+          <input
+            type='password'
+            value={password}
+            onChange={handlePasswordChange}
+            placeholder='Password'
+            required
+            className='input-text'
+            id={'passwordInput'}
+          />
+          {loginErr && <p className='error-message'>*{loginErr}</p>}
+          <span style={{ cursor: 'pointer' }}>Forgot Password?</span>
+          <button type='submit' className='login-button'>
+            Login
+          </button>
+          <button className='signup-page-button' onClick={() => navigate('/signup')}>
+            No Account? Sign Up!
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

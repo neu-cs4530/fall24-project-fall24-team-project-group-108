@@ -10,7 +10,7 @@ const BanPage = () => (
     <a href='https://www.flaticon.com/free-icons/regulatory' title='regulatory icons'>
       Regulatory icons created by nangicon - Flaticon
     </a>
-    <h2>The Ban Hammer Has Spoken</h2>
+    <h1>The Ban Hammer Has Spoken</h1>
     <p>You have been indefinitely banned, contact moderators for support.</p>
   </div>
 );
