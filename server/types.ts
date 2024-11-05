@@ -84,33 +84,51 @@ export interface Question {
 /**
  * Interface representing the structure of a Message object.
  *
+ * - _id - The unique identifier for the message. Optional field.
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
+ * - views - A list of usernames of users who have viewed the message
  */
  export interface Message {
+  _id?: string,
   messageText: string,
   messageDateTime: Date,
   messageBy: string,
-  messageTo: string[]
+  messageTo: string[],
+  views?: string[]
 }
 
 /**
  * Interface representing the structure of a Correspondence object.
  *
+ * - _id - The unique identifier for the correspondence. Optional field.
  * - messages - A list of all Messages sent between the users in messsageMembers
  * - messageMembers - A list of usernames of users involved in the messages
+ * - views - A list of usernames of users who have viewed the correspondence
  */
 export interface Correspondence {
+  _id?: string,
   messages: Message[],
-  messageMembers: string[]
+  messageMembers: string[],
+  views?: string[]
 }
 
 /**
  * Type representing the possible responses for a Question-related operation.
  */
 export type QuestionResponse = Question | { error: string };
+
+/**
+ * Type representing the possible responses for a Message-related operation.
+ */
+export type MessageResponse = Message | { error: string };
+
+/**
+ * Type representing the possible responses for a Correspondence-related operation.
+ */
+export type CorrespondenceResponse = Correspondence | { error: string };
 
 /**
  * Interface for the request query to find questions using a search string, which contains:
@@ -145,6 +163,22 @@ export interface FindQuestionByIdRequest extends Request {
  */
 export interface AddQuestionRequest extends Request {
   body: Question;
+}
+
+/**
+ * Interface for the request body when adding a new message.
+ * - body - The message being added.
+ */
+export interface AddMessageRequest extends Request {
+  body: Message;
+}
+
+/**
+ * Interface for the request body when adding a new correspondence.
+ * - body - The correspondence being added.
+ */
+export interface AddCorrespondenceRequest extends Request {
+  body: Correspondence;
 }
 
 /**
@@ -227,6 +261,59 @@ export interface AnswerUpdatePayload {
 }
 
 /**
+ * Interface for the request query to find messages using a search string, which contains:
+ * - order - The order in which to sort the messages
+ * - askedBy - The username of the user who asked the message
+ */
+ export interface FindMessageRequest extends Request {
+  query: {
+    order: OrderType;
+    askedBy: string;
+  };
+}
+
+/**
+ * Interface for the request query to find correspondences using a search string, which contains:
+ * - order - The order in which to sort the correspondences
+ * - askedBy - The username of the user who asked the correspondences
+ */
+ export interface FindCorrespondenceRequest extends Request {
+  query: {
+    order: OrderType;
+    askedBy: string;
+  };
+}
+
+
+/**
+ * Interface for the request parameters when finding a message by its ID.
+ * - mid - The unique identifier of the message.
+ */
+export interface FindMessageByIdRequest extends Request {
+  params: {
+    mid: string;
+  };
+  query: {
+    username: string;
+  };
+}
+
+
+/**
+ * Interface for the request parameters when finding a correspondence by its ID.
+ * - cid - The unique identifier of the correspondence.
+ */
+export interface FindCorrespondenceByIdRequest extends Request {
+  params: {
+    cid: string;
+  };
+  query: {
+    username: string;
+  };
+}
+
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -235,4 +322,6 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: QuestionResponse) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
+  messageUpdate: (message: MessageResponse) => void;
+  correspondenceUpdate: (message: CorrespondenceResponse) => void;
 }

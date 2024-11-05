@@ -128,10 +128,12 @@ export interface Question {
  * - messageTo - A list of usernames of users who the message was sent to
  */
 export interface Message {
+  _id?: string;
   messageText: string;
   messageDateTime: Date;
   messageBy: string;
   messageTo: string[];
+  views?: string[];
 }
 
 /**
@@ -141,8 +143,10 @@ export interface Message {
  * - messageMembers - A list of usernames of users involved in the messages
  */
 export interface Correspondence {
+  _id?: string;
   messages: Message[];
   messageMembers: string[];
+  views?: string[];
 }
 
 /**

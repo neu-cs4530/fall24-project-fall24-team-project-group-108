@@ -9,9 +9,15 @@ import {
   Question,
   QuestionResponse,
   Tag,
+  Message,
+  Correspondence,
+  MessageResponse,
+  CorrespondenceResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
+import MessageModel from './message';
+import CorrespondenceModel from './correspondence';
 import TagModel from './tags';
 import CommentModel from './comments';
 
@@ -223,6 +229,63 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 };
 
 /**
+ * Retrieves messages from the database, ordered by the specified criteria.
+ *
+ * @param {OrderType} order - The order type to filter the messages
+ *
+ * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
+ */
+export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
+  const mlist = await MessageModel.find();
+  return mlist;
+  // try {
+  //   let mlist = [];
+  //   if (order === 'active') {
+  //     mlist = await MessageModel.find().populate();
+  //     return sortMessagesByActive(mlist);
+  //   }
+  //   mlist = await MessageModel.find().populate();
+  //   if (order === 'unanswered') {
+  //     return sortMessagesByUnanswered(mlist);
+  //   }
+  //   if (order === 'newest') {
+  //     return sortMessagesByNewest(mlist);
+  //   }
+  //   return sortMessagesByMostViews(mlist);
+  // } catch (error) {
+  //   return [];
+  // }
+};
+/**
+ * Retrieves correspondences from the database, ordered by the specified criteria.
+ *
+ * @param {OrderType} order - The order type to filter the messages
+ *
+ * @returns {Promise<Correspondence[]>} - Promise that resolves to a list of ordered correspondences
+ */
+export const getCorrespondencesByOrder = async (order: OrderType): Promise<Correspondence[]> => {
+  const clist = await CorrespondenceModel.find();
+  return clist;
+  // try {
+  //   let mlist = [];
+  //   if (order === 'active') {
+  //     mlist = await MessageModel.find().populate();
+  //     return sortMessagesByActive(mlist);
+  //   }
+  //   mlist = await MessageModel.find().populate();
+  //   if (order === 'unanswered') {
+  //     return sortMessagesByUnanswered(mlist);
+  //   }
+  //   if (order === 'newest') {
+  //     return sortMessagesByNewest(mlist);
+  //   }
+  //   return sortMessagesByMostViews(mlist);
+  // } catch (error) {
+  //   return [];
+  // }
+};
+
+/**
  * Filters a list of questions by the user who asked them.
  *
  * @param qlist The array of Question objects to be filtered.
@@ -266,21 +329,21 @@ export const filterQuestionsBySearch = (qlist: Question[], search: string): Ques
 };
 
 /**
- * Fetches and populates a question or answer document based on the provided ID and type.
+ * Fetches and populates a question, answer, message, or correspondence document based on the provided ID and type.
  *
  * @param {string | undefined} id - The ID of the question or answer to fetch.
- * @param {'question' | 'answer'} type - Specifies whether to fetch a question or an answer.
+ * @param {'question' | 'answer'} type - Specifies whether to fetch a question, answer, message, or correspondence
  *
  * @returns {Promise<QuestionResponse | AnswerResponse>} - Promise that resolves to the
- *          populated question or answer, or an error message if the operation fails
+ *          populated resposne, or an error message if the operation fails
  */
 export const populateDocument = async (
   id: string | undefined,
-  type: 'question' | 'answer',
+  type: 'question' | 'answer',// | 'message' | 'correspondence',
 ): Promise<QuestionResponse | AnswerResponse> => {
   try {
     if (!id) {
-      throw new Error('Provided question ID is undefined.');
+      throw new Error('Provided ID is undefined.');
     }
 
     let result = null;
@@ -326,6 +389,7 @@ export const fetchAndIncrementQuestionViewsById = async (
   username: string,
 ): Promise<QuestionResponse | null> => {
   try {
+    console.log('getting question model')
     const q = await QuestionModel.findOneAndUpdate(
       { _id: new ObjectId(qid) },
       { $addToSet: { views: username } },
@@ -349,6 +413,56 @@ export const fetchAndIncrementQuestionViewsById = async (
 };
 
 /**
+ * Fetches a message by its ID and increments its view count.
+ *
+ * @param {string} mid - The ID of the message to fetch.
+ * @param {string} username - The username of the user requesting the message.
+ *
+ * @returns {Promise<MessageResponse | null>} - Promise that resolves to the fetched message
+ *          with incremented views, null if the message is not found, or an error message.
+ */
+export const fetchAndIncrementMessageViewsById = async (
+  mid: string,
+  username: string,
+): Promise<MessageResponse | null> => {
+  try {
+    const m = await MessageModel.findOneAndUpdate(
+      { _id: new ObjectId(mid) },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    return m;
+  } catch (error) {
+    return { error: 'Error when fetching and updating a message' };
+  }
+};
+
+/**
+ * Fetches a correspondence by its ID and increments its view count.
+ *
+ * @param {string} cid - The ID of the correspondence to fetch.
+ * @param {string} username - The username of the user requesting the correspondence.
+ *
+ * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence
+ *          with incremented views, null if the correspondence is not found, or an error message.
+ */
+export const fetchAndIncrementCorrespondenceViewsById = async (
+  cid: string,
+  username: string,
+): Promise<CorrespondenceResponse | null> => {
+  try {
+    const c = await CorrespondenceModel.findOneAndUpdate(
+      { _id: new ObjectId(cid) },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    return c;
+  } catch (error) {
+    return { error: 'Error when fetching and updating a message' };
+  }
+};
+
+/**
  * Saves a new question to the database.
  *
  * @param {Question} question - The question to save
@@ -357,10 +471,53 @@ export const fetchAndIncrementQuestionViewsById = async (
  */
 export const saveQuestion = async (question: Question): Promise<QuestionResponse> => {
   try {
+    console.log('In saveQuestion');
+    console.log(question);
     const result = await QuestionModel.create(question);
     return result;
   } catch (error) {
     return { error: 'Error when saving a question' };
+  }
+};
+
+/**
+ * Saves a new message to the database.
+ *
+ * @param {Message} message - The message to save
+ *
+ * @returns {Promise<MessageResponse>} - The saved message, or error message
+ */
+export const saveMessage = async (message: Message): Promise<MessageResponse> => {
+  try {
+    console.log('saveMessage being called!');
+    console.log(message);
+    const result = await MessageModel.create(message);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a message' };
+  }
+};
+
+/**
+ * Saves a new correspondence to the database.
+ *
+ * @param {Correspondence} correspondence - The correspondence to save
+ *
+ * @returns {Promise<CorrespondenceResponse>} - The saved correspondence, or error message
+ */
+export const saveCorrespondence = async (
+  correspondence: Correspondence,
+): Promise<CorrespondenceResponse> => {
+  try {
+
+    console.log('saveCorrespondence called!');
+    console.log(correspondence);
+    const result = await CorrespondenceModel.create(correspondence);
+
+    console.log('Correspondence object created in CorrespondenceModel!');
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a correspondence' };
   }
 };
 

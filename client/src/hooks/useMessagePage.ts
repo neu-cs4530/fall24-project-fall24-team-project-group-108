@@ -1,8 +1,10 @@
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
-import { Answer, Correspondence, OrderType, Question } from '../types';
+import { Answer, Correspondence, OrderType, Question, Message } from '../types';
 import { getQuestionsByFilter } from '../services/questionService';
+import { addCorrespondence, getCorrespondencesByOrder } from '../services/correspondenceService';
+import { addMessage } from '../services/messageService';
 
 /**
  * Custom hook for managing the question page state, filtering, and real-time updates.
@@ -17,72 +19,69 @@ const useMessagePage = () => {
   const [searchParams] = useSearchParams();
   const [titleText, setTitleText] = useState<string>('All Questions');
   const [search, setSearch] = useState<string>('');
-  const [questionOrder, setQuestionOrder] = useState<OrderType>('newest');
+  const [correspondenceOrder, setCorrespondenceOrder] = useState<OrderType>('newest');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
 
   useEffect(() => {
-    let pageTitle = 'All Messages';
-    let searchString = '';
-
-    const searchQuery = searchParams.get('search');
-    const tagQuery = searchParams.get('tag');
-
-    if (searchQuery) {
-      pageTitle = 'Search Results';
-      searchString = searchQuery;
-    } else if (tagQuery) {
-      pageTitle = tagQuery;
-      searchString = `[${tagQuery}]`;
-    }
+    const pageTitle = 'All Messages';
 
     setTitleText(pageTitle);
-    setSearch(searchString);
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     /**
-     * Function to fetch questions based on the filter and update the question list.
+     * Function to fetch correspondences based on the order and update the correspondence list.
      */
     const fetchData = async () => {
       try {
-        // const res = await getQuestionsByFilter(questionOrder, search);
-        // setQlist(res || []);
-        setCorrespondenceList([
-          {
-            messageMembers: ['siqbal', 'rjackson', 'bgibson'],
-            messages: [
-              {
-                messageText: 'I just had a great era',
-                messageDateTime: new Date(),
-                messageBy: 'bgibson',
-                messageTo: ['rjackson', 'siqbal'],
-              },
-              {
-                messageText: 'I just hit 3hr in the WS!',
-                messageDateTime: new Date(),
-                messageBy: 'rjackson',
-                messageTo: ['bgibson', 'siqbal'],
-              },
-            ],
-          },
-          {
-            messageMembers: ['siqbal', 'bruth', 'lgehrig'],
-            messages: [
-              {
-                messageText: 'I just called my shot!',
-                messageDateTime: new Date(),
-                messageBy: 'bruth',
-                messageTo: ['lgehrig', 'siqbal'],
-              },
-              {
-                messageText: 'I just gave an inspirational speech :(',
-                messageDateTime: new Date(),
-                messageBy: 'lgehrig',
-                messageTo: ['bruth', 'siqbal'],
-              },
-            ],
-          },
-        ]);
+        // const message1 = {
+        //   messageText: 'I just had a great era',
+        //   messageDateTime: new Date(),
+        //   messageBy: 'bgibson',
+        //   messageTo: ['rjackson', 'siqbal'],
+        // } as Message;
+        // const message2 = {
+        //   messageText: 'I just hit 3hr in the WS!',
+        //   messageDateTime: new Date(),
+        //   messageBy: 'rjackson',
+        //   messageTo: ['bgibson', 'siqbal'],
+        // } as Message;
+        // await addMessage(message1);
+        // await addMessage(message2);
+        // const correspondence1 = {
+        //   // _id: '1970',
+        //   views: [],
+        //   messageMembers: ['siqbal', 'rjackson', 'bgibson'],
+        //   messages: [],
+        // };
+        // await addCorrespondence(correspondence1);
+        // const message3 = {
+        //   messageText: 'I just called my shot!',
+        //   messageDateTime: new Date(),
+        //   messageBy: 'bruth',
+        //   messageTo: ['lgehrig', 'siqbal'],
+        // };
+        // const message4 = {
+        //   messageText: 'I just gave an inspirational speech :(',
+        //   messageDateTime: new Date(),
+        //   messageBy: 'lgehrig',
+        //   messageTo: ['bruth', 'siqbal'],
+        // };
+        // // await addMessage(message3);
+        // // await addMessage(message4);
+        // const correspondence2 = {
+        //   // _id: '1930',
+        //   views: [],
+        //   messageMembers: ['siqbal', 'bruth', 'lgehrig'],
+        //   messages: [],
+        // };
+        // await addCorrespondence(correspondence2);
+        // console.log('fetchingData');
+        const res = await getCorrespondencesByOrder(correspondenceOrder);
+        // const sampleCorrespondenceList = [correspondence1, correspondence2];
+        console.log('res');
+        console.log(res);
+        setCorrespondenceList(res);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -139,7 +138,7 @@ const useMessagePage = () => {
       //   socket.off('answerUpdate', handleAnswerUpdate);
       //   socket.off('viewsUpdate', handleViewsUpdate);
     };
-  }, [questionOrder, search, socket]);
+  }, [correspondenceOrder, search, socket]);
 
   return { correspondenceList };
 };
