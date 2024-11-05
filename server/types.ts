@@ -54,9 +54,11 @@ export interface Tag {
 }
 
 /**
- * Interface representing a Tag document, which contains:
+ * Interface representing a User document, which contains:
  * - _id - The unique identifier for the tag. Optional field.
- * - name - Name of the tag
+ * - username - Name of the user.
+ * - password - Password to login created by the user.
+ * - isModerator - the current state of the user's moderator status.
  */
 export interface User {
   _id?: ObjectId;
@@ -69,7 +71,6 @@ export interface User {
  * Interface extending the request body when adding a user to the database which contains:
  * - username - The new user's username.
  * - password - The new user's password.
- * - isModerator - the moderator state of the user.
  */
 export interface AddUserRequest extends Request {
   body: {
@@ -78,6 +79,10 @@ export interface AddUserRequest extends Request {
   }
 }
 
+/**
+ * Interface extending the request body when making a user a moderator in the db:
+ * - username - The user being made a moderator.
+ */
 export interface MakeUserModeratorRequest extends Request {
   body: {
     username: string;
@@ -102,7 +107,10 @@ export interface FindUserRequest extends Request {
 export type UserResponse = User | { error: string };
 
 /**
- * 
+ * Interface representing a ModApplication document, which contains:
+ * - _id - The unique identifier for the question. Optional field.
+ * - user - The user who created the application.
+ * - applicationText - The additional imformation provided by the applicant.
  */
 export interface ModApplication {
   _id?: ObjectId;
@@ -111,9 +119,8 @@ export interface ModApplication {
 }
 
 /**
- * Interface extending the request body when adding a Mod Application to the database which contains:
- * - user - The user who applied to be a moderator
- * - applicationText - The text sent as a part of the moderator application.
+ * Interface extending the request body when adding a ModApplication to the database which contains:
+ * - modApplication - contains the information about the ModAplication being added to the database.
  */
 export interface AddModApplicationRequest extends Request {
   body: {
@@ -121,14 +128,19 @@ export interface AddModApplicationRequest extends Request {
   }
 }
 
-export interface DeleteUserRequest extends Request {
+/**
+ * Interface extending the request body when deleting a ModApplication to the database which contains:
+ * - username - the user whose application is being deleted.
+ */
+export interface DeleteModApplicationRequest extends Request {
   body: {
     username: string
   }
 }
 
 /**
- * Interface for the request query to find a mod application using a username
+ * Interface extending the request body when finding a ModApplication in the database which contains:
+ * - username - the user whose application is being found.
  */
 export interface FindModApplicationRequest extends Request {
   query: {
@@ -137,12 +149,12 @@ export interface FindModApplicationRequest extends Request {
 }
 
 /**
- * Type representing the possible responses for a Mod Application related operation.
+ * Type representing the possible responses for a ModApplication related operation.
  */
 export type ModApplicationResponse = ModApplication | { error: string };
 
 /**
- * Type representing the possible responses for a Mod Application related operation.
+ * Type representing the possible responses for a ModApplication[] related operation.
  */
 export type ModApplicationResponses = ModApplication[] | { error: string };
 

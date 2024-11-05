@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
-import { authenticateUser, createUser } from '../services/userService';
+import { createUser } from '../services/userService';
 import useLoginContext from './useLoginContext';
 
 /**
@@ -8,10 +8,14 @@ import useLoginContext from './useLoginContext';
  *
  * @returns username - The current value of the username input.
  * @returns password - The current value of the password input.
+ * @returns reenterPassword - The current value of the reenterPassword input.
+ * @returns showPassword - Determines if the password inputs are visible or not.
  * @returns signUpErr - The current error text.
  * @returns handleSubmit - Function to handle username and password submission.
  * @returns handleUsernameCreate - Function to create a username from input.
  * @returns handlePasswordCreate - Function to create a password from input.
+ * @returns handlePasswordReenter - Function to handle validating a user's password by reentering.
+ * @returns handleShowPassword - Function to handle when to show the password text.
  */
 const useSignUp = () => {
   const [username, setUsername] = useState<string>('');
@@ -54,33 +58,38 @@ const useSignUp = () => {
   };
 
   /**
-   * Function to handle the form submission event.
+   * Determines if the input username is valid.
    *
-   * @param event - the form event object.
+   * @returns boolean - true if valid, false otherwise.
    */
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (password !== reenterPassword) {
-      setSignUpErr('Passwords must match');
-      return;
-    }
-
+  const validateUsername = (): boolean => {
     const minUsernameLength = 3;
     if (username.length < minUsernameLength) {
       setSignUpErr('Username must be at least 3 characters long');
-      return;
+      return false;
     }
 
     if (username.includes(' ')) {
       setSignUpErr('Username cannot contain spaces');
-      return;
+      return false;
     }
+    return true;
+  };
 
+  /**
+   * Determines if the input password is valid.
+   *
+   * @returns boolean - true if valid, false otherwise.
+   */
+  const validatePassword = () => {
+    if (password !== reenterPassword) {
+      setSignUpErr('Passwords must match');
+      return false;
+    }
     const minPasswordLength = 6;
     if (password.length < minPasswordLength) {
       setSignUpErr('Password must be at least 6 characters long');
-      return;
+      return false;
     }
 
     const specialChars = '!@#$%^&*()-_=+[]{};:\'"\\|,.<>/?`~';
@@ -93,11 +102,29 @@ const useSignUp = () => {
     });
     if (!containsSpecialChar) {
       setSignUpErr('Password must contain a special character');
-      return;
+      return false;
     }
 
     if (password.includes(' ')) {
       setSignUpErr('Password cannot contain spaces');
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * Function to handle the form submission event.
+   *
+   * @param event - the form event object.
+   */
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const isUsernameValid = validateUsername();
+    const isPasswordValid = validatePassword();
+
+    if (!isUsernameValid || !isPasswordValid) {
       return;
     }
 

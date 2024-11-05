@@ -5,12 +5,11 @@ import { deleteModApplication, getModApplications } from '../services/modApplica
 import { makeUserModerator } from '../services/userService';
 
 /**
- * Custom hook for managing the answer page's state, navigation, and real-time updates.
+ * Custom hook for managing the modApplicationPage, navigation, and real-time updates.
  *
- * @returns questionID - The current question ID retrieved from the URL parameters.
- * @returns question - The current question object with its answers, comments, and votes.
- * @returns handleNewComment - Function to handle the submission of a new comment to a question or answer.
- * @returns handleNewAnswer - Function to navigate to the "New Answer" page
+ * @returns applications - The current list of applications in the database.
+ * @returns err - The current error statement value.
+ * @returns handleApplicationDecision - Function to handle the acceptance or rejection of an application.
  */
 const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);

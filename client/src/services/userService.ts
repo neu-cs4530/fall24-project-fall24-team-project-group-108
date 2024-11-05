@@ -38,9 +38,15 @@ const createUser = async (username: string, password: string): Promise<User> => 
   return res.data;
 };
 
+/**
+ * Makes a user in the database a moderator.
+ *
+ * @param username - The username of the user being made into a moderator.
+ *
+ * @returns the User object with an updated isModerator field.
+ */
 const makeUserModerator = async (username: string): Promise<User> => {
   const data = { username };
-  console.log('hook', username);
   const res = await api.post(`${USER_API_URL}/makeUserModerator`, data);
   if (res.status !== 200) {
     throw new Error('Error while making user a moderator');

@@ -4,8 +4,7 @@ import TextArea from '../baseComponents/textarea';
 import useModApplication from '../../../hooks/useNewApplication';
 
 /**
- * SignUp component that renders a page where a user can create a new account or 'user' that will post to the database if not already
- * present. Also allows for navigation back to the login page.
+ * ModApplicationPage component allows users to apply to become a moderator.
  */
 const ModApplicationPage = () => {
   const { text, setText, textErr, handleApplicationSubmit } = useModApplication();

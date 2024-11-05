@@ -1,5 +1,5 @@
 import express, { Response } from 'express';
-import { AddModApplicationRequest, DeleteUserRequest } from '../types';
+import { AddModApplicationRequest, DeleteModApplicationRequest } from '../types';
 import {
   addModApplication,
   fetchModApplications,
@@ -10,7 +10,7 @@ export const modApplicationController = () => {
   const router = express.Router();
 
   /**
-   * Validates the mod application to ensure it contains all the necessary fields.
+   * Validates the mod application to ensure it contains all the necessary fields and that they are valid.
    *
    * @param user - The user who submitted the application.
    * @param applicationText - The additional information the user provided in the application.
@@ -32,11 +32,11 @@ export const modApplicationController = () => {
     applicationText !== '';
 
   /**
-   * Adds a new user to the database. The user is first validated and then saved.
-   * If saving the user fails, the HTTP response status is updated.
+   * Adds a new ModApplication to the database. The application is first validated and then saved.
+   * If saving the application fails, the HTTP response status is updated.
    *
-   * @param req The AddUserRequest object containing the user data.
-   * @param res The HTTP response object used to send back the result of the operation.
+   * @param req - The AddModApplicationRequest object containing the application data.
+   * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
@@ -72,6 +72,14 @@ export const modApplicationController = () => {
     }
   };
 
+  /**
+   * Retrieves all ModApplications in the database. If fetching the applications fails, the HTTP response status is updated.
+   *
+   * @param _ - Placeholder value.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const getModApplications = async (_: AddModApplicationRequest, res: Response): Promise<void> => {
     try {
       const applications = await fetchModApplications();
@@ -85,7 +93,18 @@ export const modApplicationController = () => {
     }
   };
 
-  const deleteModApplication = async (req: DeleteUserRequest, res: Response): Promise<void> => {
+  /**
+   * Deletes a specified ModApplication in the database. If deleting the applications fails, the HTTP response status is updated.
+   *
+   * @param req - The DeleteModApplicationRequest object containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const deleteModApplication = async (
+    req: DeleteModApplicationRequest,
+    res: Response,
+  ): Promise<void> => {
     const { username } = req.body;
     try {
       const deleted = await removeModApplication(username);

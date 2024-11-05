@@ -3,6 +3,9 @@ import { ModApplication } from '../../../types';
 import ReviewModApplicationHeader from './header';
 import './index.css';
 
+/**
+ * ReviewApplicationPage component allows moderators to accept or reject moderator applications by users.
+ */
 const ReviewApplicationPage = () => {
   const { applications, err, handleApplicationDecision } = useModApplicationPage();
 

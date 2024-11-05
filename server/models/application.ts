@@ -217,7 +217,7 @@ export const addUser = async (user: User): Promise<User | null> => {
       return null;
     }
 
-    const hashedPassword = await bcrypt.hash(user.password, 15);
+    const hashedPassword = await bcrypt.hash(user.password, 3);
     // If the user does not exist, create a new one
     const newUser = new UserModel({ ...user, password: hashedPassword });
     const savedUser = await newUser.save();
@@ -244,13 +244,9 @@ export const findUser = async (username: string, password: string): Promise<User
       return null;
     }
 
-    // if (user.password === password) {
-    //   return user;
-    // }
     const passwordCorrect = await bcrypt.compare(password, user.password);
     if (!passwordCorrect) {
-      // return null;
-      return user;
+      return null;
     }
     return user;
   } catch (err) {
@@ -286,6 +282,11 @@ export const addModApplication = async (
   }
 };
 
+/**
+ * Retrieves all of the moderator applications in the database.
+ *
+ * @returns {ModApplication[]} - A list of the current active ModApplications.
+ */
 export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
   try {
     const applications = await ModApplicationModel.find();
@@ -295,6 +296,12 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
   }
 };
 
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
 export const populateUser = async (username: string): Promise<UserResponse> => {
   try {
     const result = await UserModel.findOneAndUpdate(
@@ -311,6 +318,12 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
   }
 };
 
+/**
+ * Removes a specificed moderator application from the db.
+ *
+ * @param username - the username of the user's application being deleted
+ * @returns {ModApplication} - the application object being deleted.
+ */
 export const removeModApplication = async (username: string): Promise<boolean> => {
   try {
     const result = await ModApplicationModel.findOneAndDelete({ username });

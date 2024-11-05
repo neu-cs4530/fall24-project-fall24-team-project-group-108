@@ -48,7 +48,6 @@ const useModApplication = () => {
     if (!validateText()) return;
 
     try {
-      console.log('hook', user, text);
       await submitModApplication(user, text);
       setText('');
       navigate('/home');

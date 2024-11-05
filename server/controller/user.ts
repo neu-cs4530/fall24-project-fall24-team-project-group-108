@@ -17,7 +17,7 @@ export const userController = () => {
     username !== undefined && username !== '' && password !== undefined && password !== '';
 
   /**
-   * Finds a user in the database, if the user is in the database and find their information.
+   * Determines if a user is in the database and then finds their information.
    *
    * @param req The FindUserRequest object containing the input user data.
    * @param res The HTTP response object used to send back the result of the operation.
@@ -47,8 +47,8 @@ export const userController = () => {
    * Adds a new user to the database. The user is first validated and then saved.
    * If saving the user fails, the HTTP response status is updated.
    *
-   * @param req The AddUserRequest object containing the user data.
-   * @param res The HTTP response object used to send back the result of the operation.
+   * @param req - The AddUserRequest object containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
@@ -59,7 +59,6 @@ export const userController = () => {
       return;
     }
     try {
-      // New users are automatically not a moderator, need to be approved to become a moderator.
       const user = await addUser({ username, password, isModerator: false });
       if (!user) {
         res.status(400).send('Username already taken');
@@ -76,6 +75,14 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Makes an existing user in the database a moderator. If updating the isModerator field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const makeUserModerator = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
     const { username } = req.body;
     // if (!isUserBodyValid(username, password)) {
