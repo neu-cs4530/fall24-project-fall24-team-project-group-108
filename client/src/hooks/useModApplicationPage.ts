@@ -37,7 +37,7 @@ const useModApplicationPage = () => {
   const handleAccept = async (application: ModApplication) => {
     try {
       // make user moderator
-      const { username } = application.user;
+      const { username } = application;
       const id = application._id;
       if (!id) {
         setErr('Error finding application');

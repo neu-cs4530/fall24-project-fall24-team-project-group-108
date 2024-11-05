@@ -27,7 +27,7 @@ const ReviewApplicationPage = () => {
       <ReviewModApplicationHeader modAppCount={applications.length} />
       {applications.map((application: ModApplication) => (
         <div className='application-container' key={application._id}>
-          <h4 className='username'>{application.user.username}</h4>
+          <h4 className='username'>{application.username}</h4>
           <p>{application.applicationText}</p>
           <div className='button-container'>
             <button

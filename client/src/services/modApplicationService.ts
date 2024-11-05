@@ -16,6 +16,7 @@ const submitModApplication = async (
   applicationText: string,
 ): Promise<ModApplication> => {
   const data = { modApplication: { user, applicationText } };
+  console.log(data);
   const res = await api.post(`${MODAPPLICATION_API_URL}/createModApplication`, data);
   if (res.status !== 200) {
     throw new Error('Error while creating mod application');

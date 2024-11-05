@@ -17,7 +17,7 @@ export interface User {
  */
 export interface ModApplication {
   _id?: string;
-  user: User;
+  username: string;
   applicationText: string;
 }
 

@@ -1,4 +1,5 @@
 import express, { Response } from 'express';
+import { ObjectId } from 'mongodb';
 import { AddModApplicationRequest } from '../types';
 import { addModApplication, fetchModApplications } from '../models/application';
 
@@ -15,11 +16,14 @@ export const modApplicationController = () => {
    */
   const isModApplicationBodyValid = (
     username: string,
+    password: string,
     isModerator: boolean,
     applicationText: string,
   ): boolean =>
     username !== undefined &&
     username !== '' &&
+    password !== undefined &&
+    password !== '' &&
     isModerator === false &&
     applicationText !== undefined &&
     applicationText !== '';
@@ -39,13 +43,14 @@ export const modApplicationController = () => {
   ): Promise<void> => {
     const { modApplication } = req.body;
     const { user, applicationText } = modApplication;
-    if (!isModApplicationBodyValid(user.username, user.isModerator, applicationText)) {
+    const { username, password, isModerator } = user;
+    if (!isModApplicationBodyValid(username, password, isModerator, applicationText)) {
       res.status(400).send('Invalid application body');
       return;
     }
 
     try {
-      const modAppFromDb = await addModApplication(modApplication);
+      const modAppFromDb = await addModApplication(username, applicationText);
       if ('error' in modAppFromDb) {
         if (modAppFromDb.error === 'User already created an application request') {
           res.status(409).send(modAppFromDb.error);

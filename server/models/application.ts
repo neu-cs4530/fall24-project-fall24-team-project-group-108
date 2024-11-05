@@ -260,10 +260,10 @@ export const findUser = async (username: string, password: string): Promise<User
  * @returns {Promise<ModApplication | null>} - The added or existing mod application, or `null` if an error occurred
  */
 export const addModApplication = async (
-  modApplication: ModApplication,
+  username: string,
+  applicationText: string,
 ): Promise<ModApplicationResponse> => {
   try {
-    const { username } = modApplication.user;
     const existingApplication = await ModApplicationModel.findOne({
       username,
       status: { $ne: true },
@@ -272,7 +272,7 @@ export const addModApplication = async (
       return { error: 'User already created an application request' };
     }
 
-    const savedApplication = await ModApplicationModel.create(modApplication);
+    const savedApplication = await ModApplicationModel.create({ username, applicationText });
     return savedApplication as ModApplication;
   } catch (error) {
     return { error: 'Error when saving the mod application' };
