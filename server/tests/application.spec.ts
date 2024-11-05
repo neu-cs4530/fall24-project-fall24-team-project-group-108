@@ -15,10 +15,13 @@ import {
   saveComment,
   addComment,
   addVoteToQuestion,
+  addUser,
+  findUser,
 } from '../models/application';
-import { Answer, Question, Tag, Comment } from '../types';
+import { Answer, Question, Tag, Comment, User } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
+import UserModel from '../models/users';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -134,6 +137,87 @@ const QUESTIONS: Question[] = [
     comments: [],
   },
 ];
+
+const user1: User = {
+  _id: new ObjectId(),
+  username: 'testuser1',
+  password: 'password123',
+  isModerator: false,
+};
+
+const user2: User = {
+  _id: new ObjectId(),
+  username: 'testuser2',
+  password: 'password456',
+  isModerator: false,
+};
+
+describe('User model', () => {
+  beforeEach(() => {
+    mockingoose.resetAll();
+  });
+
+  describe('addUser', () => {
+    test('should add a new user when the user does not exist', async () => {
+      mockingoose(UserModel).toReturn(null, 'findOne');
+      mockingoose(UserModel).toReturn(user2, 'save');
+
+      const result = await addUser(user2);
+
+      expect(result).toEqual(user2);
+    });
+
+    test('should return null if the user already exists', async () => {
+      mockingoose(UserModel).toReturn(user1, 'findOne');
+
+      const result = await addUser(user1);
+
+      expect(result).toBeNull();
+    });
+
+    test('should return null if an error occurs', async () => {
+      mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
+
+      const result = await addUser(user1);
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('findUser', () => {
+    test('should return user if username and password are correct', async () => {
+      mockingoose(UserModel).toReturn(user1, 'findOne');
+
+      const result = await findUser(user1.username, user1.password);
+
+      expect(result).toEqual(user1);
+    });
+
+    test('should return null if username does not exist', async () => {
+      mockingoose(UserModel).toReturn(null, 'findOne');
+
+      const result = await findUser(user1.username, user1.password);
+
+      expect(result).toBeNull();
+    });
+
+    test('should return null if password is incorrect', async () => {
+      mockingoose(UserModel).toReturn({ ...user1, password: 'wrongpassword' }, 'findOne');
+
+      const result = await findUser(user1.username, user1.password);
+
+      expect(result).toBeNull();
+    });
+
+    test('should return null if an error occurs', async () => {
+      mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
+
+      const result = await findUser(user1.username, user1.password);
+
+      expect(result).toBeNull();
+    });
+  });
+});
 
 describe('application module', () => {
   beforeEach(() => {

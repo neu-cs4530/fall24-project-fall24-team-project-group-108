@@ -16,6 +16,22 @@
   margin: 10px 0;
 }
 
+.container p {
+  color: red;
+  font-size: 10px;
+  margin-top: -8px;
+  width: 100%;
+  max-width: 300px;
+  text-align: right;
+  }
+
+.container form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .input-text {
   padding: 10px;
   font-size: 16px;
@@ -36,12 +52,14 @@
 .login-button {
   padding: 10px 20px;
   font-size: 16px;
+  width: 100%;
+  max-width: 300px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-left: 20px;
+  margin-top: 25px;
 }
 
 .login-button:hover {
@@ -50,4 +68,25 @@
 
 .login-button:active {
   background-color: #003f7f;
+}
+
+.signup-page-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 300px;
+  background-color: #989898;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.signup-page-button:hover {
+  background-color: #6d6d6d;
+}
+
+.signup-page-button:active {
+  background-color: #4a4a4a;
 }
