@@ -3,6 +3,8 @@ import { QueryOptions } from 'mongoose';
 import {
   Answer,
   AnswerResponse,
+  Badge,
+  BadgeResponse,
   Comment,
   CommentResponse,
   OrderType,
@@ -14,6 +16,7 @@ import AnswerModel from './answers';
 import QuestionModel from './questions';
 import TagModel from './tags';
 import CommentModel from './comments';
+import BadgeModel from './badges';
 
 /**
  * Parses tags from a search string.
@@ -223,6 +226,28 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 };
 
 /**
+ * Retrieves questions from the database that were answered by the given user.
+ *
+ * @param string answerer - The answerer to filter the questions by
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of ordered questions
+ */
+export const filterQuestionsByAnswerer = async (answerer: string): Promise<Question[]> => {
+  try {
+    // find all answers from the given user
+    const alist = await AnswerModel.find({ ansBy: answerer });
+  
+    // find all questions that are linked to the answers
+    const answerIds = alist.map(answer => answer._id);
+    const qlist = await QuestionModel.find({ answers: { $in: answerIds } });
+
+    return qlist;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
  * Filters a list of questions by the user who asked them.
  *
  * @param qlist The array of Question objects to be filtered.
@@ -393,6 +418,36 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
+  }
+};
+
+/**
+ * Saves a new badge to the database.
+ *
+ * @param {Badge} badge - The badge to save
+ *
+ * @returns {Promise<BadgeResponse>} - The saved badge, or error message
+ */
+export const saveBadge = async (badge: Badge): Promise<BadgeResponse> => {
+  try {
+    const result = await BadgeModel.create(badge);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a badge' };
+  }
+};
+
+/**
+ * Retrieves badges from the database.
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of ordered questions
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const badges = await BadgeModel.find().exec();
+    return badges;
+  } catch (error) {
+    return [];
   }
 };
 
@@ -642,3 +697,6 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return { error: 'Error when construction tag map' };
   }
 };
+
+// functions for badge / user account logic -- Lauren
+

@@ -101,6 +101,18 @@ export interface FindQuestionRequest extends Request {
 }
 
 /**
+ * Interface for the request query to find questions using a search string, which contains:
+ * - order - The order in which to sort the questions
+ * - search - The search string used to find questions
+ * - askedBy - The username of the user who asked the question
+ */
+export interface FindQuestionByAswerer extends Request {
+  params: {
+    answeredBy: string;
+  };
+}
+
+/**
  * Interface for the request parameters when finding a question by its ID.
  * - qid - The unique identifier of the question.
  */
@@ -167,6 +179,56 @@ export interface AddCommentRequest extends Request {
  * Type representing the possible responses for a Comment-related operation.
  */
 export type CommentResponse = Comment | { error: string };
+
+
+/**
+ * Interface representing a Badge, which contains:
+ * - _id - The unique identifier for the badge. Optional field.
+ * - name - The name of the badge.
+ * - description - The description of how to obtain the badge.
+ * - category - The category of the badge, based on the action that needs to be performed to get it.
+ * - targetValue - The amount of times the category action must be performed to get the badge.
+ *
+ */
+export interface Badge {
+  _id?: ObjectId;
+  name: string;
+  description: string;
+  category: string;
+  targetValue: number;
+}
+
+/**
+ * Interface extending the request body when adding a comment to a question or an answer, which contains:
+ * - id - The unique identifier of the question or answer being commented on.
+ * - type - The type of the comment, either 'question' or 'answer'.
+ * - comment - The comment being added.
+ */
+export interface AddBadgeRequest extends Request {
+  body: {
+    name: string;
+    description: string;
+    category: 'questions' | 'answers' | 'leaderboard' | 'votes' | 'comments';
+    targetValue: number;
+  };
+}
+
+/**
+ * Type representing the possible responses for a Badge-related operation.
+ */
+export type BadgeResponse = Badge | { error: string };
+
+/**
+ * Interface representing a Tag document, which contains:
+ * - _id - The unique identifier for the tag. Optional field.
+ * - name - Name of the tag
+ */
+export interface User {
+  _id?: ObjectId;
+  username: string;
+  password: string;
+  isModerator: boolean;
+}
 
 /**
  * Interface representing the payload for a comment update event, which contains:

@@ -8,13 +8,33 @@ const QUESTION_API_URL = `${process.env.REACT_APP_SERVER_URL}/question`;
  *
  * @param order - The order in which to fetch questions. Default is 'newest'.
  * @param search - The search term to filter questions. Default is an empty string.
+ * @param askedBy - The user to filter questions by. Default is an empty string.
  * @throws Error if there is an issue fetching or filtering questions.
  */
 const getQuestionsByFilter = async (
   order: string = 'newest',
   search: string = '',
+  askedBy: string = '',
 ): Promise<Question[]> => {
-  const res = await api.get(`${QUESTION_API_URL}/getQuestion?order=${order}&search=${search}`);
+  const res = await api.get(
+    `${QUESTION_API_URL}/getQuestion?order=${order}&search=${search}&askedBy=${askedBy}`,
+  );
+  if (res.status !== 200) {
+    throw new Error('Error when fetching or filtering questions');
+  }
+  return res.data;
+};
+
+/**
+ * Function to get questions by filter.
+ *
+ * @param order - The order in which to fetch questions. Default is 'newest'.
+ * @param search - The search term to filter questions. Default is an empty string.
+ * @param askedBy - The user to filter questions by. Default is an empty string.
+ * @throws Error if there is an issue fetching or filtering questions.
+ */
+const getQuestionByAnswerer = async (answeredBy: string = ''): Promise<Question[]> => {
+  const res = await api.get(`${QUESTION_API_URL}/getQuestionByAnswerer/${answeredBy}`);
   if (res.status !== 200) {
     throw new Error('Error when fetching or filtering questions');
   }
@@ -84,4 +104,11 @@ const downvoteQuestion = async (qid: string, username: string) => {
   return res.data;
 };
 
-export { getQuestionsByFilter, getQuestionById, addQuestion, upvoteQuestion, downvoteQuestion };
+export {
+  getQuestionsByFilter,
+  getQuestionById,
+  addQuestion,
+  upvoteQuestion,
+  downvoteQuestion,
+  getQuestionByAnswerer,
+};

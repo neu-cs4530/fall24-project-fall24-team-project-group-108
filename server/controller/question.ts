@@ -7,6 +7,7 @@ import {
   AddQuestionRequest,
   VoteRequest,
   FakeSOSocket,
+  FindQuestionByAswerer,
 } from '../types';
 import {
   addVoteToQuestion,
@@ -17,6 +18,7 @@ import {
   processTags,
   populateDocument,
   saveQuestion,
+  filterQuestionsByAnswerer,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -52,6 +54,30 @@ const questionController = (socket: FakeSOSocket) => {
       }
     }
   };
+
+
+
+  /**
+   * Retrieves a list of questions filtered by a user who answered the question.
+   *
+   * @param req The FindQuestionByAswerer object containing the query parameter 'answeredBy'.
+   * @param res The HTTP response object used to send back the filtered list of questions.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getQuestionsByAnswerer = async (req: FindQuestionByAswerer, res: Response): Promise<void> => {
+    const { answeredBy } = req.params;
+    try {
+      let qlist: Question[] = await filterQuestionsByAnswerer(answeredBy);
+      res.json(qlist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching questions by answerer: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching questions by answerer`);
+      }
+    }
+  }
 
   /**
    * Retrieves a question by its unique ID, and increments the view count for that question.
@@ -230,6 +256,7 @@ const questionController = (socket: FakeSOSocket) => {
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getQuestion', getQuestionsByFilter);
   router.get('/getQuestionById/:qid', getQuestionById);
+  router.get('/getQuestionByAnswerer/:answeredBy', getQuestionsByAnswerer);
   router.post('/addQuestion', addQuestion);
   router.post('/upvoteQuestion', upvoteQuestion);
   router.post('/downvoteQuestion', downvoteQuestion);

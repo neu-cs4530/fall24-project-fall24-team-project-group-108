@@ -5,21 +5,17 @@ interface BadgesTabProps {
   handleClick: () => void;
 }
 
-const BadgesTab = ({ user, handleClick }: BadgesTabProps) => {
-  const placeHolder = 'hi';
+const BadgesTab = ({ user, handleClick }: BadgesTabProps) => (
   // at some point will grab all the badges obtained by the user
 
-  return (
-    <div className='badge_tab'>
-      <div
-        className='all_badges_link'
-        onClick={e => {
-          handleClick();
-        }}>
-        See all badges &gt;
-      </div>
+  <div className='badge_tab'>
+    <div
+      className='all_badges_link'
+      onClick={e => {
+        handleClick();
+      }}>
+      See all badges &gt;
     </div>
-  );
-};
-
+  </div>
+);
 export default BadgesTab;
