@@ -6,7 +6,19 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
  * Represents a user in the application.
  */
 export interface User {
+  _id?: string;
   username: string;
+  password: string;
+  isModerator: boolean;
+}
+
+/**
+ * Represents a mod application.
+ */
+export interface ModApplication {
+  _id?: string;
+  username: string;
+  applicationText: string;
 }
 
 /**
@@ -135,6 +147,26 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
+}
+
+/**
+ * Interface representing the structure of a Message object.
+ *
+ * - messageText - The content of the message
+ * - messageDateTime - The date and time the message was sent
+ * - messageBy - The username of the user who sent the message
+ * - messageTo - A list of usernames of users who the message was sent to
+ */
+export interface Message {
+  messageText: string;
+  messageDateTime: Date;
+  messageBy: string;
+  messageTo: string[];
+}
+
+export interface Correspondence {
+  messages: Message[];
+  messageMembers: string[];
 }
 
 /**

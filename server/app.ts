@@ -13,8 +13,10 @@ import answerController from './controller/answer';
 import questionController from './controller/question';
 import tagController from './controller/tag';
 import commentController from './controller/comment';
+import { userController } from './controller/user';
 import { FakeSOSocket } from './types';
 import badgeController from './controller/badge';
+import modApplicationController from './controller/modApplication';
 
 dotenv.config();
 
@@ -74,6 +76,8 @@ app.use('/tag', tagController());
 app.use('/answer', answerController(socket));
 app.use('/comment', commentController(socket));
 app.use('/badge', badgeController(socket));
+app.use('/user', userController());
+app.use('/modApplication', modApplicationController());
 
 // Export the app instance
 export { app, server, startServer };

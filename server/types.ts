@@ -54,6 +54,124 @@ export interface Tag {
 }
 
 /**
+ * Interface representing a User document, which contains:
+ * - _id - The unique identifier for the tag. Optional field.
+ * - username - Name of the user.
+ * - password - Password to login created by the user.
+ * - isModerator - the current state of the user's moderator status.
+ */
+export interface User {
+  _id?: ObjectId;
+  username: string;
+  password: string;
+  isModerator: boolean;
+}
+
+/**
+ * Interface extending the request body when adding a user to the database which contains:
+ * - username - The new user's username.
+ * - password - The new user's password.
+ */
+export interface AddUserRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Interface extending the request body when reseting a password in the database which contains:
+ * - username - The user's username.
+ * - password - The user's new password.
+ */
+export interface ResetPasswordRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Interface extending the request body when making a user a moderator in the db:
+ * - username - The user being made a moderator.
+ */
+export interface MakeUserModeratorRequest extends Request {
+  body: {
+    username: string;
+  }
+}
+
+/**
+ * Interface for the request query to find a user using a search string, which contains:
+ * - username - The username of the user
+ * - password - The password of the user
+ */
+export interface FindUserRequest extends Request {
+  query: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Type representing the possible responses for a User-related operation.
+ */
+export type UserResponse = User | { error: string };
+
+/**
+ * Interface representing a ModApplication document, which contains:
+ * - _id - The unique identifier for the question. Optional field.
+ * - user - The user who created the application.
+ * - applicationText - The additional imformation provided by the applicant.
+ */
+export interface ModApplication {
+  _id?: ObjectId;
+  user: User; 
+  applicationText: string;
+}
+
+/**
+ * Interface extending the request body when adding a ModApplication to the database which contains:
+ * - modApplication - contains the information about the ModAplication being added to the database.
+ */
+export interface AddModApplicationRequest extends Request {
+  body: {
+    modApplication: ModApplication;
+  }
+}
+
+/**
+ * Interface extending the request body when deleting a ModApplication to the database which contains:
+ * - username - the user whose application is being deleted.
+ */
+export interface DeleteModApplicationRequest extends Request {
+  body: {
+    username: string
+  }
+}
+
+/**
+ * Interface extending the request body when finding a ModApplication in the database which contains:
+ * - username - the user whose application is being found.
+ */
+export interface FindModApplicationRequest extends Request {
+  query: {
+    username: string;
+  }
+}
+
+/**
+ * Type representing the possible responses for a ModApplication related operation.
+ */
+export type ModApplicationResponse = ModApplication | { error: string };
+
+/**
+ * Type representing the possible responses for a ModApplication[] related operation.
+ */
+export type ModApplicationResponses = ModApplication[] | { error: string };
+
+
+/**
  * Interface representing a Question document, which contains:
  * - _id - The unique identifier for the question. Optional field.
  * - title - The title of the question.
@@ -79,6 +197,26 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[] | ObjectId[];
+}
+
+/**
+ * Interface representing the structure of a Message object.
+ *
+ * - messageText - The content of the message
+ * - messageDateTime - The date and time the message was sent
+ * - messageBy - The username of the user who sent the message
+ * - messageTo - A list of usernames of users who the message was sent to
+ */
+ export interface Message {
+  messageText: string,
+  messageDateTime: Date,
+  messageBy: string,
+  messageTo: string[]
+}
+
+export interface Correspondence {
+  messages: Message[],
+  messageMembers: string[]
 }
 
 /**

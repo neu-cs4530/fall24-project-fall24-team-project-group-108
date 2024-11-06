@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
+import { application } from 'express';
+import bcrypt from 'bcrypt';
 import {
   Answer,
   AnswerResponse,
@@ -7,16 +9,23 @@ import {
   BadgeResponse,
   Comment,
   CommentResponse,
+  ModApplication,
+  ModApplicationResponse,
+  ModApplicationResponses,
   OrderType,
   Question,
   QuestionResponse,
   Tag,
+  User,
+  UserResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
 import TagModel from './tags';
 import CommentModel from './comments';
 import BadgeModel from './badges';
+import UserModel from './users';
+import ModApplicationModel from './modApplication';
 
 /**
  * Parses tags from a search string.
@@ -192,6 +201,165 @@ export const addTag = async (tag: Tag): Promise<Tag | null> => {
     return savedTag as Tag;
   } catch (error) {
     return null;
+  }
+};
+
+/**
+ * Adds a user to the database if they do not already exist.
+ *
+ * @param user - the user to add
+ *
+ * @returns {Promise<User | null>} - The added or existing user, or `null` if an error occurred
+ */
+export const addUser = async (user: User): Promise<User | null> => {
+  try {
+    // Check if a user with the given id already exists
+    const existingUser = await UserModel.findOne({ username: user.username });
+
+    if (existingUser) {
+      return null;
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 5);
+    // If the user does not exist, create a new one
+    const newUser = new UserModel({ ...user, password: hashedPassword });
+    const savedUser = await newUser.save();
+
+    return savedUser as User;
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Authenticates a user by checking their input username and password and checking the database for it.
+ *
+ * @param username - The input username.
+ * @param password - The input password.
+ *
+ * @returns {Promise<boolean>} - Return true if the username and password are in the database, otherwise false.
+ */
+export const findUser = async (username: string, password: string): Promise<User | null> => {
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return null;
+    }
+
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+    if (!passwordCorrect) {
+      return null;
+    }
+    return user;
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ * Adds a mod application to the database using the information of the application provided by a user.
+ *
+ * @param user - the user who created the application.
+ * @param applicationText - the additional information given in the application.
+ *
+ * @returns {Promise<ModApplication | null>} - The added or existing mod application, or `null` if an error occurred
+ */
+export const addModApplication = async (
+  username: string,
+  applicationText: string,
+): Promise<ModApplicationResponse> => {
+  try {
+    const existingApplication = await ModApplicationModel.findOne({
+      username,
+      status: { $ne: true },
+    });
+    if (existingApplication) {
+      return { error: 'User already created an application request' };
+    }
+
+    const savedApplication = await ModApplicationModel.create({ username, applicationText });
+    return savedApplication as ModApplication;
+  } catch (error) {
+    return { error: 'Error when saving the mod application' };
+  }
+};
+
+/**
+ * Retrieves all of the moderator applications in the database.
+ *
+ * @returns {ModApplication[]} - A list of the current active ModApplications.
+ */
+export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
+  try {
+    const applications = await ModApplicationModel.find();
+    return applications;
+  } catch (error) {
+    return { error: 'Error when saving the mod application' };
+  }
+};
+
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
+export const updatePassword = async (username: string, password: string): Promise<UserResponse> => {
+  const hashedPassword = await bcrypt.hash(password, 5);
+
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error(`Failed to reset password`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when reseting password: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
+export const populateUser = async (username: string): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $set: { isModerator: true } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error(`Failed to fetch and populate a user`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Removes a specificed moderator application from the db.
+ *
+ * @param username - the username of the user's application being deleted
+ * @returns {ModApplication} - the application object being deleted.
+ */
+export const removeModApplication = async (username: string): Promise<boolean> => {
+  try {
+    const result = await ModApplicationModel.findOneAndDelete({ username });
+    if (!result) {
+      throw new Error(`No application found`);
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Error when deleting the application: ${(error as Error).message}`);
   }
 };
 
