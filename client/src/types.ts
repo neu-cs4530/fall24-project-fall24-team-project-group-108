@@ -10,6 +10,7 @@ export interface User {
   username: string;
   password: string;
   isModerator: boolean;
+  badges: Badge[];
 }
 
 /**
@@ -117,7 +118,6 @@ export interface Badge {
   category: string;
   targetValue: number;
   tier: string;
-  users: []; // add this later when merging w user branch
 }
 
 /**

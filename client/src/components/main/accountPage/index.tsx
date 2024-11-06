@@ -6,8 +6,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import QuestionsTab from './questionsTab';
 import AnswersTab from './answersTab';
 import BadgesTab from './badgesTab';
-import { Question } from '../../../types';
+import { Badge, Question } from '../../../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../../../services/questionService';
+import { fetchBadgesByUser } from '../../../services/badgeService';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
@@ -19,6 +20,7 @@ const AccountPage = () => {
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
   const [alist, setAlist] = useState<Question[]>([]);
+  const [badgeList, setBadgeList] = useState<Badge[]>([]);
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -58,8 +60,22 @@ const AccountPage = () => {
       }
     };
 
+    /**
+     * Function to fetch all badges obtained by the user.
+     */
+    const fetchUserBadges = async () => {
+      try {
+        const res = await fetchBadgesByUser(user as string);
+        setBadgeList(res || []);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    };
+
     fetchQuestionData();
     fetchAnswerData();
+    fetchUserBadges();
   }, [user]);
 
   return (
@@ -89,7 +105,12 @@ const AccountPage = () => {
           {value === 0 && QuestionsTab(user as string, qlist)}
           {value === 1 && AnswersTab(user as string, alist)}
           {value === 2 && user && (
-            <BadgesTab user={user} handleClick={handleAuthorClick} /> // Pass both user and handleClick
+            <BadgesTab
+              user={user}
+              handleClick={handleAuthorClick}
+              userBadges={badgeList}
+              navigate={navigate}
+            /> // Pass both user and handleClick
           )}
         </div>
       </div>

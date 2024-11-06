@@ -2,14 +2,38 @@ import React, { useEffect, useState } from 'react';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import StarIcon from '@mui/icons-material/Star';
 import { Card } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { NavigateFunction, useNavigate } from 'react-router-dom';
 import { Badge } from '../../../types';
 import './index.css';
 import BadgeHover from './badgeHover';
 import getAllBadges from '../../../services/badgeService';
 
-type BadgeCategory = 'answers' | 'questions';
-type BadgeTier = 'bronze' | 'silver' | 'gold';
+export type BadgeCategory = 'answers' | 'questions';
+export type BadgeTier = 'bronze' | 'silver' | 'gold';
+
+// maps badge tier to its icon color
+export const tierColors: { [key in BadgeTier]: string } = {
+  bronze: '#cd7f32',
+  silver: '#c0c0c0',
+  gold: '#ffd700',
+};
+
+// maps badge category to its icon image
+export const iconMap: { [key in BadgeCategory]: JSX.Element } = {
+  answers: <QuestionAnswerIcon sx={{ fontSize: '50px' }} />,
+  questions: <StarIcon sx={{ fontSize: '50px' }} />,
+};
+
+// determine which badgeIcon to display based on its category and tier
+export const getBadgeIcon = (badgeType: BadgeCategory, tier: BadgeTier) => {
+  const color = tierColors[tier];
+  return React.cloneElement(iconMap[badgeType], { style: { color } });
+};
+
+// navigate to the specific badge name if clicked
+export const handleCardClick = (badgeName: string, navigate: NavigateFunction) => {
+  navigate(`/badges/${badgeName}`);
+};
 
 const BadgePage = () => {
   const navigate = useNavigate();
@@ -33,30 +57,6 @@ const BadgePage = () => {
     fetchBadgeData();
   }, []);
 
-  // maps badge tier to its icon color
-  const tierColors: { [key in BadgeTier]: string } = {
-    bronze: '#cd7f32',
-    silver: '#c0c0c0',
-    gold: '#ffd700',
-  };
-
-  // maps badge category to its icon image
-  const iconMap: { [key in BadgeCategory]: JSX.Element } = {
-    answers: <QuestionAnswerIcon sx={{ fontSize: '50px' }} />,
-    questions: <StarIcon sx={{ fontSize: '50px' }} />,
-  };
-
-  // determine which badgeIcon to display based on its category and tier
-  const getBadgeIcon = (badgeType: BadgeCategory, tier: BadgeTier) => {
-    const color = tierColors[tier];
-    return React.cloneElement(iconMap[badgeType], { style: { color } });
-  };
-
-  // navigate to the specific badge name if clicked
-  const handleCardClick = (badgeName: string) => {
-    navigate(`/badges/${badgeName}`);
-  };
-
   return (
     <div className='badge-page'>
       <div className='page-title'>All Badges</div>
@@ -67,7 +67,7 @@ const BadgePage = () => {
             className='badge-item'
             onMouseEnter={() => setHoveredBadge(badge.name)}
             onMouseLeave={() => setHoveredBadge(null)}
-            onClick={() => handleCardClick(badge.name)}>
+            onClick={() => handleCardClick(badge.name, navigate)}>
             <div className='badge-icon'>
               {getBadgeIcon(badge.category as BadgeCategory, badge.tier as BadgeTier)}
             </div>

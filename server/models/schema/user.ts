@@ -8,6 +8,7 @@ import { Schema } from 'mongoose';
  * - `username`: The name of the user.
  * - `password`: The password of the user.
  * - `isModerator`: If the user has moderator privileges.
+ * - `badges`: Badges obtained by the user.
  */
 const userSchema: Schema = new Schema(
   {
@@ -21,6 +22,7 @@ const userSchema: Schema = new Schema(
     isModerator: {
       type: Boolean,
     },
+    badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
   },
   { collection: 'User' },
 );

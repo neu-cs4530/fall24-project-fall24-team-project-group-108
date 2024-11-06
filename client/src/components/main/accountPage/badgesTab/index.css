@@ -1,13 +1,23 @@
 .badge_tab {
-  display: flex;               
+  display: flex;  
+  flex-direction: column;             
   justify-content: flex-end;  
   align-items: flex-start;     
 }
 
 .all_badges_link {
   color: #858585;
+  align-self: flex-end;
 }
 
 .all_badges_link:hover {
   text-decoration: underline;
+}
+
+.page-title {
+  align-self: center;
+}
+
+.badge-grid {
+  align-self: center;
 }

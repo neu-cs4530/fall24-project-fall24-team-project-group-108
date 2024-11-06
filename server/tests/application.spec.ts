@@ -143,6 +143,7 @@ const user1: User = {
   username: 'testuser1',
   password: 'password123',
   isModerator: false,
+  badges: [],
 };
 
 const user2: User = {
@@ -150,6 +151,7 @@ const user2: User = {
   username: 'testuser2',
   password: 'password456',
   isModerator: false,
+  badges: [],
 };
 
 describe('User model', () => {

@@ -10,6 +10,16 @@ export type FakeSOSocket = Server<ServerToClientEvents>;
 export type OrderType = 'newest' | 'unanswered' | 'active' | 'mostViewed';
 
 /**
+ * Type representing the possible category options for badges and badgeProgress.
+ */
+export type BadgeCategory = 'questions' | 'answers' | 'leaderboard' | 'votes' | 'comments';
+
+/**
+ * Type representing the possible tiers for a badge.
+ */
+export type BadgeTier = 'bronze' | 'silver' | 'gold';
+
+/**
  * Interface representing an Answer document, which contains:
  * - _id - The unique identifier for the answer. Optional field
  * - text - The content of the answer
@@ -59,12 +69,14 @@ export interface Tag {
  * - username - Name of the user.
  * - password - Password to login created by the user.
  * - isModerator - the current state of the user's moderator status.
+ * - badges - The badges obtained by the user.
  */
 export interface User {
   _id?: ObjectId;
   username: string;
   password: string;
   isModerator: boolean;
+  badges: Badge[];
 }
 
 /**
@@ -333,24 +345,40 @@ export interface Badge {
   _id?: ObjectId;
   name: string;
   description: string;
-  category: string;
+  category: BadgeCategory;
   targetValue: number;
-  tier: string;
+  tier: BadgeTier;
 }
 
 /**
- * Interface extending the request body when adding a comment to a question or an answer, which contains:
- * - id - The unique identifier of the question or answer being commented on.
- * - type - The type of the comment, either 'question' or 'answer'.
- * - comment - The comment being added.
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
  */
 export interface AddBadgeRequest extends Request {
   body: {
     name: string;
     description: string;
-    category: 'questions' | 'answers' | 'leaderboard' | 'votes' | 'comments';
+    category: BadgeCategory;
     targetValue: number;
-    tier: 'bronze' | 'silver' | 'gold'
+    tier: BadgeTier
+  };
+}
+
+/**
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
+ */
+export interface UserBadgeRequest extends Request {
+  params: {
+    username: string;
   };
 }
 
@@ -360,16 +388,40 @@ export interface AddBadgeRequest extends Request {
 export type BadgeResponse = Badge | { error: string };
 
 /**
- * Interface representing a Tag document, which contains:
- * - _id - The unique identifier for the tag. Optional field.
- * - name - Name of the tag
+ * Interface representing a BadgeProgress, which contains:
+ * - _id - The unique identifier for the badgeProgress. Optional field.
+ * - user - The username of the user whose progress is being tracked.
+ * - badge - The badge being tracked.
+ * - category - The category of the badge, based on the action that needs to be performed to get it.
+ * - targetValue - The amount of times the category action must be performed to get the badge.
+ * - currentValue - The amount of times the category action has been performed by the user.
  */
-export interface User {
+export interface BadgeProgress {
   _id?: ObjectId;
-  username: string;
-  password: string;
-  isModerator: boolean;
+  user: string;
+  badge: ObjectId;
+  category: BadgeCategory;
+  targetValue: number;
+  currentValue: number;
 }
+
+/**
+ * Interface extending the request body when updating badge progress, which contains:
+ * - name - The username of the user.
+ * - category - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ */
+export interface UpdateBadgeProgressRequest extends Request {
+  body: {
+    username: string;
+    category: BadgeCategory;
+  };
+}
+
+/**
+ * Type representing the possible responses for a badgeProgress-related operation.
+ */
+export type BadgeProgressResponse = BadgeProgress[] | { error: string };
 
 /**
  * Interface representing the payload for a comment update event, which contains:

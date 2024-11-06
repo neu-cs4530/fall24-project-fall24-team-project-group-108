@@ -6,6 +6,7 @@ import {
   Answer,
   AnswerResponse,
   Badge,
+  BadgeProgressResponse,
   BadgeResponse,
   Comment,
   CommentResponse,
@@ -26,6 +27,7 @@ import CommentModel from './comments';
 import BadgeModel from './badges';
 import UserModel from './users';
 import ModApplicationModel from './modApplication';
+import BadgeProgressModel from './badgeProgresses';
 
 /**
  * Parses tags from a search string.
@@ -606,13 +608,42 @@ export const saveBadge = async (badge: Badge): Promise<BadgeResponse> => {
 };
 
 /**
- * Retrieves badges from the database.
+ * Retrieves all badges from the database.
  *
- * @returns {Promise<Question[]>} - Promise that resolves to a list of ordered questions
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
  */
 export const getAllBadges = async (): Promise<Badge[]> => {
   try {
     const badges = await BadgeModel.find().exec();
+    return badges;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves all badges earned from a user from the database.
+ *
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
+ */
+export const getBadgesByUser = async (username: string): Promise<Badge[]> => {
+  try {
+    // find all badgeProgresses where the user has hit the targetValue
+    const badgeProgresses = await BadgeProgressModel.aggregate([
+      {
+        $match: {
+          user: username,
+          $expr: { $gte: ["$currentValue", "$targetValue"] },
+        },
+      },
+    ]);
+
+    // find the badges that correspond to this badgeprogress
+    const badgeIds = badgeProgresses.map(progress => progress.badge); 
+    const badges = await BadgeModel.find({
+      _id: { $in: badgeIds },
+    });
+
     return badges;
   } catch (error) {
     return [];
@@ -866,5 +897,47 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
   }
 };
 
-// functions for badge / user account logic -- Lauren
+/**
+ * Updates the badgeProgress for a user and a given category.
+ *
+ * @param {string} username - The username to update
+ * @param {category} ans - The category of badge to update
+ *
+ * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
+ */
+export const updateBadgeProgress = async (username: string, category: string): Promise<BadgeProgressResponse> => {
+  try {
+    var badgeProgresses = await BadgeProgressModel.find({ user: username, category: category });
+
+    if (badgeProgresses.length == 0) {
+      // if no existing badgeProgresses, create new ones for all badges in the given category
+      const badges = await BadgeModel.find({category: category});
+
+      // create a badgeprogress for all badges
+      await Promise.all(
+        badges.map(async (badge) => {
+          const newBadgeProgress = await BadgeProgressModel.create({
+            user: username,
+            badge: badge._id,
+            category: category,
+            targetValue: badge.targetValue,
+            currentValue: 1,
+          });
+        })
+      );
+    } else {
+      // loop through all badgeProgresses and increment their values by one
+      const updatedBadgeProgresses = await Promise.all(
+        badgeProgresses.map(async (badgeProgress) => {
+          badgeProgress.currentValue += 1;
+          return badgeProgress.save();
+        })
+      );
+    }
+
+    return badgeProgresses;
+  } catch (error) {
+    return { error: 'Error when updating badge progress' };
+  }
+};
 
