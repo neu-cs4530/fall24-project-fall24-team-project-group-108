@@ -4,6 +4,7 @@ import { validateHyperlink } from '../tool';
 import addAnswer from '../services/answerService';
 import useUserContext from './useUserContext';
 import { Answer } from '../types';
+import updateBadgeProgress from '../services/badgeProgressService';
 
 /**
  * Custom hook for managing the state and logic of an answer submission form.
@@ -62,6 +63,9 @@ const useAnswerForm = () => {
     };
 
     const res = await addAnswer(questionID, answer);
+
+    // update the user's progress towards answer related badges
+    await updateBadgeProgress(user.username, 'answers');
 
     if (res && res._id) {
       // navigate to the question that was answered
