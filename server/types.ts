@@ -80,6 +80,18 @@ export interface AddUserRequest extends Request {
 }
 
 /**
+ * Interface extending the request body when reseting a password in the database which contains:
+ * - username - The user's username.
+ * - password - The user's new password.
+ */
+export interface ResetPasswordRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
  * Interface extending the request body when making a user a moderator in the db:
  * - username - The user being made a moderator.
  */

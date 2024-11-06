@@ -13,15 +13,24 @@ import { authenticateUser } from '../services/userService';
  * @returns handleSubmit - Function to handle login submission
  * @returns handleInputChange - Function to handle changes in the input field.
  * @returns handlePasswordChange - Function to handle changes in the password field.
+ * @returns handleShowPassword - Function to handle when to show the password text.
  */
 const useLogin = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isBanned, setIsBanned] = useState<boolean>(false);
   const [loginAttempts, setLoginAttempts] = useState<number>(0);
   const [loginErr, setLoginErr] = useState<string>('');
   const { setUser } = useLoginContext();
   const navigate = useNavigate();
+
+  /**
+   * Function to toggle visibility of the password to user.
+   */
+  const handleShowPassword = () => {
+    setShowPassword(prev => !prev);
+  };
 
   /**
    * Function to handle the input change event.
@@ -88,11 +97,13 @@ const useLogin = () => {
   return {
     username,
     password,
+    showPassword,
     isBanned,
     loginErr,
     handleSubmit,
     handleInputChange,
     handlePasswordChange,
+    handleShowPassword,
   };
 };
 

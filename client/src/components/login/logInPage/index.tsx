@@ -12,11 +12,13 @@ const Login = () => {
   const {
     username,
     password,
+    showPassword,
     isBanned,
     loginErr,
     handleSubmit,
     handleInputChange,
     handlePasswordChange,
+    handleShowPassword,
   } = useLogin();
   const navigate = useNavigate();
 
@@ -32,26 +34,30 @@ const Login = () => {
         <h2>Login</h2>
         <h4>Welcome to FakeStackOverflow!</h4>
         <form onSubmit={handleSubmit}>
+          <h5>Username</h5>
           <input
             type='text'
             value={username}
             onChange={handleInputChange}
-            placeholder='Username'
+            placeholder='Enter Username'
             required
             className='input-text'
             id={'usernameInput'}
           />
+          <h5>Password</h5>
           <input
-            type='password'
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={handlePasswordChange}
-            placeholder='Password'
+            placeholder='Enter Password'
             required
             className='input-text'
             id={'passwordInput'}
           />
           {loginErr && <p className='error-message'>*{loginErr}</p>}
-          <span style={{ cursor: 'pointer' }}>Forgot Password?</span>
+          <span onClick={handleShowPassword} style={{ cursor: 'pointer' }}>
+            {showPassword ? 'Hide Password' : 'Show Password'}
+          </span>
           <button type='submit' className='login-button'>
             Login
           </button>

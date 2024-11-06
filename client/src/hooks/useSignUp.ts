@@ -26,6 +26,9 @@ const useSignUp = () => {
   const { setUser } = useLoginContext();
   const navigate = useNavigate();
 
+  /**
+   * Function to toggle visibility of the password to user.
+   */
   const handleShowPassword = () => {
     setShowPassword(prev => !prev);
   };
@@ -70,7 +73,7 @@ const useSignUp = () => {
     }
 
     if (username.includes(' ')) {
-      setSignUpErr('Username cannot contain spaces');
+      setSignUpErr('Username cannot contain whitespace');
       return false;
     }
     return true;

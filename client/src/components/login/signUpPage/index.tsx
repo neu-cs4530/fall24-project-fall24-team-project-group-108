@@ -27,24 +27,27 @@ const SignUp = () => {
         <h2>Sign Up</h2>
         <h4>Create a username and password</h4>
         <form onSubmit={handleSubmit}>
+          <h5>Username</h5>
           <input
             type='text'
             value={username}
             onChange={handleUsernameCreate}
-            placeholder='Username'
+            placeholder='Create Username'
             required
             className='input-text'
             id={'usernameInput'}
           />
+          <h5>Password</h5>
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={handlePasswordCreate}
-            placeholder='Password'
+            placeholder='Create Password'
             required
             className='input-text'
             id={'passwordInput'}
           />
+          <h5>Re-Enter Password</h5>
           <input
             type={showPassword ? 'text' : 'password'}
             value={reenterPassword}

@@ -217,7 +217,7 @@ export const addUser = async (user: User): Promise<User | null> => {
       return null;
     }
 
-    const hashedPassword = await bcrypt.hash(user.password, 3);
+    const hashedPassword = await bcrypt.hash(user.password, 5);
     // If the user does not exist, create a new one
     const newUser = new UserModel({ ...user, password: hashedPassword });
     const savedUser = await newUser.save();
@@ -293,6 +293,30 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
     return applications;
   } catch (error) {
     return { error: 'Error when saving the mod application' };
+  }
+};
+
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
+export const updatePassword = async (username: string, password: string): Promise<UserResponse> => {
+  const hashedPassword = await bcrypt.hash(password, 5);
+
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error(`Failed to reset password`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when reseting password: ${(error as Error).message}` };
   }
 };
 

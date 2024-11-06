@@ -16,6 +16,16 @@
   margin: 10px 0;
 }
 
+
+
+.container h5 {
+  text-align: left;
+  margin-top: 7px;
+  margin-left: 100px;
+  margin-bottom: 6px;
+  width: 100%;
+}
+
 .container p {
   color: red;
   font-size: 10px;
@@ -24,12 +34,30 @@
   max-width: 300px;
   text-align: right;
   }
+  
 
 .container form {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.password-container {
+  display: flex;
+  align-items: center;
+  max-width: 300px;
+  width: 100%;
+}
+
+.password-container h5 {
+  margin-left: 5px;
+}
+
+.password-container span {
+  white-space: nowrap;
+  margin-left: 120px;
+  margin-bottom: 4px;
 }
 
 .input-text {
@@ -84,9 +112,9 @@
 }
 
 .signup-page-button:hover {
-  background-color: #6d6d6d;
+  background-color: #7f7e7e;
 }
 
 .signup-page-button:active {
-  background-color: #4a4a4a;
+  background-color: #5d5d5d;
 }

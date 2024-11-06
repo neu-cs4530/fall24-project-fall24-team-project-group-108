@@ -38,6 +38,14 @@ const createUser = async (username: string, password: string): Promise<User> => 
   return res.data;
 };
 
+const resetPassword = async (username: string, password: string): Promise<User> => {
+  const data = { username, password };
+  const res = await api.post(`${USER_API_URL}/resetPassword`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while creating user');
+  }
+  return res.data;
+};
 /**
  * Makes a user in the database a moderator.
  *
@@ -53,4 +61,4 @@ const makeUserModerator = async (username: string): Promise<User> => {
   }
   return res.data;
 };
-export { authenticateUser, createUser, makeUserModerator };
+export { authenticateUser, createUser, resetPassword, makeUserModerator };
