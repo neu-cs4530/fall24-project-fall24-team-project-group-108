@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../tool';
 import AnswerView from './answer';
 import AnswerHeader from './header';
@@ -15,10 +16,24 @@ import useAnswerPage from '../../../hooks/useAnswerPage';
  */
 const AnswerPage = () => {
   const { questionID, question, handleNewComment, handleNewAnswer } = useAnswerPage();
+  const navigate = useNavigate();
 
   if (!question) {
     return null;
   }
+
+  /**
+   * Function to handle navigation to the "Report" page.
+   */
+  const handleReport = (
+    targetId: string | undefined,
+    targetType: 'question' | 'answer',
+    targetText: string,
+    targetBy: string,
+    targetLink: string | undefined,
+  ) => {
+    navigate('/report', { state: { targetId, targetType, targetText, targetBy, targetLink } });
+  };
 
   return (
     <>
@@ -29,6 +44,9 @@ const AnswerPage = () => {
         text={question.text}
         askby={question.askedBy}
         meta={getMetaData(new Date(question.askDateTime))}
+        handleReport={() =>
+          handleReport(question._id, 'question', question.text, question.askedBy, question._id)
+        }
       />
       <CommentSection
         comments={question.comments}
@@ -42,6 +60,7 @@ const AnswerPage = () => {
           meta={getMetaData(new Date(a.ansDateTime))}
           comments={a.comments}
           handleAddComment={(comment: Comment) => handleNewComment(comment, 'answer', a._id)}
+          handleReport={() => handleReport(a._id, 'answer', a.text, a.ansBy, question._id)}
         />
       ))}
       <button

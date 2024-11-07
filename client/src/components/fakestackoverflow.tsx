@@ -13,9 +13,10 @@ import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
 import BanPage from './login/banPage';
 import SignUpPage from './login/signUpPage';
-import ReportPage from './main/reportPage';
 import ModApplicationPage from './main/modApplicationPage';
 import ReviewApplicationPage from './main/reviewApplicationPage';
+import ReviewReportsPage from './main/reviewReportPage';
+import ReportPage from './reportPage';
 
 const ProtectedRoute = ({
   user,
@@ -59,7 +60,8 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='home' element={<QuestionPage />} />
             <Route path='tags' element={<TagPage />} />
             <Route path='/messagePage' element={<MessagePage />} />
-            <Route path='reports' element={<ReportPage />} />
+            <Route path='report' element={<ReportPage />} />
+            <Route path='reviewReports' element={<ReviewReportsPage />} />
             <Route path='modApplication' element={<ModApplicationPage />} />
             <Route path='reviewApplication' element={<ReviewApplicationPage />} />
             <Route path='/question/:qid' element={<AnswerPage />} />

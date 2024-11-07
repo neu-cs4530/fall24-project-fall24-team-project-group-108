@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
  * SignUp component that renders a page where a user can create a new account or 'user' that will post to the database if not already
  * present. Also allows for navigation back to the login page.
  */
-const ReportPage = () => {
+const ReviewReportsPage = () => {
   const navigate = useNavigate();
 
   return (
@@ -16,4 +16,4 @@ const ReportPage = () => {
   );
 };
 
-export default ReportPage;
+export default ReviewReportsPage;

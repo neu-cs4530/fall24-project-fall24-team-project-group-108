@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import bcrypt from 'bcrypt';
 import Tags from '../models/tags';
 import QuestionModel from '../models/questions';
 import {
@@ -17,11 +18,17 @@ import {
   addVoteToQuestion,
   addUser,
   findUser,
+  updatePassword,
+  addModApplication,
+  fetchModApplications,
+  removeModApplication,
+  populateUser,
 } from '../models/application';
 import { Answer, Question, Tag, Comment, User } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
+import ModApplicationModel from '../models/modApplication';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -140,17 +147,118 @@ const QUESTIONS: Question[] = [
 
 const user1: User = {
   _id: new ObjectId(),
-  username: 'testuser1',
-  password: 'password123',
+  username: 'user1',
+  password: 'Password1!',
   isModerator: false,
 };
 
 const user2: User = {
   _id: new ObjectId(),
-  username: 'testuser2',
-  password: 'password456',
+  username: 'user2',
+  password: 'Password2!',
   isModerator: false,
 };
+
+const mockApplication1 = { username: 'testuser1', applicationText: 'Please!' };
+
+const mockApplication2 = {
+  username: 'testuser2',
+  applicationText:
+    'I want to become a moderator so like I think it would be great if you accepted me and what not, ummmmmmm, anyway yeah please accept me!',
+};
+
+const MOCK_APPLICATIONS = [mockApplication1, mockApplication2];
+
+describe('Mod Application model', () => {
+  beforeEach(() => {
+    mockingoose.resetAll();
+  });
+
+  describe('addModApplication', () => {
+    test('Should add a mod application to the database if none already exists', async () => {
+      mockingoose(ModApplicationModel).toReturn(null, 'findOne');
+      mockingoose(ModApplicationModel).toReturn(mockApplication1, 'create');
+
+      const result = await addModApplication(
+        mockApplication1.username,
+        mockApplication1.applicationText,
+      );
+      expect(result).toBeTruthy();
+    });
+
+    test('Should return an error if the user has an unresolved application in the database', async () => {
+      mockingoose(ModApplicationModel).toReturn(mockApplication2, 'findOne');
+
+      const result = await addModApplication(
+        mockApplication1.username,
+        mockApplication1.applicationText,
+      );
+      expect(result).toEqual({ error: 'User already created an application request' });
+    });
+
+    test('Should return an error if saving the application to the database fails', async () => {
+      // mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'create');
+
+      jest.spyOn(ModApplicationModel, 'create').mockImplementationOnce(() => {
+        throw new Error('Error');
+      });
+
+      const result = await addModApplication(
+        mockApplication2.username,
+        mockApplication2.applicationText,
+      );
+      expect(result).toEqual({ error: 'Error when saving the mod application' });
+    });
+  });
+  describe('fetchModApplication', () => {
+    test('Should return all mod applications', async () => {
+      mockingoose(ModApplicationModel).toReturn(MOCK_APPLICATIONS, 'find');
+
+      const result = await fetchModApplications();
+      expect(result).toBeTruthy();
+    });
+
+    test('Should return an error if the get from the database fails', async () => {
+      mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'find');
+
+      const result = await fetchModApplications();
+      expect(result).toEqual({ error: 'Error when saving the mod application' });
+    });
+  });
+  describe('removeModApplication', () => {
+    test('Should delete the mod application from the database if valid', async () => {
+      const { username } = mockApplication1;
+      mockingoose(ModApplicationModel).toReturn({ username }, 'findOneAndDelete');
+
+      const result = await removeModApplication(mockApplication1.username);
+      expect(result).toBe(true);
+    });
+
+    test('Should return an error if the user does not have an application in the database', async () => {
+      mockingoose(ModApplicationModel).toReturn(null, 'findOneAndDelete');
+
+      await expect(removeModApplication('null')).rejects.toThrow(
+        'Error when deleting the application: No application found',
+      );
+    });
+
+    test('Should return an error if findOneAndDelete encounters an error', async () => {
+      mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'findOneAndDelete');
+
+      await expect(removeModApplication(mockApplication1.username)).rejects.toThrow(
+        'Error when deleting the application: Error',
+      );
+    });
+  });
+  describe('populateUser', () => {
+    test('Should make a user a moderator', async () => {
+      mockingoose(ModApplicationModel).toReturn(user1, 'findOneAndDelete');
+
+      const result = await populateUser(user1.username);
+      expect(result).toEqual(true);
+    });
+  });
+});
 
 describe('User model', () => {
   beforeEach(() => {
@@ -158,16 +266,18 @@ describe('User model', () => {
   });
 
   describe('addUser', () => {
-    test('should add a new user when the user does not exist', async () => {
+    test('should add a new user to the database if not already present', async () => {
       mockingoose(UserModel).toReturn(null, 'findOne');
       mockingoose(UserModel).toReturn(user2, 'save');
 
       const result = await addUser(user2);
 
-      expect(result).toEqual(user2);
+      expect(result).not.toBeNull();
+      expect(result?.username).toEqual('user2');
+      expect(result?.isModerator).toBe(false);
     });
 
-    test('should return null if the user already exists', async () => {
+    test('should be null if the user is already in the database', async () => {
       mockingoose(UserModel).toReturn(user1, 'findOne');
 
       const result = await addUser(user1);
@@ -186,14 +296,17 @@ describe('User model', () => {
 
   describe('findUser', () => {
     test('should return user if username and password are correct', async () => {
-      mockingoose(UserModel).toReturn(user1, 'findOne');
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+
+      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
 
       const result = await findUser(user1.username, user1.password);
 
-      expect(result).toEqual(user1);
+      expect(result).toBeTruthy();
+      expect(result?.username).toBe(user1.username);
     });
 
-    test('should return null if username does not exist', async () => {
+    test('should return null if username is not in the database', async () => {
       mockingoose(UserModel).toReturn(null, 'findOne');
 
       const result = await findUser(user1.username, user1.password);
@@ -202,7 +315,8 @@ describe('User model', () => {
     });
 
     test('should return null if password is incorrect', async () => {
-      mockingoose(UserModel).toReturn({ ...user1, password: 'wrongpassword' }, 'findOne');
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
 
       const result = await findUser(user1.username, user1.password);
 
@@ -215,6 +329,36 @@ describe('User model', () => {
       const result = await findUser(user1.username, user1.password);
 
       expect(result).toBeNull();
+    });
+  });
+  describe('updatePassword', () => {
+    test('should update the user password then the user', async () => {
+      const newPassword = 'NewPassword1!';
+      bcrypt.hash = jest.fn().mockResolvedValue('mock-hash');
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOneAndUpdate');
+
+      const result = await updatePassword(user1.username, newPassword);
+
+      expect(result).toBeTruthy();
+    });
+
+    test('should throw a new error if the user is found in the database', async () => {
+      const newPassword = 'NewPassword1!';
+      mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+      const result = await updatePassword(user1.username, newPassword);
+
+      expect(result).toEqual({ error: 'Error when reseting password: Failed to reset password' });
+    });
+
+    test('should handle an error being returned', async () => {
+      const newPassword = 'NewPassword1!';
+      mockingoose(UserModel).toReturn(new Error('Error'), 'findOneAndUpdate');
+
+      const result = await updatePassword(user1.username, newPassword);
+
+      expect(result).toEqual({ error: 'Error when reseting password: Error' });
     });
   });
 });

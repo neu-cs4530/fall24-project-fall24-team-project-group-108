@@ -36,7 +36,7 @@ const SideBarNav = () => {
         {moderatorStatus ? (
           <>
             <NavLink
-              to='/reports'
+              to='/reviewReports'
               id='menu_reports'
               className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
               Reports

@@ -52,6 +52,19 @@ export interface Comment {
 }
 
 /**
+ * Interface represents a report.
+ *
+ * text - The text of the comment.
+ * reportBy - Username of the author of the report.
+ * reportDateTime - Time at which the comment was created.
+ */
+export interface UserReport {
+  text: string;
+  reportBy: string;
+  reportDateTime: Date;
+}
+
+/**
  * Interface representing a tag associated with a question.
  *
  * @property name - The name of the tag.
@@ -100,6 +113,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[];
+  reports: Report[];
 }
 
 /**
@@ -129,6 +143,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
+  reports: Report[];
 }
 
 /**

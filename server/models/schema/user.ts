@@ -13,12 +13,15 @@ const userSchema: Schema = new Schema(
   {
     username: {
       type: String,
+      required: true,
       unique: true,
     },
     password: {
+      required: true,
       type: String,
     },
     isModerator: {
+      required: true,
       type: Boolean,
     },
   },

@@ -12,6 +12,7 @@ import { Comment } from '../../../../types';
  * - meta Additional metadata related to the answer.
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
+ * - handleReport Callback function to handle adding a new report.
  */
 interface AnswerProps {
   text: string;
@@ -19,6 +20,7 @@ interface AnswerProps {
   meta: string;
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
+  handleReport: () => void;
 }
 
 /**
@@ -30,8 +32,16 @@ interface AnswerProps {
  * @param meta Additional metadata related to the answer.
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
+ * @param handleReport Function to handle adding a new report.
  */
-const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => (
+const AnswerView = ({
+  text,
+  ansBy,
+  meta,
+  comments,
+  handleAddComment,
+  handleReport,
+}: AnswerProps) => (
   <div className='answer right_padding'>
     <div id='answerText' className='answerText'>
       {handleHyperlink(text)}
@@ -41,6 +51,9 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
       <div className='answer_question_meta'>{meta}</div>
     </div>
     <CommentSection comments={comments} handleAddComment={handleAddComment} />
+    <button onClick={handleReport} className='report-button'>
+      Report
+    </button>
   </div>
 );
 
