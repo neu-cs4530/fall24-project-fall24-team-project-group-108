@@ -15,6 +15,8 @@ import {
   QuestionResponse,
   Tag,
   User,
+  UserReport,
+  UserReportResponse,
   UserResponse,
 } from '../types';
 import AnswerModel from './answers';
@@ -23,6 +25,7 @@ import TagModel from './tags';
 import CommentModel from './comments';
 import UserModel from './users';
 import ModApplicationModel from './modApplication';
+import UserReportModel from './userReport';
 
 /**
  * Parses tags from a search string.
@@ -462,13 +465,18 @@ export const populateDocument = async (
         {
           path: 'answers',
           model: AnswerModel,
-          populate: { path: 'comments', model: CommentModel },
+          populate: [
+            { path: 'comments', model: CommentModel },
+            { path: 'reports', model: UserReportModel },
+          ],
         },
         { path: 'comments', model: CommentModel },
+        { path: 'reports', model: UserReportModel },
       ]);
     } else if (type === 'answer') {
       result = await AnswerModel.findOne({ _id: id }).populate([
         { path: 'comments', model: CommentModel },
+        { path: 'reports', model: UserReportModel },
       ]);
     }
     if (!result) {
@@ -558,6 +566,22 @@ export const saveAnswer = async (answer: Answer): Promise<AnswerResponse> => {
 export const saveComment = async (comment: Comment): Promise<CommentResponse> => {
   try {
     const result = await CommentModel.create(comment);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a comment' };
+  }
+};
+
+/**
+ * Saves a new report to the database.
+ *
+ * @param {UserReport} report - The report to save
+ *
+ * @returns {Promise<UserReportResponse>} - The saved comment, or an error message if the save failed
+ */
+export const saveUserReport = async (report: UserReport): Promise<UserReportResponse> => {
+  try {
+    const result = await UserReportModel.create(report);
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
@@ -774,6 +798,47 @@ export const addComment = async (
     return result;
   } catch (error) {
     return { error: `Error when adding comment: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Adds a report to a question or answer.
+ *
+ * @param id - The ID of the question or answer to add a report to
+ * @param type - The type of the report, either 'question' or 'answer'
+ * @param report - The report to add
+ *
+ * @returns A Promise that resolves to the updated question or answer, or an error message if the operation fails
+ */
+export const addReport = async (
+  id: string,
+  type: 'question' | 'answer',
+  report: UserReport,
+): Promise<QuestionResponse | AnswerResponse> => {
+  try {
+    if (!report || !report.text || !report.reportBy || !report.reportDateTime) {
+      throw new Error('Invalid report');
+    }
+    let result: QuestionResponse | AnswerResponse | null;
+    if (type === 'question') {
+      result = await QuestionModel.findOneAndUpdate(
+        { _id: id },
+        { $push: { reports: { $each: [report._id] } } },
+        { new: true },
+      );
+    } else {
+      result = await AnswerModel.findOneAndUpdate(
+        { _id: id },
+        { $push: { reports: { $each: [report._id] } } },
+        { new: true },
+      );
+    }
+    if (result === null) {
+      throw new Error('Failed to add report');
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when adding report: ${(error as Error).message}` };
   }
 };
 

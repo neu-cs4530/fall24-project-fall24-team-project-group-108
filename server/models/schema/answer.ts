@@ -21,6 +21,7 @@ const answerSchema: Schema = new Schema(
       type: Date,
     },
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+    reports: [{ type: Schema.Types.ObjectId, ref: 'UserReport' }],
   },
   { collection: 'Answer' },
 );

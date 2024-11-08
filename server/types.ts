@@ -16,6 +16,7 @@ export type OrderType = 'newest' | 'unanswered' | 'active' | 'mostViewed';
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Object IDs of comments that have been added to the answer by users, or comments themselves if populated
+ * - reports - An array of reports associated with the answer.
  */
 export interface Answer {
   _id?: ObjectId;
@@ -23,6 +24,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
+  reports: UserReport[];
 }
 
 /**
@@ -184,6 +186,7 @@ export type ModApplicationResponses = ModApplication[] | { error: string };
  * - upVotes - An array of usernames that have upvoted the question.
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
+ * - reports - An array of reports associated with the question.
  */
 export interface Question {
   _id?: ObjectId;
@@ -197,6 +200,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[] | ObjectId[];
+  reports: UserReport[];
 }
 
 /**
@@ -271,6 +275,40 @@ export interface VoteRequest extends Request {
     username: string;
   };
 }
+
+/**
+ * Interface representing a UserReport, which contains:
+ * - _id - The unique identifier for the report. Optional field.
+ * - text - The content of the report.
+ * - reportBy - The username of the user who reported.
+ * - reportDateTime - The date and time when the report was created.
+ *
+ */
+export interface UserReport {
+  _id?: ObjectId;
+  text: string;
+  reportBy: string;
+  reportDateTime: Date;
+}
+
+/**
+ * Interface for the request body when reporting.
+ * - targetId - The unique identifier of the question or answer being reported.
+ * - targetType - The type of the report, either 'question' or 'answer'.
+ * - report - The report being added.
+ */
+export interface AddUserReportRequest extends Request {
+  body: {
+    id: string;
+    type: 'question' | 'answer';
+    report: UserReport;
+  };
+}
+
+/**
+ * Type representing the possible responses for a UserReport-related operation.
+ */
+export type UserReportResponse = UserReport | { error: string };
 
 /**
  * Interface representing a Comment, which contains:

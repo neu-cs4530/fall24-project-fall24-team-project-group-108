@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUserContext from './useUserContext';
 import { UserReport } from '../types';
+import addReport from '../services/reportService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -33,6 +34,12 @@ const useAnswerPage = () => {
     try {
       if (targetId === undefined) {
         setReportErr('No target ID found');
+        return;
+      }
+
+      if (targetLink === undefined) {
+        setReportErr('No return address found');
+        return;
       }
 
       if (text.trim() === '') {
@@ -46,7 +53,7 @@ const useAnswerPage = () => {
         reportDateTime: new Date(),
       };
 
-      // await addReport(targetId, targetType, newReport);
+      await addReport(targetId, targetType, newReport);
       setText('');
       setReportErr('');
       navigate(`/question/${targetLink}`);
