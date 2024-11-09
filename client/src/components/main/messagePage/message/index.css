@@ -1,0 +1,25 @@
+.message {
+    display: flex;
+    flex-direction: row
+  }
+
+  .messageBy {
+      float: right;
+      text-align: right;
+      width: 5%;
+      margin-right: 10%;
+  }
+
+  .messageText {
+      float: right;
+      text-align: right;
+      width: 60%;
+      margin-right: 10%
+  }
+
+.messageDate {
+    float: right;
+    text-align: right;
+    width: 15%;
+    margin-left: 0%;
+}

@@ -1,7 +1,74 @@
 #correspondence_list {
-    float: left
+    float: left;
+    width: 30%;
+    max-height: 36em;
+    overflow: scroll;
+    border-style: solid;
 }
 
+
 #selected_correspondence {
-    float: left
+    width: 60%;
+    display: flex;
+    border-collapse:collapse;
+    max-height: 80%;
+    overflow: scroll;
+    flex-direction: column;
 }
+
+#message_list_outer_wrapper {
+    overflow:scroll; 
+    display:flex; 
+    flex-direction:column-reverse;
+}
+
+#selected_correspondence_top {
+    max-height: 10em;
+    font-size: 1em;
+}
+
+#message_list {
+    max-height: 30em;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    overflow-y: 30em;
+}
+
+#selected_correspondence_bottom {
+    margin-bottom: 1%;
+    gap: 0.5em;
+    height: 50%;
+    /* margin-top: auto; */
+    display: flex;
+    vertical-align: bottom;
+}
+
+#message_text_input {
+    float: left;
+    width: 10%
+}
+
+#message_text_send {
+    float: right;
+}
+
+.message-textarea {
+    flex: 5;
+    padding: 0.25em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    resize: none;
+}
+
+.send-message-button {
+    flex: 1;
+    background-color: #28a745;
+    color: white;
+    /* padding: 0.25em 0.5em; */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
