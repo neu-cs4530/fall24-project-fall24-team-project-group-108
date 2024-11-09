@@ -32,6 +32,7 @@ import {
   saveMessage,
   saveCorrespondence,
 } from '../models/application';
+import MessageModel from '../models/message';
 
 const correspondenceController = (socket: FakeSOSocket) => {
 
@@ -52,10 +53,8 @@ const correspondenceController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     console.log('At getCorrespondencesByFilter');
-    const { order } = req.query;
-    const { askedBy } = req.query;
     try {
-      const clist: Correspondence[] = await getCorrespondencesByOrder(order);
+      const clist: Correspondence[] = await getCorrespondencesByOrder();
       console.log('clist');
       console.log(clist);
       res.json(clist);
@@ -152,6 +151,10 @@ const correspondenceController = (socket: FakeSOSocket) => {
     const correspondence: Correspondence = req.body;
     try {
       const result = await saveCorrespondence(correspondence);
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+      // const savedCorrespondence = {...result, messages: [savedMessage]} as Correspondence;
       // if ('error' in result) {
       //   throw new Error(result.error);
       // }
@@ -165,6 +168,8 @@ const correspondenceController = (socket: FakeSOSocket) => {
       // if (populatedCorrespondence && 'error' in populatedCorrespondence) {
       //   throw new Error(populatedCorrespondence.error);
       // }
+      console.log(result);
+      // console.log(savedCorrespondence);
 
       socket.emit('correspondenceUpdate', result);
       res.json(result);

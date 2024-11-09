@@ -259,12 +259,13 @@ export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> =
 /**
  * Retrieves correspondences from the database, ordered by the specified criteria.
  *
- * @param {OrderType} order - The order type to filter the messages
  *
  * @returns {Promise<Correspondence[]>} - Promise that resolves to a list of ordered correspondences
  */
-export const getCorrespondencesByOrder = async (order: OrderType): Promise<Correspondence[]> => {
-  const clist = await CorrespondenceModel.find();
+export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
+  const clist = await CorrespondenceModel.find().populate([
+    { path: 'messages', model: MessageModel },
+  ]);
   return clist;
   // try {
   //   let mlist = [];
@@ -722,6 +723,36 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
     return result;
   } catch (error) {
     return { error: 'Error when adding answer to question' };
+  }
+};
+
+/**
+ * Adds a message to a correspondence.
+ *
+ * @param {string} cid - The ID of the correspondence to add a message to
+ * @param {Message} message - The message to add
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+ export const addMessageToCorrespondence = async (cid: string, message: Message): Promise<CorrespondenceResponse> => {
+  try {
+    if (!message || !message.messageText || !message.messageBy || !message.messageTo || !message.messageDateTime) {
+      throw new Error('Invalid message');
+    }
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $push: { messages: { $each: [message._id] } } },
+      // { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { new: true },
+    ).populate([
+      { path: 'messages', model: MessageModel },
+    ]);
+    if (result === null) {
+      throw new Error('Error when adding message to correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding message to correspondence' };
   }
 };
 

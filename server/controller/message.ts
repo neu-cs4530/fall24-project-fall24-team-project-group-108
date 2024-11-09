@@ -25,6 +25,7 @@ import {
   populateDocument,
   saveQuestion,
   saveMessage,
+  addMessageToCorrespondence,
 } from '../models/application';
 
 const messageController = (socket: FakeSOSocket) => {
@@ -111,7 +112,7 @@ const messageController = (socket: FakeSOSocket) => {
    *
    * @returns `true` if the message is valid, otherwise `false`.
    */
-  const isMessageBodyValid = (message: Message): boolean =>
+  const isMessageValid = (message: Message): boolean =>
     message.messageText !== undefined &&
     message.messageText !== '' &&
     message.messageTo !== undefined &&
@@ -121,6 +122,16 @@ const messageController = (socket: FakeSOSocket) => {
     message.messageDateTime !== undefined &&
     message.messageDateTime !== null;
 
+    /**
+     * Checks if the provided message request contains the required fields.
+     *
+     * @param req The request object containing the message data.
+     *
+     * @returns `true` if the request is valid, otherwise `false`.
+     */
+    const isRequestValid = (req: AddMessageRequest): boolean => {
+      return !!req.body.cid && !!req.body.message;
+    }
   /**
    * Adds a new message to the database. The message is first validated and then saved.
    * If saving the message fails, the HTTP response status is updated.
@@ -131,15 +142,32 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addMessage = async (req: AddMessageRequest, res: Response): Promise<void> => {
-    if (!isMessageBodyValid(req.body)) {
-      res.status(400).send('Invalid message body');
+    if (!isRequestValid(req)) {
+      res.status(400).send('Invalid request');
       return;
     }
-    const message: Message = req.body;
+    if (!isMessageValid(req.body.message)) {
+      res.status(400).send('Invalid message');
+      return;
+    }
+
+    const { cid } = req.body;
+    const messageInfo: Message = req.body.message;
     try {
-      const result = await saveMessage(message);
+      const messageFromDb = await saveMessage(messageInfo);
+
+      if ('error' in messageFromDb) {
+        throw new Error(messageFromDb.error as string);
+      }
+
+      const status = await addMessageToCorrespondence(cid, messageFromDb);
+
+      if (status && 'error' in status) {
+        throw new Error(status.error as string);
+      }
+
       console.log('saveMessage finished!');
-      console.log(result);
+      console.log(status);
       // if ('error' in result) {
       //   throw new Error(result.error);
       // }
@@ -151,8 +179,8 @@ const messageController = (socket: FakeSOSocket) => {
       //   throw new Error(populatedMessage.error);
       // }
 
-      socket.emit('messageUpdate', result);
-      res.json(result);
+      socket.emit('correspondenceUpdate', status);
+      res.json(status);
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when saving message: ${err.message}`);

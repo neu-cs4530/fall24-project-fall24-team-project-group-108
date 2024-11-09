@@ -170,7 +170,10 @@ export interface AddQuestionRequest extends Request {
  * - body - The message being added.
  */
 export interface AddMessageRequest extends Request {
-  body: Message;
+  body: {
+    cid: string;
+    message: Message
+  };
 }
 
 /**
@@ -279,8 +282,6 @@ export interface AnswerUpdatePayload {
  */
  export interface FindCorrespondenceRequest extends Request {
   query: {
-    order: OrderType;
-    askedBy: string;
   };
 }
 
