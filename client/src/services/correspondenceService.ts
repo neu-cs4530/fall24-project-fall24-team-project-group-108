@@ -9,7 +9,7 @@ const CORRESPONDENCE_API_URL = `${process.env.REACT_APP_SERVER_URL}/corresponden
  * @param order - The order in which to fetch messages. Default is 'newest'.
  * @throws Error if there is an issue fetching or filtering messages.
  */
-const getCorrespondencesByOrder = async (order: string = 'newest'): Promise<Correspondence[]> => {
+const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
   console.log(CORRESPONDENCE_API_URL);
   const res = await api.get(`${CORRESPONDENCE_API_URL}/getCorrespondence`);
   console.log('Returned CORRESPONDENCE_API_URL');

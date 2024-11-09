@@ -7,20 +7,26 @@ import { addCorrespondence, getCorrespondencesByOrder } from '../services/corres
 import { addMessage } from '../services/messageService';
 
 /**
- * Custom hook for managing the question page state, filtering, and real-time updates.
+ * Custom hook for managing the message page state, filtering, and real-time updates.
  *
  * @returns titleText - The current title of the question page
  * @returns qlist - The list of questions to display
  * @returns setQuestionOrder - Function to set the sorting order of questions (e.g., newest, oldest).
  */
 const useMessagePage = () => {
-  const { socket } = useUserContext();
+  const { socket, user } = useUserContext();
 
   const [searchParams] = useSearchParams();
-  const [titleText, setTitleText] = useState<string>('All Questions');
+  const [titleText, setTitleText] = useState<string>('All Messages');
   const [search, setSearch] = useState<string>('');
   const [correspondenceOrder, setCorrespondenceOrder] = useState<OrderType>('newest');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
+  const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
+  const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
+    [],
+  );
+  const [toAddText, setToAddText] = useState<string>('');
+  const [messageText, setMessageText] = useState<string>('');
 
   useEffect(() => {
     const pageTitle = 'All Messages';
@@ -34,54 +40,13 @@ const useMessagePage = () => {
      */
     const fetchData = async () => {
       try {
-        // const message1 = {
-        //   messageText: 'I just had a great era',
-        //   messageDateTime: new Date(),
-        //   messageBy: 'bgibson',
-        //   messageTo: ['rjackson', 'siqbal'],
-        // } as Message;
-        // const message2 = {
-        //   messageText: 'I just hit 3hr in the WS!',
-        //   messageDateTime: new Date(),
-        //   messageBy: 'rjackson',
-        //   messageTo: ['bgibson', 'siqbal'],
-        // } as Message;
-        // await addMessage(message1);
-        // await addMessage(message2);
-        // const correspondence1 = {
-        //   // _id: '1970',
-        //   views: [],
-        //   messageMembers: ['siqbal', 'rjackson', 'bgibson'],
-        //   messages: [],
-        // };
-        // await addCorrespondence(correspondence1);
-        // const message3 = {
-        //   messageText: 'I just called my shot!',
-        //   messageDateTime: new Date(),
-        //   messageBy: 'bruth',
-        //   messageTo: ['lgehrig', 'siqbal'],
-        // };
-        // const message4 = {
-        //   messageText: 'I just gave an inspirational speech :(',
-        //   messageDateTime: new Date(),
-        //   messageBy: 'lgehrig',
-        //   messageTo: ['bruth', 'siqbal'],
-        // };
-        // // await addMessage(message3);
-        // // await addMessage(message4);
-        // const correspondence2 = {
-        //   // _id: '1930',
-        //   views: [],
-        //   messageMembers: ['siqbal', 'bruth', 'lgehrig'],
-        //   messages: [],
-        // };
-        // await addCorrespondence(correspondence2);
-        // console.log('fetchingData');
-        const res = await getCorrespondencesByOrder(correspondenceOrder);
-        // const sampleCorrespondenceList = [correspondence1, correspondence2];
+        const res = await getCorrespondencesByOrder();
+
         console.log('res');
         console.log(res);
-        setCorrespondenceList(res);
+        setCorrespondenceList(
+          res.filter(correspondence => correspondence.messageMembers.indexOf(user.username) > -1),
+        );
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -89,58 +54,87 @@ const useMessagePage = () => {
     };
 
     /**
-     * Function to handle question updates from the socket.
+     * Function to handle message/corresponcence updates from the socket.
      *
-     * @param question - the updated question object.
+     * @param correspondence - The updated correspondence object.
      */
-    // const handleQuestionUpdate = (question: Question) => {
-    //   setQlist(prevQlist => {
-    //     const questionExists = prevQlist.some(q => q._id === question._id);
-
-    //     if (questionExists) {
-    //       // Update the existing question
-    //       return prevQlist.map(q => (q._id === question._id ? question : q));
-    //     }
-
-    //     return [question, ...prevQlist];
-    //   });
-    // };
-
-    /**
-     * Function to handle answer updates from the socket.
-     *
-     * @param qid - The question ID.
-     * @param answer - The answer object.
-     */
-    // const handleAnswerUpdate = ({ qid, answer }: { qid: string; answer: Answer }) => {
-    //   setQlist(prevQlist =>
-    //     prevQlist.map(q => (q._id === qid ? { ...q, answers: [...q.answers, answer] } : q)),
-    //   );
-    // };
-
-    /**
-     * Function to handle views updates from the socket.
-     *
-     * @param question - The updated question object.
-     */
-    // const handleViewsUpdate = (question: Question) => {
-    //   setQlist(prevQlist => prevQlist.map(q => (q._id === question._id ? question : q)));
-    // };
+    const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
+      // setCorrespondenceList(
+      //   [...correspondenceList].map(c =>
+      //     c._id === correspondence._id ? { ...correspondence } : { ...c },
+      //   ),
+      // );
+      await fetchData();
+      if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
+        console.log('changing selected correspondence');
+        console.log({ ...correspondence });
+        setSelectedCorrespondence({ ...correspondence });
+        setSelectedCorrespondenceMessages([...correspondence.messages]);
+      }
+    };
 
     fetchData();
 
     // socket.on('questionUpdate', handleQuestionUpdate);
     // socket.on('answerUpdate', handleAnswerUpdate);
     // socket.on('viewsUpdate', handleViewsUpdate);
+    socket.on('correspondenceUpdate', handleCorrespondenceUpdate);
 
     return () => {
       //   socket.off('questionUpdate', handleQuestionUpdate);
       //   socket.off('answerUpdate', handleAnswerUpdate);
-      //   socket.off('viewsUpdate', handleViewsUpdate);
+      // socket.off('viewsUpdate', handleViewsUpdate);
+      socket.off('correspondenceUpdate', handleCorrespondenceUpdate);
     };
-  }, [correspondenceOrder, search, socket]);
+  }, [socket]);
 
-  return { correspondenceList };
+  const handleSelectCorrespondence = (correspondence: Correspondence): void => {
+    setSelectedCorrespondence(correspondence);
+    setSelectedCorrespondenceMessages([...correspondence.messages]);
+  };
+
+  const handleSendMessage = async (): Promise<void> => {
+    if (messageText !== '') {
+      const cid = selectedCorrespondence?._id;
+      const messageTo = selectedCorrespondence?.messageMembers.filter(
+        member => member !== user.username,
+      );
+      const message = {
+        messageText,
+        messageDateTime: new Date(),
+        messageTo: messageTo || [],
+        messageBy: user.username,
+      };
+
+      console.log('handleSendMessage');
+      console.log(selectedCorrespondence);
+      const updatedCorrespondence = await addMessage(cid || '', message);
+      console.log('addedMessage after');
+      console.log(updatedCorrespondence);
+      const updatedCorrespondenceList = correspondenceList.filter(
+        correspondence => correspondence._id !== cid,
+      );
+
+      setCorrespondenceList([...updatedCorrespondenceList, updatedCorrespondence]);
+      setSelectedCorrespondence({ ...updatedCorrespondence });
+      setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
+      setMessageText('');
+    }
+  };
+
+  return {
+    correspondenceList,
+    titleText,
+    selectedCorrespondence,
+    setSelectedCorrespondence,
+    handleSelectCorrespondence,
+    messageText,
+    setMessageText,
+    handleSendMessage,
+    selectedCorrespondenceMessages,
+    toAddText,
+    setToAddText,
+  };
 };
 
 export default useMessagePage;

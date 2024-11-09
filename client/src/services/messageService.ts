@@ -35,11 +35,15 @@ const getMessageById = async (mid: string, username: string): Promise<Message> =
 /**
  * Function to add a new message.
  *
- * @param m - The message object to add.
+ * @param cid - The id of the message's associated correspondence
+ * @param message - The message object to add.
  * @throws Error if there is an issue creating the new message.
  */
-const addMessage = async (m: Message): Promise<Question> => {
-  const res = await api.post(`${MESSAGE_API_URL}/addMessage`, m);
+const addMessage = async (cid: string, message: Message): Promise<Correspondence> => {
+  console.log('at addMessage');
+  const res = await api.post(`${MESSAGE_API_URL}/addMessage`, { cid, message });
+  console.log('end of addMessage');
+  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while creating a new message');
