@@ -17,6 +17,7 @@ import {
   User,
   UserReport,
   UserReportResponse,
+  UserReportResponses,
   UserResponse,
 } from '../types';
 import AnswerModel from './answers';
@@ -514,9 +515,13 @@ export const fetchAndIncrementQuestionViewsById = async (
       {
         path: 'answers',
         model: AnswerModel,
-        populate: { path: 'comments', model: CommentModel },
+        populate: [
+          { path: 'comments', model: CommentModel },
+          { path: 'reports', model: UserReportModel },
+        ],
       },
       { path: 'comments', model: CommentModel },
+      { path: 'reports', model: UserReportModel },
     ]);
     return q;
   } catch (error) {
@@ -839,6 +844,61 @@ export const addReport = async (
     return result;
   } catch (error) {
     return { error: `Error when adding report: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Retrieves all of the moderator applications in the database.
+ *
+ * @returns {ModApplication[]} - A list of the current active ModApplications.
+ */
+export const fetchUnresolvedReports = async (
+  type: 'question' | 'answer',
+): Promise<UserReportResponses> => {
+  try {
+    if (type === 'question') {
+      const reportedQuestions = await QuestionModel.find({
+        reports: { $exists: true, $not: { $size: 0 } },
+      }).populate([{ path: 'reports', model: UserReportModel }]);
+      return reportedQuestions;
+    }
+    if (type === 'answer') {
+      const reportedAnswers = await AnswerModel.find({
+        reports: { $exists: true, $not: { $size: 0 } },
+      }).populate([{ path: 'reports', model: UserReportModel }]);
+      return reportedAnswers;
+    }
+    return [];
+  } catch (error) {
+    return { error: 'Error when fetching the repored objects' };
+  }
+};
+
+/**
+ * Removes a specificed moderator application from the db.
+ *
+ * @param username - the username of the user's application being deleted
+ * @returns {ModApplication} - the application object being deleted.
+ */
+export const removeReported = async (
+  postId: string,
+  type: 'question' | 'answer',
+): Promise<boolean> => {
+  try {
+    if (type === 'question') {
+      const result = await QuestionModel.findOneAndDelete({ _id: postId });
+      if (!result) {
+        throw new Error(`No question found`);
+      }
+    } else if (type === 'answer') {
+      const result = await AnswerModel.findOneAndDelete({ _id: postId });
+      if (!result) {
+        throw new Error(`No answer found`);
+      }
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Error when deleting the reported object: ${(error as Error).message}`);
   }
 };
 

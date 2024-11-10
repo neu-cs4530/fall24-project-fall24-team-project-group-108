@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUserContext from './useUserContext';
 import { UserReport } from '../types';
-import addReport from '../services/reportService';
+import { addReport } from '../services/reportService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -13,7 +13,7 @@ import addReport from '../services/reportService';
  * @returns handleNewReport - Function to handle the submission of a new report to a question or answer.
  * @returns handleNewAnswer - Function to navigate to the "New Answer" page
  */
-const useAnswerPage = () => {
+const useReportPage = () => {
   const { user } = useUserContext();
   const [text, setText] = useState<string>('');
   const [reportErr, setReportErr] = useState<string>('');
@@ -71,4 +71,4 @@ const useAnswerPage = () => {
   };
 };
 
-export default useAnswerPage;
+export default useReportPage;

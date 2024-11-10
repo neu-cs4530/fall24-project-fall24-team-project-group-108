@@ -1,5 +1,5 @@
 import api from './config';
-import { UserReport } from '../types';
+import { Answer, Question, UserReport } from '../types';
 
 const USERREPORT_API_URL = `${process.env.REACT_APP_SERVER_URL}/userReport`;
 
@@ -40,4 +40,37 @@ const addReport = async (
   return res.data;
 };
 
-export default addReport;
+/**
+ * Gets unresolved reports in the database.
+ *
+ * @returns A list of all the unresolved reported Question or Answer documents in the database.
+ */
+const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Question[] | Answer[]> => {
+  const res = await api.get(`${USERREPORT_API_URL}/getUnresolvedReport`, {
+    params: { type },
+  });
+  if (res.status !== 200) {
+    throw new Error('Error while retrieving mod applications');
+  }
+  return res.data;
+};
+
+/**
+ * Deletes a reported question or answer in the database.
+ *
+ * @param id - The id of the question or answer that will be deleted.
+ *
+ * @returns A boolean which evaluates to true if an object was deleted, and false if there was an error.
+ */
+const deleteReported = async (postId: string, type: 'question' | 'answer'): Promise<boolean> => {
+  console.log(postId, type);
+  const res = await api.delete(`${USERREPORT_API_URL}/deleteReport`, {
+    data: { postId, type },
+  });
+  if (res.status !== 200) {
+    throw new Error('Error while deleting report');
+  }
+  return res.data;
+};
+
+export { addReport, getUnresolvedReport, deleteReported };

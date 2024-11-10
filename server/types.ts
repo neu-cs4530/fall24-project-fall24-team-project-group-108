@@ -306,9 +306,37 @@ export interface AddUserReportRequest extends Request {
 }
 
 /**
+ * Interface for the request body when reporting.
+ * - targetId - The unique identifier of the question or answer being reported.
+ * - targetType - The type of the report, either 'question' or 'answer'.
+ * - report - The report being added.
+ */
+export interface GetUserReportRequest extends Request {
+  query: {
+    type: 'question' | 'answer';
+  };
+}
+
+/**
+ * Interface extending the request body when deleting a question/answer from the database which contains:
+ * - id - the id of the answer/question being deleted.
+ */
+export interface DeleteReportedRequest extends Request {
+  body: {
+    postId: string
+    type: 'question' | 'answer'
+  }
+}
+
+/**
  * Type representing the possible responses for a UserReport-related operation.
  */
 export type UserReportResponse = UserReport | { error: string };
+
+/**
+ * Type representing the possible responses for a ModApplication[] related operation.
+ */
+export type UserReportResponses = Answer[] | Question[] | { error: string };
 
 /**
  * Interface representing a Comment, which contains:

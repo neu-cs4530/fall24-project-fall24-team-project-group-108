@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Comment, Question, Tag } from './types';
+import { Answer, Comment, Question, Tag, UserReport } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -44,8 +44,15 @@ import {
   C10_TEXT,
   C11_TEXT,
   C12_TEXT,
+  R1_TEXT,
+  R2_TEXT,
+  R3_TEXT,
+  R4_TEXT,
+  R5_TEXT,
+  R6_TEXT,
 } from './data/posts_strings';
 import CommentModel from './models/comments';
+import UserReportModel from './models/userReport';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
 const userArgs = process.argv.slice(2);
@@ -99,12 +106,37 @@ async function commentCreate(
 }
 
 /**
+ * Creates a new UserReport document in the database.
+ *
+ * @param text The content of the report.
+ * @param reportBy The username of the user who reported.
+ * @param reportDateTime The date and time when the report was posted.
+ * @returns A Promise that resolves to the created UserReport document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function reportCreate(
+  text: string,
+  reportBy: string,
+  reportDateTime: Date,
+): Promise<UserReport> {
+  if (text === '' || reportBy === '' || reportDateTime == null)
+    throw new Error('Invalid Report Format');
+  const reportDetail: UserReport = {
+    text: text,
+    reportBy: reportBy,
+    reportDateTime: reportDateTime,
+  };
+  return await UserReportModel.create(reportDetail);
+}
+
+/**
  * Creates a new Answer document in the database.
  *
  * @param text The content of the answer.
  * @param ansBy The username of the user who wrote the answer.
  * @param ansDateTime The date and time when the answer was created.
  * @param comments The comments that have been added to the answer.
+ * @param reports The reports that have been added to the answer.
  * @returns A Promise that resolves to the created Answer document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -113,14 +145,16 @@ async function answerCreate(
   ansBy: string,
   ansDateTime: Date,
   comments: Comment[],
+  reports: UserReport[],
 ): Promise<Answer> {
-  if (text === '' || ansBy === '' || ansDateTime == null || comments == null)
+  if (text === '' || ansBy === '' || ansDateTime == null || comments == null || reports == null)
     throw new Error('Invalid Answer Format');
   const answerDetail: Answer = {
     text: text,
     ansBy: ansBy,
     ansDateTime: ansDateTime,
     comments: comments,
+    reports: reports,
   };
   return await AnswerModel.create(answerDetail);
 }
@@ -136,6 +170,7 @@ async function answerCreate(
  * @param askDateTime The date and time when the question was asked.
  * @param views An array of usernames who have viewed the question.
  * @param comments An array of comments associated with the question.
+ * @param reports The reports that have been added to the question.
  * @returns A Promise that resolves to the created Question document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -148,6 +183,7 @@ async function questionCreate(
   askDateTime: Date,
   views: string[],
   comments: Comment[],
+  reports: UserReport[],
 ): Promise<Question> {
   if (
     title === '' ||
@@ -155,7 +191,8 @@ async function questionCreate(
     tags.length === 0 ||
     askedBy === '' ||
     askDateTime == null ||
-    comments == null
+    comments == null || 
+    reports == null
   )
     throw new Error('Invalid Question Format');
   const questionDetail: Question = {
@@ -169,6 +206,7 @@ async function questionCreate(
     upVotes: [],
     downVotes: [],
     comments: comments,
+    reports: reports,
   };
   return await QuestionModel.create(questionDetail);
 }
@@ -186,6 +224,14 @@ const populate = async () => {
     const t5 = await tagCreate(T5_NAME, T5_DESC);
     const t6 = await tagCreate(T6_NAME, T6_DESC);
 
+    const r1 = await reportCreate(R1_TEXT, 'sana', new Date('2023-12-12T03:30:00'));
+    const r2 = await reportCreate(R2_TEXT, 'ihba001', new Date('2023-12-01T15:24:19'));
+    const r3 = await reportCreate(R3_TEXT, 'saltyPeter', new Date('2023-12-18T09:24:00'));
+    const r4 = await reportCreate(R4_TEXT, 'monkeyABC', new Date('2023-12-20T03:24:42'));
+    const r5 = await reportCreate(R5_TEXT, 'hamkalo', new Date('2023-12-23T08:24:00'));
+    const r6 = await reportCreate(R6_TEXT, 'azad', new Date('2023-12-22T17:19:00'));
+
+
     const c1 = await commentCreate(C1_TEXT, 'sana', new Date('2023-12-12T03:30:00'));
     const c2 = await commentCreate(C2_TEXT, 'ihba001', new Date('2023-12-01T15:24:19'));
     const c3 = await commentCreate(C3_TEXT, 'saltyPeter', new Date('2023-12-18T09:24:00'));
@@ -199,14 +245,14 @@ const populate = async () => {
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
 
-    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1]);
-    const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2]);
-    const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3]);
-    const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4]);
-    const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5]);
-    const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6]);
-    const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7]);
-    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8]);
+    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1], [r1, r2, r3, r4]);
+    const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2], []);
+    const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3], [r3, r2]);
+    const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4], [r4]);
+    const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5], []);
+    const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6], []);
+    const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7], []);
+    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8], []);
 
     await questionCreate(
       Q1_DESC,
@@ -217,6 +263,7 @@ const populate = async () => {
       new Date('2022-01-20T03:00:00'),
       ['sana', 'abaya', 'alia'],
       [c9],
+      [],
     );
     await questionCreate(
       Q2_DESC,
@@ -227,6 +274,7 @@ const populate = async () => {
       new Date('2023-01-10T11:24:30'),
       ['mackson3332'],
       [c10],
+      [r5, r2, r1],
     );
     await questionCreate(
       Q3_DESC,
@@ -237,6 +285,7 @@ const populate = async () => {
       new Date('2023-02-18T01:02:15'),
       ['monkeyABC', 'elephantCDE'],
       [c11],
+      [],
     );
     await questionCreate(
       Q4_DESC,
@@ -247,6 +296,7 @@ const populate = async () => {
       new Date('2023-03-10T14:28:01'),
       [],
       [c12],
+      [r6],
     );
 
     console.log('Database populated');

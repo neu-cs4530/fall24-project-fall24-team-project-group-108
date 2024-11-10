@@ -1,7 +1,19 @@
 import express, { Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { FakeSOSocket, AddUserReportRequest, UserReport } from '../types';
-import { addReport, populateDocument, saveUserReport } from '../models/application';
+import {
+  FakeSOSocket,
+  AddUserReportRequest,
+  UserReport,
+  DeleteReportedRequest,
+  GetUserReportRequest,
+} from '../types';
+import {
+  addReport,
+  fetchUnresolvedReports,
+  populateDocument,
+  removeReported,
+  saveUserReport,
+} from '../models/application';
 
 const userReportController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -98,7 +110,53 @@ const userReportController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Retrieves all unresolved reported objects in the database. If fetching the reported objects fails, the HTTP response status is updated.
+   *
+   * @param _ - Placeholder value.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getUnresolvedReport = async (req: GetUserReportRequest, res: Response): Promise<void> => {
+    const { type } = req.query;
+    try {
+      const reports = await fetchUnresolvedReports(type);
+      res.json(reports);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching applications: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching applications`);
+      }
+    }
+  };
+
+  /**
+   * Deletes a specified question or answer in the database. If deleting fails, the HTTP response status is updated.
+   *
+   * @param req - The DeleteReportedRequest object containing the reported object data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const deleteReport = async (req: DeleteReportedRequest, res: Response): Promise<void> => {
+    const { postId, type } = req.body;
+    try {
+      const deleted = await removeReported(postId, type);
+      res.json(deleted);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when deleting reported object: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when deleting reported object`);
+      }
+    }
+  };
+
   router.post('/addReport', addReportRoute);
+  router.get('/getUnresolvedReport', getUnresolvedReport);
+  router.delete('/deleteReport', deleteReport);
 
   return router;
 };

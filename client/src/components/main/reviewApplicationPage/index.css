@@ -8,6 +8,8 @@
     margin: 13px auto;
     width: 95%;
     box-sizing: border-box;
+    overflow-wrap: break-word;
+    overflow: hidden;
   }
 
   .username {

@@ -77,7 +77,7 @@ app.use('/answer', answerController(socket));
 app.use('/comment', commentController(socket));
 app.use('/user', userController());
 app.use('/modApplication', modApplicationController());
-app.use('/addReport', userReportController(socket));
+app.use('/userReport', userReportController(socket));
 
 // Export the app instance
 export { app, server, startServer };

@@ -113,7 +113,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[];
-  reports: Report[];
+  reports: UserReport[];
 }
 
 /**
@@ -143,7 +143,7 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
-  reports: Report[];
+  reports: UserReport[];
 }
 
 /**
