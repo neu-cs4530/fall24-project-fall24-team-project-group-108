@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
 import { Answer, Correspondence, OrderType, Question, Message } from '../types';
@@ -15,6 +15,7 @@ import { addMessage } from '../services/messageService';
  */
 const useMessagePage = () => {
   const { socket, user } = useUserContext();
+  const navigate = useNavigate();
 
   const [searchParams] = useSearchParams();
   const [titleText, setTitleText] = useState<string>('All Messages');
@@ -27,6 +28,12 @@ const useMessagePage = () => {
   );
   const [toAddText, setToAddText] = useState<string>('');
   const [messageText, setMessageText] = useState<string>('');
+
+  const handleUpdateCorrespondence = () => {
+    navigate(
+      `/update/correspondence/${selectedCorrespondence?._id}`,
+    );
+  };
 
   useEffect(() => {
     const pageTitle = 'All Messages';
@@ -134,6 +141,7 @@ const useMessagePage = () => {
     selectedCorrespondenceMessages,
     toAddText,
     setToAddText,
+    handleUpdateCorrespondence,
   };
 };
 
