@@ -13,6 +13,7 @@ import {
   AddQuestionRequest,
   AddMessageRequest,
   AddCorrespondenceRequest,
+  UpdateCorrespondenceRequest,
   VoteRequest,
   FakeSOSocket,
 } from '../types';
@@ -31,6 +32,7 @@ import {
   saveQuestion,
   saveMessage,
   saveCorrespondence,
+  updateCorrespondenceById
 } from '../models/application';
 import MessageModel from '../models/message';
 
@@ -112,14 +114,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
     }
   };
 
-  //   export interface Message {
-  //     _id?: string,
-  //     messageText: string,
-  //     messageDateTime: Date,
-  //     messageBy: string,
-  //     messageTo: string[]
-  //   }
-
   /**
    * Validates the correspondence object to ensure it contains all the necessary fields.
    *
@@ -154,22 +148,40 @@ const correspondenceController = (socket: FakeSOSocket) => {
       if ('error' in result) {
         throw new Error(result.error);
       }
-      // const savedCorrespondence = {...result, messages: [savedMessage]} as Correspondence;
-      // if ('error' in result) {
-      //   throw new Error(result.error);
-      // }
-
-      // // Populates the fields of the message that was added, and emits the new object
-      // const populatedCorrespondence = await populateDocument(
-      //   result._id?.toString(),
-      //   'question',
-      // );
-
-      // if (populatedCorrespondence && 'error' in populatedCorrespondence) {
-      //   throw new Error(populatedCorrespondence.error);
-      // }
       console.log(result);
-      // console.log(savedCorrespondence);
+
+      socket.emit('correspondenceUpdate', result);
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
+
+  /**
+   * Adds a new correspondence to the database. The correspondence is first validated and then saved.
+   * If saving the correspondence fails, the HTTP response status is updated.
+   *
+   * @param req The AddCorrespondenceRequest object containing the question data.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateCorrespondence = async (req: UpdateCorrespondenceRequest, res: Response): Promise<void> => {
+    const { cid, updatedMessageMembers } = req.body;
+    try {
+      console.log('At updateCorrespondenceById');
+      console.log(cid);
+      console.log(updatedMessageMembers);
+      const result = await updateCorrespondenceById(cid, updatedMessageMembers);
+      console.log('End updateCorrespondenceById');
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+      console.log(result);
 
       socket.emit('correspondenceUpdate', result);
       res.json(result);
@@ -187,6 +199,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
   router.get('/getCorrespondence', getCorrespondencesByFilter);
   router.get('/getCorrespondenceById/:qid', getCorrespondenceById);
   router.post('/addCorrespondence', addCorrespondence);
+  router.post('/updateCorrespondence', updateCorrespondence);
 
   return router;
 };

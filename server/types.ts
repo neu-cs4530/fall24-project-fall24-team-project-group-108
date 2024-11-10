@@ -185,6 +185,18 @@ export interface AddCorrespondenceRequest extends Request {
 }
 
 /**
+ * Interface for the request body when updating a correspondence.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - updatedMessageMembers - an updated list of the correspondence members
+ */
+ export interface UpdateCorrespondenceRequest extends Request {
+  body: {
+    cid: string;
+    updatedMessageMembers: string[];
+  };
+}
+/**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.

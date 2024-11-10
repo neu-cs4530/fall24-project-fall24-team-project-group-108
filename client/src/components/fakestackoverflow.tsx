@@ -10,6 +10,7 @@ import MessagePage from './main/messagePage';
 import TagPage from './main/tagPage';
 import NewQuestionPage from './main/newQuestion';
 import NewCorrespondencePage from './main/newCorrespondence';
+import UpdateCorrespondencePage from './main/updateCorrespondence';
 import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
 
@@ -57,7 +58,7 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
             <Route path='/new/correspondence' element={<NewCorrespondencePage />} />
-            {/* <Route path='/update/correspondence/:cid' element={<UpdateCorrespondencePage />} /> */}
+            <Route path='/update/correspondence/:cid' element={<UpdateCorrespondencePage />} />
           </Route>
         }
       </Routes>

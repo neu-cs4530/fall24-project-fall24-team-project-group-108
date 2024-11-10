@@ -5,6 +5,8 @@ import useMessagePage from '../../../hooks/useMessagePage';
 import CorrespondenceView from './correspondence';
 import MessageView from './message';
 import Input from '../baseComponents/input';
+import NewCorrespondenceButton from '../newCorrespondenceButton';
+// import UpdateCorrespondenceButton from '../updateCorrespondenceButton';
 
 /**
  * MessagePage component renders a page displaying a list of questions
@@ -24,6 +26,7 @@ const MessagePage = () => {
     selectedCorrespondenceMessages,
     toAddText,
     setToAddText,
+    handleUpdateCorrespondence,
   } = useMessagePage();
 
   return (
@@ -41,6 +44,15 @@ const MessagePage = () => {
         </div>
         <div id='selected_correspondence' className='selected_correspondence'>
           {selectedCorrespondence ? null : 'Please Select a Correspondence'}
+          {selectedCorrespondence ? (
+            <button
+              className='bluebtn updateMembersButton'
+              onClick={() => {
+                handleUpdateCorrespondence();
+              }}>
+              Add/Delete Correspondence Members
+            </button>
+          ) : null}
           <div id='message_list'>
             {selectedCorrespondenceMessages.length > 0
               ? selectedCorrespondenceMessages.map((message, idx) => (

@@ -56,4 +56,43 @@ const addCorrespondence = async (c: Correspondence): Promise<Correspondence> => 
   return res.data;
 };
 
-export { getCorrespondencesByOrder, getCorrespondenceById, addCorrespondence };
+/**
+ * Function to add a new correspondence.
+ *
+ * @param cid - The ID of the correspondence to retrieve.
+ * @param updatedMessageMembers - the updated members of the correspondence
+ * @throws Error if there is an issue updating the new correspondence.
+ */
+const updateCorrespondenceById = async (
+  cid: string,
+  updatedMessageMembers: string[],
+): Promise<Correspondence> => {
+  console.log('updateCorrespondence called!');
+  // console.log(
+  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
+  // );
+  // const res = await api.post(
+  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
+  // );
+  const updatedCId = cid.split('&')[0];
+  console.log(updatedCId);
+  const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondence`, {
+    cid: updatedCId,
+    updatedMessageMembers,
+  });
+  console.log('updateCorrespondence finished!');
+  console.log(res);
+
+  if (res.status !== 200) {
+    throw new Error('Error while updating correspondence');
+  }
+
+  return res.data;
+};
+
+export {
+  getCorrespondencesByOrder,
+  getCorrespondenceById,
+  addCorrespondence,
+  updateCorrespondenceById,
+};
