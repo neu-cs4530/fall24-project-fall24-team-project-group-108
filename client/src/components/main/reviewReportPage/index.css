@@ -18,6 +18,14 @@
     text-decoration: underline;
   }
 
+  .reports-container span:hover {
+    color: #0052ab;
+  }
+
+  .reports-container span:active {
+    color: #003874;
+  }
+
   .reports-username {
     font-weight: bold;
     color: #ff0000;

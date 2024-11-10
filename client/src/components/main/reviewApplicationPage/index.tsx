@@ -1,13 +1,21 @@
+import { useNavigate } from 'react-router-dom';
 import useModApplicationPage from '../../../hooks/useModApplicationPage';
 import { ModApplication } from '../../../types';
 import ReviewModApplicationHeader from './header';
 import './index.css';
+import useModStatus from '../../../hooks/useModStatus';
 
 /**
  * ReviewApplicationPage component allows moderators to accept or reject moderator applications by users.
  */
 const ReviewApplicationPage = () => {
+  const { moderatorStatus } = useModStatus();
   const { applications, err, handleApplicationDecision } = useModApplicationPage();
+  const navigate = useNavigate();
+
+  if (!moderatorStatus) {
+    navigate('/home');
+  }
 
   if (!applications.length) {
     return (
