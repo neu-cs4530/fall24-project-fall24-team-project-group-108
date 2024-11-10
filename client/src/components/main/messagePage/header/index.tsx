@@ -1,5 +1,6 @@
 import React from 'react';
 import './index.css';
+import NewCorrespondenceButton from '../../newCorrespondenceButton';
 
 /**
  * Interface representing the props for the MessageHeader component.
@@ -23,6 +24,7 @@ const MessageHeader = ({ titleText, ccnt }: MessageHeaderProps) => (
   <div>
     <div className='space_between right_padding'>
       <div className='bold_title'>{titleText}</div>
+      <NewCorrespondenceButton />
     </div>
     <div className='space_between right_padding'>
       <div id='correspondence_count'>{ccnt} correspondences</div>
