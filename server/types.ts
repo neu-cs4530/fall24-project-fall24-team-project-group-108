@@ -196,6 +196,20 @@ export interface AddCorrespondenceRequest extends Request {
     updatedMessageMembers: string[];
   };
 }
+
+/**
+ * Interface for the request body when updating a message.
+ * - body - The message ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - updatedMessageText - an updated message text for the message
+ */
+ export interface UpdateMessageRequest extends Request {
+  body: {
+    mid: string;
+    updatedMessageText: string;
+  };
+}
+
 /**
  * Interface for the request body when upvoting or downvoting a question.
  * - body - The question ID and the username of the user voting.

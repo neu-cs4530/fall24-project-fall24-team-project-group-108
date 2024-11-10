@@ -178,4 +178,5 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
   correspondenceUpdate: (update: Correspondence) => void;
+  messageUpdate: (update: Message) => void;
 }

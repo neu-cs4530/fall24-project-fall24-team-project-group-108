@@ -30,9 +30,7 @@ const useMessagePage = () => {
   const [messageText, setMessageText] = useState<string>('');
 
   const handleUpdateCorrespondence = () => {
-    navigate(
-      `/update/correspondence/${selectedCorrespondence?._id}`,
-    );
+    navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
   };
 
   useEffect(() => {
@@ -130,6 +128,7 @@ const useMessagePage = () => {
   };
 
   return {
+    user,
     correspondenceList,
     titleText,
     selectedCorrespondence,

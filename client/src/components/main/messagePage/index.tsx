@@ -15,6 +15,7 @@ import NewCorrespondenceButton from '../newCorrespondenceButton';
  */
 const MessagePage = () => {
   const {
+    user,
     correspondenceList,
     titleText,
     selectedCorrespondence,
@@ -69,16 +70,19 @@ const MessagePage = () => {
                 className='message-textarea'
               />
             ) : null}
-
             {selectedCorrespondence ? (
               <button className='send-message-button' onClick={handleSendMessage}>
                 Send Message
               </button>
             ) : null}
           </div>
-          {/* <div id='message_text_send' className='message_text_send'>
-              {'send'}
-            </div> */}
+          {messageText !== '' ? (
+            <pre>
+              <code id='user-typing' className='user-typing'>
+                {user.username} is typing...
+              </code>
+            </pre>
+          ) : null}
         </div>
       </div>
       {/* {titleText === 'Search Results' && !qlist.length && (

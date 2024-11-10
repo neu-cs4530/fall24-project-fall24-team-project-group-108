@@ -785,6 +785,47 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
 };
 
 /**
+ * Updates a message for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} updatedMessageText - The updated message text for the message
+ *
+ * @returns Promise<CorrespondenceResponse> - The correspondence with the update message or an error message
+ */
+ export const updateMessageById = async (mid: string, updatedMessageText: string): Promise<CorrespondenceResponse> => {
+  try {
+    console.log('At Message Model');
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { messageText: updatedMessageText } },
+      { returnDocument: 'after' }
+    );
+    console.log('End Message Model');
+    console.log(result);
+    if (result === null) {
+      throw new Error('Error when updating message');
+    }
+
+    const updatedCorrespondenceWithMessage = await CorrespondenceModel.findOne(
+      { messages: { _id: mid } } 
+    ).populate([
+      { path: 'messages', model: MessageModel },
+    ]) as Correspondence;
+
+    if (!updatedCorrespondenceWithMessage) {
+      return { error: 'Error when retrieving updated correspondence' };
+    }
+
+    // console.log(updatedCorrespondenceWithMessage);
+
+
+    return updatedCorrespondenceWithMessage;
+  } catch (error) {
+    return { error: 'Error when updating message' };
+  }
+};
+
+/**
  * Adds a comment to a question or answer.
  *
  * @param id The ID of the question or answer to add a comment to
