@@ -62,6 +62,38 @@
     resize: none;
 }
 
+
+
+.codeStyle {
+    font-family: Consolas,"courier new";
+    color: crimson;
+    background-color: #f1f1f1;
+    padding: 2px;
+    font-size: 105%;
+  }
+
+.message-textarea-code {
+    font-family: Consolas,"courier new";
+    color: crimson;
+    flex: 5;
+    padding: 0.25em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    resize: none;
+}
+
+.code-style-button {
+    flex: 1;
+    background-color: black;
+    color: white;
+    /* padding: 0.25em 0.5em; */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
 .send-message-button {
     flex: 1;
     background-color: #28a745;

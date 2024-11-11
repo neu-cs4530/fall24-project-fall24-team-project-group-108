@@ -22,7 +22,10 @@ const messageSchema: Schema = new Schema(
       type: Date,
     },
     messageTo: [{ type: String }],
-    views: [{ type: String }]
+    views: [{ type: String }],
+    isCodeStyle: {
+      type: Boolean,
+    }
   },
   { collection: 'Message' },
 );

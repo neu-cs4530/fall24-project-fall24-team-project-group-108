@@ -134,6 +134,7 @@ export interface Message {
   messageBy: string;
   messageTo: string[];
   views?: string[];
+  isCodeStyle: boolean;
 }
 
 /**

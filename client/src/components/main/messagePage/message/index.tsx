@@ -39,11 +39,16 @@ const MessageView = ({ message }: MessageProps) => {
     <div className='message right_padding'>
       <div className='messageBy'>{message.messageBy}</div>
       {!isEditing ? (
-        <div className='messageText'>{editingText}</div>
+        <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
       ) : (
         <div className='messageTextEdit'>
+          <button
+            className='messageTextEditCodeStyleButton'
+            onClick={() => setIsCodeStyle(!isCodeStyle)}>
+            {'<Code> Style'}
+          </button>
           <textarea
-            className='messageTextEditBox'
+            className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
             placeholder='New Message...'
             value={editingText}
             onChange={e => setEditingText(e.target.value)}

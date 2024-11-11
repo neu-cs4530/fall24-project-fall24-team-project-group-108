@@ -15,7 +15,7 @@ const useMessageView = (message: Message) => {
 
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingText, setEditingText] = useState<string>(message.messageText);
-  const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
+  const [isCodeStyle, setIsCodeStyle] = useState<boolean>(message.isCodeStyle);
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
@@ -43,7 +43,7 @@ const useMessageView = (message: Message) => {
 
   useEffect(() => {
     const updateMessage = async () => {
-      const result = await updateMessageById(message._id || '', editingText);
+      const result = await updateMessageById(message._id || '', editingText, isCodeStyle);
     };
 
     // Need to update message by id, passing in new text
@@ -57,7 +57,7 @@ const useMessageView = (message: Message) => {
 
   useEffect(() => {
     const updateMessage = async () => {
-      const result = await updateMessageById(message._id || '', 'Message was Deleted');
+      const result = await updateMessageById(message._id || '', 'Message was Deleted', false);
     };
 
     // Need to update message by id, passing in new text

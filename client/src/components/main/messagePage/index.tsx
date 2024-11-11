@@ -28,6 +28,8 @@ const MessagePage = () => {
     toAddText,
     setToAddText,
     handleUpdateCorrespondence,
+    isCodeStyle,
+    setIsCodeStyle,
   } = useMessagePage();
 
   return (
@@ -63,11 +65,16 @@ const MessagePage = () => {
           </div>
           <div id='selected_correspondence_bottom' className='selected_correspondence_bottom'>
             {selectedCorrespondence ? (
+              <button className='code-style-button' onClick={() => setIsCodeStyle(!isCodeStyle)}>
+                {'<Code> Style'}
+              </button>
+            ) : null}
+            {selectedCorrespondence ? (
               <textarea
                 placeholder='New Message...'
                 value={messageText}
                 onChange={e => setMessageText(e.target.value)}
-                className='message-textarea'
+                className={isCodeStyle ? 'message-textarea-code' : 'message-textarea'}
               />
             ) : null}
             {selectedCorrespondence ? (

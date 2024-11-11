@@ -62,6 +62,7 @@ const addMessage = async (cid: string, message: Message): Promise<Correspondence
 const updateMessageById = async (
   mid: string,
   updatedMessageText: string,
+  isCodeStyle: boolean,
 ): Promise<Correspondence> => {
   console.log('updateMessage called!');
   // console.log(
@@ -75,6 +76,7 @@ const updateMessageById = async (
   const res = await api.post(`${MESSAGE_API_URL}/updateMessage`, {
     mid: updatedMId,
     updatedMessageText,
+    isCodeStyle,
   });
   console.log('updateMessage finished!');
   console.log(res);

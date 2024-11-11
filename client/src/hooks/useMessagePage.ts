@@ -28,6 +28,7 @@ const useMessagePage = () => {
   );
   const [toAddText, setToAddText] = useState<string>('');
   const [messageText, setMessageText] = useState<string>('');
+  const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -109,6 +110,7 @@ const useMessagePage = () => {
         messageDateTime: new Date(),
         messageTo: messageTo || [],
         messageBy: user.username,
+        isCodeStyle,
       };
 
       console.log('handleSendMessage');
@@ -141,6 +143,8 @@ const useMessagePage = () => {
     toAddText,
     setToAddText,
     handleUpdateCorrespondence,
+    isCodeStyle,
+    setIsCodeStyle,
   };
 };
 

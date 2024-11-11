@@ -202,12 +202,12 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const updateMessage = async (req: UpdateMessageRequest, res: Response): Promise<void> => {
-    const { mid, updatedMessageText } = req.body;
+    const { mid, updatedMessageText, isCodeStyle } = req.body;
     try {
       console.log('At updateMessageById');
       console.log(mid);
       console.log(updatedMessageText);
-      const result = await updateMessageById(mid, updatedMessageText);
+      const result = await updateMessageById(mid, updatedMessageText, isCodeStyle);
       console.log('End updateMessageById');
       if ('error' in result) {
         throw new Error(result.error);

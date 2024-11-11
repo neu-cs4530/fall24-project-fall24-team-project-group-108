@@ -97,7 +97,8 @@ export interface Question {
   messageDateTime: Date,
   messageBy: string,
   messageTo: string[],
-  views?: string[]
+  views?: string[],
+  isCodeStyle: boolean,
 }
 
 /**
@@ -207,6 +208,7 @@ export interface AddCorrespondenceRequest extends Request {
   body: {
     mid: string;
     updatedMessageText: string;
+    isCodeStyle: boolean;
   };
 }
 

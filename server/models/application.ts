@@ -792,12 +792,12 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
  *
  * @returns Promise<CorrespondenceResponse> - The correspondence with the update message or an error message
  */
- export const updateMessageById = async (mid: string, updatedMessageText: string): Promise<CorrespondenceResponse> => {
+ export const updateMessageById = async (mid: string, updatedMessageText: string, isCodeStyle: boolean): Promise<CorrespondenceResponse> => {
   try {
     console.log('At Message Model');
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
-      { $set: { messageText: updatedMessageText } },
+      { $set: { messageText: updatedMessageText, isCodeStyle: isCodeStyle } },
       { returnDocument: 'after' }
     );
     console.log('End Message Model');

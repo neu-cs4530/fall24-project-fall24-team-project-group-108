@@ -102,6 +102,7 @@ const useNewCorrespondence = () => {
       messageDateTime: new Date(),
       messageBy: user.username,
       messageTo: [...toNamesArray],
+      isCodeStyle: false,
     };
     console.log('addCorrespondence !!!!!!!');
     console.log(res);
