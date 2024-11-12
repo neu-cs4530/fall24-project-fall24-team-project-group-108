@@ -9,18 +9,28 @@ import BadgesTab from './badgesTab';
 import { Badge, Question } from '../../../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../../../services/questionService';
 import { fetchBadgesByUser } from '../../../services/badgeService';
+import useUserContext from '../../../hooks/useUserContext';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
  * badges and question/answer activity.
  */
 const AccountPage = () => {
-  const { user } = useParams();
+  const { sentUser } = useParams();
+  const { user } = useUserContext();
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
   const [alist, setAlist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
+
+  // determine if the profile being viewed is for the currently logged in user
+  let userLoggedIn: boolean;
+  if (user.username === sentUser) {
+    userLoggedIn = true;
+  } else {
+    userLoggedIn = false;
+  }
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -39,7 +49,7 @@ const AccountPage = () => {
      */
     const fetchQuestionData = async () => {
       try {
-        const res = await getQuestionsByFilter('newest', '', user);
+        const res = await getQuestionsByFilter('newest', '', sentUser);
         setQlist(res || []);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -52,7 +62,7 @@ const AccountPage = () => {
      */
     const fetchAnswerData = async () => {
       try {
-        const res = await getQuestionByAnswerer(user);
+        const res = await getQuestionByAnswerer(sentUser);
         setAlist(res || []);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -65,7 +75,7 @@ const AccountPage = () => {
      */
     const fetchUserBadges = async () => {
       try {
-        const res = await fetchBadgesByUser(user as string);
+        const res = await fetchBadgesByUser(sentUser as string);
         setBadgeList(res || []);
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -84,12 +94,10 @@ const AccountPage = () => {
         <div className='profileHeaderInfo'>
           <AccountCircleIcon sx={{ fontSize: 100 }} />
           <div className='profileHeaderUsername'>
-            <div>{user}</div>
-            <div>profile metadata? joined x date</div>
+            <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
           </div>
         </div>
         <div className='profileHeaderButtons'>
-          <Button variant='outlined'>Edit</Button>
           <Button variant='contained'>Message</Button>
         </div>
       </div>
@@ -101,17 +109,27 @@ const AccountPage = () => {
             <Tab label='Badges' />
           </Tabs>
         </Box>
-        <div style={{ padding: '20px' }}>
-          {value === 0 && QuestionsTab(user as string, qlist)}
-          {value === 1 && AnswersTab(user as string, alist)}
-          {value === 2 && user && (
-            <BadgesTab
-              user={user}
-              handleClick={handleAuthorClick}
-              userBadges={badgeList}
-              navigate={navigate}
-            /> // Pass both user and handleClick
-          )}
+        <div>
+          {value === 0 &&
+            (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
+          {value === 1 &&
+            (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
+          {value === 2 &&
+            (userLoggedIn ? (
+              <BadgesTab
+                user={'you'}
+                handleClick={handleAuthorClick}
+                userBadges={badgeList}
+                navigate={navigate}
+              />
+            ) : (
+              <BadgesTab
+                user={sentUser}
+                handleClick={handleAuthorClick}
+                userBadges={badgeList}
+                navigate={navigate}
+              />
+            ))}
         </div>
       </div>
     </div>

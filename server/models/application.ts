@@ -17,6 +17,8 @@ import {
   Question,
   QuestionResponse,
   Tag,
+  TagAnswerCount,
+  TagAnswerCountResponse,
   User,
   UserResponse,
 } from '../types';
@@ -28,6 +30,7 @@ import BadgeModel from './badges';
 import UserModel from './users';
 import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
+import TagAnswerCountModel from './tagAnswerCounts';
 
 /**
  * Parses tags from a search string.
@@ -651,6 +654,30 @@ export const getBadgesByUser = async (username: string): Promise<Badge[]> => {
 };
 
 /**
+ * Retrieves all users who have earned a given badge.
+ *
+ * @returns {Promise<String[]>} - Promise that resolves to a list of usernames
+ */
+export const getBadgeUsers = async (badgeName: string): Promise<string[]> => {
+  try {
+    const badge = await BadgeModel.findOne({ name: badgeName });
+
+    // return empty array if error
+    if (!badge || !badge.users || badge.users.length === 0) {
+      return [];
+    }
+
+    // map users to usernames
+    const userIds = badge.users;
+    const users = await UserModel.find({ _id: { $in: userIds } }).select('username');
+    const usernames = users.map(user => user.username);
+    return usernames;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
  * Processes a list of tags by removing duplicates, checking for existing tags in the database,
  * and adding non-existing tags. Returns an array of the existing or newly added tags.
  * If an error occurs during the process, it is logged, and an empty array is returned.
@@ -930,7 +957,23 @@ export const updateBadgeProgress = async (username: string, category: string): P
       const updatedBadgeProgresses = await Promise.all(
         badgeProgresses.map(async (badgeProgress) => {
           badgeProgress.currentValue += 1;
-          return badgeProgress.save();
+          await badgeProgress.save();
+
+          // if the user just acquired the badge, 
+          // add them to the badge's list
+          if (badgeProgress.currentValue === badgeProgress.targetValue) {
+            console.log('adding user to badge progress');
+            const user = await UserModel.findOne({ username: username });
+            if (user) {
+              await BadgeModel.findOneAndUpdate(
+                { _id: badgeProgress.badge },
+                { $addToSet: { users: user._id } },
+                { new: true }
+              );
+            }
+          }
+
+          return badgeProgress;
         })
       );
     }
@@ -938,6 +981,49 @@ export const updateBadgeProgress = async (username: string, category: string): P
     return badgeProgresses;
   } catch (error) {
     return { error: 'Error when updating badge progress' };
+  }
+};
+
+/**
+ * Updates the tagAnswerCounts for a user and a given question.
+ *
+ * @param {string} user - The username to update
+ * @param {string} qid - The id of question to update
+ *
+ * @returns Promise<void> - The updated badgeProgress or an error message
+ */
+
+export const updateTagAnswers = async (username: string, qid: string): Promise<TagAnswerCountResponse> => {
+  try {
+    // get all tags associated with the question
+    const question = await QuestionModel.findById(qid).exec();
+    if (!question) {
+      return { error: 'Question not found' }; // return an error if the question doesnt exist
+    }
+
+    // for each tag, check if a TagAnswerCount exists 
+    const tags = question.tags; 
+    for (const tagId of tags) {
+      let tagAnswerCount = await TagAnswerCountModel.findOne({ user: username, tag: tagId }).exec();
+
+      if (tagAnswerCount) {
+        // if it exists, update the count by incrementing it
+        tagAnswerCount.count += 1;
+        await tagAnswerCount.save();
+      } else {
+        // if it doesn't exist, create a new TagAnswerCount with count initialized to 1
+        await TagAnswerCountModel.create({
+          tag: tagId,
+          user: username,
+          count: 1,
+        });
+      }
+    }
+
+    // return the updated question
+    return question;
+  } catch (error) {
+    return { error: 'Error when updating tag progress' };
   }
 };
 

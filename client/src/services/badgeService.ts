@@ -30,4 +30,18 @@ export const fetchBadgesByUser = async (user: string): Promise<Badge[]> => {
   return res.data;
 };
 
+/**
+ * Gets all the badges earned by a given user from the database.
+ *
+ * @throws Error Throws an error if the request fails or the response status is not 200.
+ */
+export const fetchEarnedUsers = async (badgeName: string): Promise<string[]> => {
+  const res = await api.get(`${BADGE_API_URL}/getEarnedUsers/${badgeName}`);
+  if (res.status !== 200) {
+    throw new Error('Error while fetching users');
+  }
+
+  return res.data;
+};
+
 export default getAllBadges;

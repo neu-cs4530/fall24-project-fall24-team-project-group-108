@@ -8,3 +8,19 @@
     font-weight: bold;
     font-size: 20px;
 }
+
+.users-table {
+    margin-bottom: 5%;
+}
+
+.header-style {
+    text-align: center;
+    font-weight: bold;
+    font-size: 20px;
+    background-color: rgb(94, 145, 255);
+    color: white;
+}
+
+.user:hover {
+    text-decoration: underline;
+  }

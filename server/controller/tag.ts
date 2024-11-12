@@ -1,6 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { getTagCountMap } from '../models/application';
 import TagModel from '../models/tags';
+import TagAnswerCountModel from '../models/tagAnswerCounts';
 
 const tagController = () => {
   const router: Router = express.Router();
@@ -56,9 +57,42 @@ const tagController = () => {
     }
   };
 
+  /**
+   * Retrieves a tag leaderboard from the database by its name, provided in the request parameters.
+   * If the tag is not found or an error occurs, the appropriate HTTP response status and message are returned.
+   *
+   * @param req The Request object containing the tag name in the URL parameters.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { tagName } = req.params; 
+
+      // find the tagid of the tag with the given name
+      const tag = await TagModel.findOne({ name: tagName }).exec();
+      if (!tag) {
+        res.status(404).send(`Tag not found for name: ${tagName}`);
+        return;
+      }
+
+      // find all TagAnswerCounts 
+      const tagAnswerCounts = await TagAnswerCountModel.find({ tag: tag._id })
+        .sort({ count: -1 }) //  descending order 
+        .populate('user', 'username') 
+        .exec();
+
+      res.status(200).json(tagAnswerCounts);
+    } catch (err) {
+      res.status(500).send(`Error when fetching tag leaderboard: ${(err as Error).message}`);
+    }
+  };
+
   // Add appropriate HTTP verbs and their endpoints to the router.
   router.get('/getTagsWithQuestionNumber', getTagsWithQuestionNumber);
-  router.get('/getTagByName/:name', getTagByName); // New endpoint to get tag by name
+  router.get('/getTagByName/:name', getTagByName); 
+  router.get('/getLeaderboard/:tagName', getLeaderboard); 
 
   return router;
 };

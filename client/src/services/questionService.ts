@@ -104,6 +104,21 @@ const downvoteQuestion = async (qid: string, username: string) => {
   return res.data;
 };
 
+/**
+ * Function to update tag leaderboard progress when a user answers a question.
+ *
+ * @param user - The name of the user who answered the question.
+ * @param qid - The id of the question being answered.
+ * @throws Error if there is an issue posting the updated data.
+ */
+const updateTagProgress = async (user: string, qid: string): Promise<void> => {
+  const res = await api.post(`${QUESTION_API_URL}/updateTagProgress?user=${user}&qid=${qid}`);
+  if (res.status !== 200) {
+    throw new Error(`Error when updating tag data.`);
+  }
+  return res.data;
+};
+
 export {
   getQuestionsByFilter,
   getQuestionById,
@@ -111,4 +126,5 @@ export {
   upvoteQuestion,
   downvoteQuestion,
   getQuestionByAnswerer,
+  updateTagProgress,
 };

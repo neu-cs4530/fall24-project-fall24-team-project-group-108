@@ -150,6 +150,18 @@ export interface Question {
 }
 
 /**
+ * Interface representing tag counts for the leaderboard.
+ *
+ * - user - The username.
+ * - count - The amount of times they've answered questions about a tag.
+ */
+export interface TagCounts {
+  user: string;
+  tagid: string;
+  count: number;
+}
+
+/**
  * Interface representing the structure of a Message object.
  *
  * - messageText - The content of the message

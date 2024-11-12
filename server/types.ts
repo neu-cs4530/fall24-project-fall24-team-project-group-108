@@ -297,6 +297,20 @@ export interface VoteRequest extends Request {
 }
 
 /**
+ * Interface for the request body when upvoting or downvoting a question.
+ * - body - The question ID and the username of the user voting.
+ *  - qid - The unique identifier of the question.
+ *  - username - The username of the user voting.
+ */
+export interface UpdateTagsRequest extends Request {
+  query: {
+    user: string;
+    qid: string;
+  };
+}
+
+
+/**
  * Interface representing a Comment, which contains:
  * - _id - The unique identifier for the comment. Optional field.
  * - text - The content of the comment.
@@ -348,7 +362,24 @@ export interface Badge {
   category: BadgeCategory;
   targetValue: number;
   tier: BadgeTier;
+  users: User[] | ObjectId[];
 }
+
+
+/**
+ * Interface representing a TagAnswerCount, which contains:
+ * - `user`: The user id who answers
+ * - `tag`: The id of the tag being answered.
+ * - `count`: The amount of times the user has answered questions about the given tag.
+ */
+export interface TagAnswerCount {
+  _id?: ObjectId;
+  user: User;
+  tag: Tag;
+  count: number;
+}
+
+
 
 /**
  * Interface extending the request body when adding a badge, which contains:
@@ -364,7 +395,8 @@ export interface AddBadgeRequest extends Request {
     description: string;
     category: BadgeCategory;
     targetValue: number;
-    tier: BadgeTier
+    tier: BadgeTier;
+    users: User[];
   };
 }
 
@@ -379,6 +411,20 @@ export interface AddBadgeRequest extends Request {
 export interface UserBadgeRequest extends Request {
   params: {
     username: string;
+  };
+}
+
+/**
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
+ */
+export interface EarnedUserRequest extends Request {
+  params: {
+    badgeName: string;
   };
 }
 
@@ -422,6 +468,11 @@ export interface UpdateBadgeProgressRequest extends Request {
  * Type representing the possible responses for a badgeProgress-related operation.
  */
 export type BadgeProgressResponse = BadgeProgress[] | { error: string };
+
+/**
+ * Type representing the possible responses for a tagAnswerCount-related operation.
+ */
+export type TagAnswerCountResponse = Question | { error: string };
 
 /**
  * Interface representing the payload for a comment update event, which contains:

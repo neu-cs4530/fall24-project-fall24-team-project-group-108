@@ -1,13 +1,16 @@
 .badge_tab {
-  display: flex;  
-  flex-direction: column;             
-  justify-content: flex-end;  
-  align-items: flex-start;     
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  background-color: #f2f2f2;
 }
 
 .all_badges_link {
   color: #858585;
   align-self: flex-end;
+  padding-top: 1%;
+  padding-right: 1%;
 }
 
 .all_badges_link:hover {
@@ -19,5 +22,27 @@
 }
 
 .badge-grid {
-  align-self: center;
+  display: grid;
+  grid-template-rows: 100px;
+  grid-auto-rows: 100px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px; 
+  width: 100%;
+  margin: 0;
+  padding-bottom: 7%;
+  padding-top: 2%;
+  padding-left: 6%;
+  padding-right: 6%;
+}
+  
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 80%;
+  width: 80%;
+}
+
+.badge-category {
+  margin: 0 0 10px 5%;
 }

@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
-import { FakeSOSocket, AddBadgeRequest, Badge, UserBadgeRequest } from '../types';
-import { getAllBadges, getBadgesByUser, saveBadge } from '../models/application';
+import { FakeSOSocket, AddBadgeRequest, Badge, UserBadgeRequest, EarnedUserRequest } from '../types';
+import { getAllBadges, getBadgesByUser, getBadgeUsers, saveBadge } from '../models/application';
 
 const badgeController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -86,8 +86,28 @@ const badgeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Handles grabbing all existing badges from the db.
+   *
+   * @param req The Request object.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getEarnedUsers = async (req: EarnedUserRequest, res: Response): Promise<void> => {
+    try {
+      const { badgeName } = req.params;
+      const users: string[] = await getBadgeUsers(badgeName);
+      res.status(200).json(users); 
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ message: 'Internal server error' }); 
+    }
+  };
+
   router.get('/allBadges', getBadges);
   router.get('/byUser/:username', getUserBadges);
+  router.get('/getEarnedUsers/:badgeName', getEarnedUsers);
   router.post('/addBadge', addBadgeRoute);
 
   return router;

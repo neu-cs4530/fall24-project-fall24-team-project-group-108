@@ -3,6 +3,7 @@ import './index.css';
 import useUserContext from '../../../hooks/useUserContext';
 import { Question } from '../../../types';
 import useVoteStatus from '../../../hooks/useVoteStatus';
+import updateBadgeProgress from '../../../services/badgeProgressService';
 
 /**
  * Interface represents the props for the VoteComponent.
@@ -35,6 +36,9 @@ const VoteComponent = ({ question }: VoteComponentProps) => {
         } else if (type === 'downvote') {
           await downvoteQuestion(question._id, user.username);
         }
+
+        // update the user's progress towards answer related badges
+        await updateBadgeProgress(user.username, 'votes');
       }
     } catch (error) {
       // Handle error

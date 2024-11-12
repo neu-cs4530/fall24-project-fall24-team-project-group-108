@@ -4,6 +4,7 @@ import './index.css';
 interface BadgeHoverProps {
   badge: Badge;
   icon: React.ReactElement;
+  count?: number;
 }
 
 const BadgeHover = (props: BadgeHoverProps) => (
@@ -12,6 +13,7 @@ const BadgeHover = (props: BadgeHoverProps) => (
     <div className='badge-info'>
       <div>{props.badge.name}</div>
       <div>{props.badge.description}</div>
+      <div>Your Count: {props.count}</div>
     </div>
   </div>
 );

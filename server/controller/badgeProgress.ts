@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { FakeSOSocket, AddBadgeRequest, Badge, UpdateBadgeProgressRequest } from '../types';
 import { getAllBadges, saveBadge, updateBadgeProgress } from '../models/application';
+import BadgeProgressModel from '../models/badgeProgresses';
 
 const badgeProgressController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -49,6 +50,38 @@ const badgeProgressController = (socket: FakeSOSocket) => {
 
   }
 
+  /**
+   * Gets a user's progress towards a specific badge category.
+   *
+   * @param req The Request object.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getProgressStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { username, category } = req.query;
+  
+      if (!username || !category) {
+        res.status(400).json({ message: 'Username and category are required.' });
+        return;
+      }
+  
+      // find user progress and return 0 if it doesn't exist
+      const progress = await BadgeProgressModel.findOne({
+        user: username,
+        category: category,
+      });
+  
+      const count = progress ? progress.currentValue : 0;
+      res.status(200).json({ count });
+    } catch (error) {
+      console.error('Error fetching progress:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+
+  router.get('/getProgress', getProgressStats);
   router.post('/update', updateProgress);
 
   return router;

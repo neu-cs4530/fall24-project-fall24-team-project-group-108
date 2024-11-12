@@ -8,9 +8,11 @@ const QuestionsTab = (user: string, qlist: Question[]) => (
   <div className='profilePageContainer'>
     <h2>Questions asked by {user}:</h2>
     <div id='question_list' className='question_list'>
-      {qlist.map((q, idx) => (
-        <QuestionView q={q} key={idx} />
-      ))}
+      {qlist.length === 0 ? (
+        <p className='no-questions-message'>No questions asked.</p>
+      ) : (
+        qlist.map((q, idx) => <QuestionView q={q} key={idx} />)
+      )}
     </div>
   </div>
 );

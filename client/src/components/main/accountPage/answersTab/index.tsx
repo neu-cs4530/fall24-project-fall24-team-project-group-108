@@ -9,9 +9,11 @@ const AnswersTab = (user: string, alist: Question[]) => (
   <div>
     <h2>Questions answered by {user}:</h2>
     <div id='question_list' className='question_list'>
-      {alist.map((q, idx) => (
-        <QuestionView q={q} key={idx} />
-      ))}
+      {alist.length === 0 ? (
+        <p className='no-answers-message'>No answers posted.</p>
+      ) : (
+        alist.map((q, idx) => <QuestionView q={q} key={idx} />)
+      )}
     </div>
   </div>
 );
