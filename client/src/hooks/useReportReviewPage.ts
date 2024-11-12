@@ -13,8 +13,8 @@ import { deleteReported, getUnresolvedReport } from '../services/reportService';
 const useReportReviewPage = () => {
   const [numReports, setNumReports] = useState<number>(0);
   const [qReports, setQReports] = useState<Question[]>([]);
-  const [ansReports, setAnsReports] = useState<Answer[]>([]);
-  const [allReports, setAllReports] = useState<(Question | Answer)[]>([]);
+  const [ansReports, setAnsReports] = useState<{ answer: Answer; qid: string }[]>([]);
+  const [allReports, setAllReports] = useState<(Question | { answer: Answer; qid: string })[]>([]);
   const [err, setErr] = useState<string>('');
   const [reportsVisible, setReportsVisibile] = useState<boolean>(false);
   const { socket } = useUserContext();
@@ -23,14 +23,34 @@ const useReportReviewPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // reported questions
         const resQ = await getUnresolvedReport('question');
+        // questions with reported answers
         const resAns = await getUnresolvedReport('answer');
+        // Questions
         setQReports(resQ as Question[]);
-        setAnsReports(resAns as Answer[]);
-
-        const mergedReports = [...qReports, ...ansReports].sort(
-          (a, b) => (b.reports.length || 0) - (a.reports.length || 0),
+        // Questions with reported answers
+        const reportedAnswers = (resAns as Question[]).flatMap(question =>
+          question.answers
+            .filter(
+              (answer: Answer) =>
+                answer.reports && Array.isArray(answer.reports) && answer.reports.length > 0,
+            )
+            .map(answer => {
+              if (question._id) {
+                return { answer, qid: question._id };
+              }
+              return null;
+            })
+            .filter(ans => ans !== null),
         );
+        setAnsReports(reportedAnswers);
+
+        const mergedReports = [...qReports, ...ansReports].sort((a, b) => {
+          const aReports = 'reports' in a ? a.reports.length : 0;
+          const bReports = 'reports' in b ? b.reports.length : 0;
+          return bReports - aReports;
+        });
         setAllReports(mergedReports);
         const reportedQAns = mergedReports.length;
         setNumReports(reportedQAns);
@@ -71,7 +91,7 @@ const useReportReviewPage = () => {
             }
             const { ansBy } = reportedPost;
             // give user +1 warnings
-            setAnsReports(prev => prev.filter(r => r._id !== postId));
+            setAnsReports(prev => prev.filter(r => r.answer._id !== postId));
           }
         } else {
           setErr('Invalid post id');

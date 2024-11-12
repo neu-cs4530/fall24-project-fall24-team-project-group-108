@@ -45,7 +45,7 @@ const addReport = async (
  *
  * @returns A list of all the unresolved reported Question or Answer documents in the database.
  */
-const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Question[] | Answer[]> => {
+const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Question[]> => {
   const res = await api.get(`${USERREPORT_API_URL}/getUnresolvedReport`, {
     params: { type },
   });

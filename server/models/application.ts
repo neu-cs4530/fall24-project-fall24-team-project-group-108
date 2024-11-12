@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { QueryOptions } from 'mongoose';
+import { isValidObjectId, QueryOptions } from 'mongoose';
 import { application } from 'express';
 import bcrypt from 'bcrypt';
 import {
@@ -863,10 +863,22 @@ export const fetchUnresolvedReports = async (
       return reportedQuestions;
     }
     if (type === 'answer') {
-      const reportedAnswers = await AnswerModel.find({
-        reports: { $exists: true, $not: { $size: 0 } },
-      }).populate([{ path: 'reports', model: UserReportModel }]);
-      return reportedAnswers;
+      const qWithReportedAns = await QuestionModel.find({
+        answers: { $exists: true, $not: { $size: 0 } },
+      }).populate([
+        {
+          path: 'answers',
+          model: AnswerModel,
+          populate: [{ path: 'reports', model: UserReportModel }],
+        },
+      ]);
+      const filteredQ = qWithReportedAns.map(question => {
+        question.answers = (question.answers as Answer[]).filter(
+          answer => answer.reports && answer.reports.length > 0,
+        );
+        return question;
+      });
+      return filteredQ;
     }
     return [];
   } catch (error) {
