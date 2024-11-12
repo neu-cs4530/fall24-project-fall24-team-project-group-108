@@ -25,6 +25,7 @@ export interface Answer {
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
   reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**
@@ -61,12 +62,14 @@ export interface Tag {
  * - username - Name of the user.
  * - password - Password to login created by the user.
  * - isModerator - the current state of the user's moderator status.
+ * - infractions - A list of answer/question id's that were removed by moderators
  */
 export interface User {
   _id?: ObjectId;
   username: string;
   password: string;
   isModerator: boolean;
+  infractions: string[];
 }
 
 /**
@@ -201,6 +204,7 @@ export interface Question {
   downVotes: string[];
   comments: Comment[] | ObjectId[];
   reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**
@@ -321,10 +325,12 @@ export interface GetUserReportRequest extends Request {
  * Interface extending the request body when deleting a question/answer from the database which contains:
  * - id - the id of the answer/question being deleted.
  */
-export interface DeleteReportedRequest extends Request {
+export interface ResolveReportedRequest extends Request {
   body: {
+    reportedPost: Question | Answer,
     postId: string
     type: 'question' | 'answer'
+    isRemoved: boolean
   }
 }
 
@@ -336,7 +342,7 @@ export type UserReportResponse = UserReport | { error: string };
 /**
  * Type representing the possible responses for a ModApplication[] related operation.
  */
-export type UserReportResponses = Answer[] | Question[] | { error: string };
+export type UserReportResponses = Question[] | { error: string };
 
 /**
  * Interface representing a Comment, which contains:

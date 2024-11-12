@@ -16,7 +16,7 @@ import SignUpPage from './login/signUpPage';
 import ModApplicationPage from './main/modApplicationPage';
 import ReviewApplicationPage from './main/reviewApplicationPage';
 import ReviewReportsPage from './main/reviewReportPage';
-import ReportPage from './reportPage';
+import ReportPage from './main/reportPage';
 
 const ProtectedRoute = ({
   user,

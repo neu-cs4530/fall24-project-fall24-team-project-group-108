@@ -9,12 +9,14 @@ import QuestionBody from './questionBody';
 import VoteComponent from '../voteComponent';
 import CommentSection from '../commentSection';
 import useAnswerPage from '../../../hooks/useAnswerPage';
+import useBan from '../../../hooks/useBan';
 
 /**
  * AnswerPage component that displays the full content of a question along with its answers.
  * It also includes the functionality to vote, ask a new question, and post a new answer.
  */
 const AnswerPage = () => {
+  useBan();
   const { questionID, question, handleNewComment, handleNewAnswer } = useAnswerPage();
   const navigate = useNavigate();
 

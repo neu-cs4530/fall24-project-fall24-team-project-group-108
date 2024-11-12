@@ -137,6 +137,7 @@ async function reportCreate(
  * @param ansDateTime The date and time when the answer was created.
  * @param comments The comments that have been added to the answer.
  * @param reports The reports that have been added to the answer.
+ * @param isRemoved Current visibility state, true if moderator removes answer.
  * @returns A Promise that resolves to the created Answer document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -146,8 +147,9 @@ async function answerCreate(
   ansDateTime: Date,
   comments: Comment[],
   reports: UserReport[],
+  isRemoved: boolean,
 ): Promise<Answer> {
-  if (text === '' || ansBy === '' || ansDateTime == null || comments == null || reports == null)
+  if (text === '' || ansBy === '' || ansDateTime == null || comments == null || reports == null || isRemoved == null)
     throw new Error('Invalid Answer Format');
   const answerDetail: Answer = {
     text: text,
@@ -155,6 +157,7 @@ async function answerCreate(
     ansDateTime: ansDateTime,
     comments: comments,
     reports: reports,
+    isRemoved: isRemoved,
   };
   return await AnswerModel.create(answerDetail);
 }
@@ -171,6 +174,7 @@ async function answerCreate(
  * @param views An array of usernames who have viewed the question.
  * @param comments An array of comments associated with the question.
  * @param reports The reports that have been added to the question.
+ * @param isRemoved Current visibility state, true if moderator removes question.
  * @returns A Promise that resolves to the created Question document.
  * @throws An error if any of the parameters are invalid.
  */
@@ -184,6 +188,7 @@ async function questionCreate(
   views: string[],
   comments: Comment[],
   reports: UserReport[],
+  isRemoved: boolean,
 ): Promise<Question> {
   if (
     title === '' ||
@@ -192,7 +197,8 @@ async function questionCreate(
     askedBy === '' ||
     askDateTime == null ||
     comments == null || 
-    reports == null
+    reports == null ||
+    isRemoved == null
   )
     throw new Error('Invalid Question Format');
   const questionDetail: Question = {
@@ -207,6 +213,7 @@ async function questionCreate(
     downVotes: [],
     comments: comments,
     reports: reports,
+    isRemoved: isRemoved,
   };
   return await QuestionModel.create(questionDetail);
 }
@@ -245,14 +252,14 @@ const populate = async () => {
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
 
-    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1], [r1, r2, r3, r4]);
-    const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2], []);
-    const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3], [r3, r2]);
-    const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4], [r4]);
-    const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5], []);
-    const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6], []);
-    const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7], []);
-    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8], []);
+    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1], [r1, r2, r3, r4], false);
+    const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2], [], false);
+    const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3], [r3, r2], false);
+    const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4], [r4], false);
+    const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5], [], false);
+    const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6], [], false);
+    const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7], [], false);
+    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8], [], false);
 
     await questionCreate(
       Q1_DESC,
@@ -264,6 +271,7 @@ const populate = async () => {
       ['sana', 'abaya', 'alia'],
       [c9],
       [],
+      false,
     );
     await questionCreate(
       Q2_DESC,
@@ -275,6 +283,7 @@ const populate = async () => {
       ['mackson3332'],
       [c10],
       [r5, r2, r1],
+      false,
     );
     await questionCreate(
       Q3_DESC,
@@ -286,6 +295,7 @@ const populate = async () => {
       ['monkeyABC', 'elephantCDE'],
       [c11],
       [],
+      false,
     );
     await questionCreate(
       Q4_DESC,
@@ -297,6 +307,7 @@ const populate = async () => {
       [],
       [c12],
       [r6],
+      false,
     );
 
     console.log('Database populated');

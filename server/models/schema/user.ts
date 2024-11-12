@@ -8,22 +8,21 @@ import { Schema } from 'mongoose';
  * - `username`: The name of the user.
  * - `password`: The password of the user.
  * - `isModerator`: If the user has moderator privileges.
+ * - `infractions`: List of removed Answers/Questions by the user.
  */
 const userSchema: Schema = new Schema(
   {
     username: {
       type: String,
-      required: true,
       unique: true,
     },
     password: {
-      required: true,
       type: String,
     },
     isModerator: {
-      required: true,
       type: Boolean,
     },
+    infractions: [{ type: String }],
   },
   { collection: 'User' },
 );

@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Answer, Question } from '../types';
 import useUserContext from './useUserContext';
-import { deleteReported, getUnresolvedReport } from '../services/reportService';
+import { getUnresolvedReport, resolveReport } from '../services/reportService';
 
 /**
- * Custom hook for managing the modApplicationPage, navigation, and real-time updates.
+ * Custom hook for managing the reportReviewPage, navigation, and real-time updates.
  *
- * @returns applications - The current list of applications in the database.
- * @returns err - The current error statement value.
+ * @returns allReports - All Questions/Answers that have a report on them, sorted by number of reports.
+ * @returns numReports - The total number of unresolved Questions/Answers with reports.
+ * @returns err - Error message to display to mod.
+ * @returns reportsVisible - Current value of report visibility, true renders reports list, false does not.
  * @returns handleApplicationDecision - Function to handle the acceptance or rejection of an application.
+ * @returns handleReportVisible - Function to handle changing the report visibility value.
+ *
  */
 const useReportReviewPage = () => {
   const [numReports, setNumReports] = useState<number>(0);
@@ -28,7 +32,10 @@ const useReportReviewPage = () => {
         // questions with reported answers
         const resAns = await getUnresolvedReport('answer');
         // Questions
-        setQReports(resQ as Question[]);
+        const reportedQuestions = (resQ as Question[]).filter(
+          question => question.reports && question.reports.length > 0,
+        );
+        setQReports(reportedQuestions as Question[]);
         // Questions with reported answers
         const reportedAnswers = (resAns as Question[]).flatMap(question =>
           question.answers
@@ -47,9 +54,9 @@ const useReportReviewPage = () => {
         setAnsReports(reportedAnswers);
 
         const mergedReports = [...qReports, ...ansReports].sort((a, b) => {
-          const aReports = 'reports' in a ? a.reports.length : 0;
-          const bReports = 'reports' in b ? b.reports.length : 0;
-          return bReports - aReports;
+          const lenReportA = 'reports' in a ? a.reports.length : a.answer.reports.length;
+          const lenReportB = 'reports' in b ? b.reports.length : b.answer.reports.length;
+          return lenReportB - lenReportA;
         });
         setAllReports(mergedReports);
         const reportedQAns = mergedReports.length;
@@ -68,34 +75,32 @@ const useReportReviewPage = () => {
   const handleReportDecision = async (
     reportedPost: Question | Answer,
     reportType: 'question' | 'answer',
-    isAccepted: boolean,
+    isPostRemoved: boolean,
   ) => {
     try {
       const { _id: postId } = reportedPost;
-      console.log(postId, reportType);
-      if (isAccepted === true) {
-        if (postId !== undefined) {
-          if (reportType === 'question' && 'askedBy' in reportedPost) {
-            const removedQ = await deleteReported(postId, reportType);
-            if (!removedQ) {
-              setErr('Error removing question');
-            }
-            const { askedBy } = reportedPost;
-            console.log(askedBy);
-            // give user +1 warnings
-            setQReports(prev => prev.filter(r => r._id !== postId));
-          } else if (reportType === 'answer' && 'ansBy' in reportedPost) {
-            const removedAns = await deleteReported(postId, reportType);
-            if (!removedAns) {
-              setErr('Error removing answer');
-            }
-            const { ansBy } = reportedPost;
-            // give user +1 warnings
-            setAnsReports(prev => prev.filter(r => r.answer._id !== postId));
+      if (postId !== undefined) {
+        if (isPostRemoved === true) {
+          const postRemoved = await resolveReport(reportedPost, postId, reportType, true);
+
+          if (postRemoved === false) {
+            setErr('Error dismissing report');
           }
-        } else {
-          setErr('Invalid post id');
+        } else if (isPostRemoved === false) {
+          const postDismissed = await resolveReport(reportedPost, postId, reportType, false);
+
+          if (postDismissed === false) {
+            setErr('Error dismissing report');
+          }
         }
+        if (reportType === 'question') {
+          setQReports(prev => prev.filter(r => r._id !== postId));
+        } else if (reportType === 'answer') {
+          setAnsReports(prev => prev.filter(r => r.answer._id !== postId));
+        }
+        setNumReports(prev => prev - 1);
+      } else {
+        setErr('Invalid post id');
       }
     } catch (error) {
       setErr('Error processing application');

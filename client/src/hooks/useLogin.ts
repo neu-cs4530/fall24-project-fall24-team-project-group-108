@@ -66,7 +66,12 @@ const useLogin = () => {
       // Checks if the username and password provided is a valid user already in the database.
       const user = await authenticateUser(username, password);
       if (user) {
-        setUser({ username, password, isModerator: user.isModerator });
+        setUser({
+          username,
+          password,
+          isModerator: user.isModerator,
+          infractions: user.infractions,
+        });
         setLoginAttempts(0);
         navigate('/home');
       } else {

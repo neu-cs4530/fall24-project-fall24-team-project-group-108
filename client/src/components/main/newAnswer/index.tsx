@@ -3,11 +3,13 @@ import React from 'react';
 import Form from '../baseComponents/form';
 import TextArea from '../baseComponents/textarea';
 import useAnswerForm from '../../../hooks/useAnswerForm';
+import useBan from '../../../hooks/useBan';
 
 /**
  * NewAnswerPage component allows users to submit an answer to a specific question.
  */
 const NewAnswerPage = () => {
+  useBan();
   const { text, textErr, setText, postAnswer } = useAnswerForm();
 
   return (

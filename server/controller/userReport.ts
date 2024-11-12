@@ -4,15 +4,15 @@ import {
   FakeSOSocket,
   AddUserReportRequest,
   UserReport,
-  DeleteReportedRequest,
+  ResolveReportedRequest,
   GetUserReportRequest,
 } from '../types';
 import {
   addReport,
   fetchUnresolvedReports,
   populateDocument,
-  removeReported,
   saveUserReport,
+  updateReportStatus,
 } from '../models/application';
 
 const userReportController = (socket: FakeSOSocket) => {
@@ -133,30 +133,30 @@ const userReportController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Deletes a specified question or answer in the database. If deleting fails, the HTTP response status is updated.
+   * Resolves a reported question or answer. If resolving fails, the HTTP response status is updated.
    *
-   * @param req - The DeleteReportedRequest object containing the reported object data.
+   * @param req - The ResolveReportedRequest object containing the reported object data.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
-  const deleteReport = async (req: DeleteReportedRequest, res: Response): Promise<void> => {
-    const { postId, type } = req.body;
+  const resolveReport = async (req: ResolveReportedRequest, res: Response): Promise<void> => {
+    const { reportedPost, postId, type, isRemoved } = req.body;
     try {
-      const deleted = await removeReported(postId, type);
-      res.json(deleted);
+      const resolved = await updateReportStatus(reportedPost, postId, type, isRemoved);
+      res.json(resolved);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        res.status(500).send(`Error when deleting reported object: ${err.message}`);
+        res.status(500).send(`Error when updating reported object: ${err.message}`);
       } else {
-        res.status(500).send(`Error when deleting reported object`);
+        res.status(500).send(`Error when updating reported object`);
       }
     }
   };
 
   router.post('/addReport', addReportRoute);
   router.get('/getUnresolvedReport', getUnresolvedReport);
-  router.delete('/deleteReport', deleteReport);
+  router.post('/resolveReport', resolveReport);
 
   return router;
 };

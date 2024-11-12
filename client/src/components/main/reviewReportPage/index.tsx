@@ -1,24 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import useReportReviewPage from '../../../hooks/useReportReviewPage';
 import { getMetaData } from '../../../tool';
 import { UserReport } from '../../../types';
 import ReviewReportHeader from './Header';
 import './index.css';
-import useModStatus from '../../../hooks/useModStatus';
+import useReportReviewPage from '../../../hooks/useReportReviewPage';
+import useModNavigationPrivileges from '../../../hooks/useModNavigationPrivileges';
+import useBan from '../../../hooks/useBan';
 
 /**
- * SignUp component that renders a page where a user can create a new account or 'user' that will post to the database if not already
- * present. Also allows for navigation back to the login page.
+ * ReviewReportsPage component that renders a page where a mod can review reported Questions and Answers.
  */
 const ReviewReportsPage = () => {
-  const { moderatorStatus } = useModStatus();
+  useModNavigationPrivileges();
+  useBan();
   const { numReports, allReports, err, reportsVisible, handleReportDecision, handleReportVisible } =
     useReportReviewPage();
   const navigate = useNavigate();
-
-  if (!moderatorStatus) {
-    navigate('/home');
-  }
 
   if (numReports === 0) {
     return (
@@ -43,7 +40,7 @@ const ReviewReportsPage = () => {
         const reportedQAns = isQ ? reportedObject : reportedObject.answer;
 
         return (
-          <div className='reports-container' key={objId}>
+          <div className='accent-container' key={objId}>
             <h3>{reportedText}</h3>
             <div className='reports-container'>
               <h4 className='reports-username'>{reportAskedBy}</h4>
@@ -87,10 +84,10 @@ const ReviewReportsPage = () => {
                   handleReportDecision(
                     reportedQAns,
                     'askedBy' in reportedObject ? 'question' : 'answer',
-                    true,
+                    false,
                   )
                 }>
-                Accept
+                Dismiss
               </button>
               <button
                 className='application-button application-button-reject'
@@ -98,10 +95,10 @@ const ReviewReportsPage = () => {
                   handleReportDecision(
                     reportedQAns,
                     'askedBy' in reportedObject ? 'question' : 'answer',
-                    false,
+                    true,
                   )
                 }>
-                Reject
+                Remove
               </button>
             </div>
             {err && (

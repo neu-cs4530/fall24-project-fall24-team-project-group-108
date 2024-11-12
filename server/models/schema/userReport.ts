@@ -8,6 +8,7 @@ import { Schema } from 'mongoose';
  * - `text`: The content of the comment.
  * - `reportBy`: The username of the user who submitted the report.
  * - `reportDateTime`: The date and time when the report was posted.
+ * - `status`: The status of the report, false if not reviewed
  */
 const userReportSchema: Schema = new Schema(
   {
@@ -19,6 +20,11 @@ const userReportSchema: Schema = new Schema(
     },
     reportDateTime: {
       type: Date,
+    },
+    status: {
+      type: String,
+      enum: ['unresolved', 'dismissed', 'removed'],
+      default: 'unresolved',
     },
   },
   { collection: 'UserReport' },

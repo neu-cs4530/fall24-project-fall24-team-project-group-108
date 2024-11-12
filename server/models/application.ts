@@ -375,13 +375,16 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
   try {
     let qlist = [];
     if (order === 'active') {
-      qlist = await QuestionModel.find().populate([
+      qlist = await QuestionModel.find({ isRemoved: false }).populate([
         { path: 'tags', model: TagModel },
-        { path: 'answers', model: AnswerModel },
+        { path: 'answers', model: AnswerModel, match: { isRemoved: false } },
       ]);
       return sortQuestionsByActive(qlist);
     }
-    qlist = await QuestionModel.find().populate([{ path: 'tags', model: TagModel }]);
+    qlist = await QuestionModel.find({ isRemoved: false }).populate([
+      { path: 'tags', model: TagModel },
+      { path: 'answers', model: AnswerModel, match: { isRemoved: false } },
+    ]);
     if (order === 'unanswered') {
       return sortQuestionsByUnanswered(qlist);
     }
@@ -848,9 +851,10 @@ export const addReport = async (
 };
 
 /**
- * Retrieves all of the moderator applications in the database.
+ * Retrieves all of the Questions and Answers in the database with unresolved reports that are not removed.
+ * @param type - The type of the object, either question or answer.
  *
- * @returns {ModApplication[]} - A list of the current active ModApplications.
+ * @returns {UserReportResponses} - A list of Questions containing the reported Questions and Answers.
  */
 export const fetchUnresolvedReports = async (
   type: 'question' | 'answer',
@@ -859,7 +863,7 @@ export const fetchUnresolvedReports = async (
     if (type === 'question') {
       const reportedQuestions = await QuestionModel.find({
         reports: { $exists: true, $not: { $size: 0 } },
-      }).populate([{ path: 'reports', model: UserReportModel }]);
+      }).populate([{ path: 'reports', model: UserReportModel, match: { status: 'unresolved' } }]);
       return reportedQuestions;
     }
     if (type === 'answer') {
@@ -869,7 +873,7 @@ export const fetchUnresolvedReports = async (
         {
           path: 'answers',
           model: AnswerModel,
-          populate: [{ path: 'reports', model: UserReportModel }],
+          populate: [{ path: 'reports', model: UserReportModel, match: { status: 'unresolved' } }],
         },
       ]);
       const filteredQ = qWithReportedAns.map(question => {
@@ -887,30 +891,88 @@ export const fetchUnresolvedReports = async (
 };
 
 /**
- * Removes a specificed moderator application from the db.
+ * Adds the id of the removed reportedPost to the User's infractions list.
  *
- * @param username - the username of the user's application being deleted
- * @returns {ModApplication} - the application object being deleted.
+ * @param reportedPost - The Question/Answer that was reported.
+ * @param postId - The id of the post to query in the database.
+ *
+ * @returns {boolean} - True if the status was successfully changed, false otherwise.
  */
-export const removeReported = async (
+export const addUserInfraction = async (
+  reportedPost: Question | Answer,
   postId: string,
-  type: 'question' | 'answer',
 ): Promise<boolean> => {
   try {
-    if (type === 'question') {
-      const result = await QuestionModel.findOneAndDelete({ _id: postId });
+    const username = 'askedBy' in reportedPost ? reportedPost.askedBy : reportedPost.ansBy;
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $push: { infractions: postId } },
+      { new: true },
+    );
+    if (!result) {
+      throw new Error(`No answer found`);
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Error when adding user infraction: ${(error as Error).message}`);
+  }
+};
+
+/**
+ * Updates the status of a report based on moderator decision.
+ *
+ * @param reportedPost - The Question/Answer that was reported.
+ * @param postId - The id of the post to query in the database.
+ * @param type - The type of the object, either question or answer.
+ * @param isRemoved - True if the moderator removed the question or answer, true otherwise.
+ *
+ * @returns {boolean} - True if the status was successfully changed, false otherwise.
+ */
+export const updateReportStatus = async (
+  reportedPost: Question | Answer,
+  postId: string,
+  type: 'question' | 'answer',
+  isRemoved: boolean,
+): Promise<boolean> => {
+  try {
+    const status = isRemoved ? 'removed' : 'dismissed';
+    if (type === 'question' && isRemoved === true) {
+      const result = await QuestionModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
       if (!result) {
         throw new Error(`No question found`);
       }
-    } else if (type === 'answer') {
-      const result = await AnswerModel.findOneAndDelete({ _id: postId });
+    } else if (type === 'answer' && isRemoved === true) {
+      const result = await AnswerModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
       if (!result) {
         throw new Error(`No answer found`);
       }
     }
+
+    const reportPromises = reportedPost.reports.map(async (report: UserReport) => {
+      const reportId = report._id;
+      return UserReportModel.findOneAndUpdate({ _id: reportId }, { status }, { new: true });
+    });
+
+    const resolvedReports = await Promise.all(reportPromises);
+
+    if (!resolvedReports) {
+      throw new Error(`No answer found`);
+    }
+
+    if (status === 'removed') {
+      await addUserInfraction(reportedPost, postId);
+    }
     return true;
   } catch (error) {
-    throw new Error(`Error when deleting the reported object: ${(error as Error).message}`);
+    throw new Error(`Error when resolving the reported object: ${(error as Error).message}`);
   }
 };
 

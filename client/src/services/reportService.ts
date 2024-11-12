@@ -15,6 +15,13 @@ interface AddReportRequestBody {
   report: UserReport;
 }
 
+interface ResolveReportedRequest {
+  reportedPost: Question | Answer;
+  postId: string;
+  type: 'question' | 'answer';
+  isRemoved: boolean;
+}
+
 /**
  * Adds a new report to a specific question or answer.
  *
@@ -56,21 +63,32 @@ const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Questio
 };
 
 /**
- * Deletes a reported question or answer in the database.
+ * Resolves a reported question or answer in the database.
  *
- * @param id - The id of the question or answer that will be deleted.
+ * @param reportedPost - The id of the question or answer that will be deleted.
+ * @param postId - The ID of the question/answer to which the report is being added.
+ * @param type - The type of the report, either 'question' or 'answer'.
+ * @param isRemoved - The id of the question or answer that will be deleted.
  *
- * @returns A boolean which evaluates to true if an object was deleted, and false if there was an error.
+ * @returns A boolean which evaluates to true if an object was resolved, and false if there was an error.
  */
-const deleteReported = async (postId: string, type: 'question' | 'answer'): Promise<boolean> => {
-  console.log(postId, type);
-  const res = await api.delete(`${USERREPORT_API_URL}/deleteReport`, {
-    data: { postId, type },
-  });
+const resolveReport = async (
+  reportedPost: Question | Answer,
+  postId: string,
+  type: 'question' | 'answer',
+  isRemoved: boolean,
+): Promise<boolean> => {
+  const reqBody: ResolveReportedRequest = {
+    reportedPost,
+    postId,
+    type,
+    isRemoved,
+  };
+  const res = await api.post(`${USERREPORT_API_URL}/resolveReport`, reqBody);
   if (res.status !== 200) {
-    throw new Error('Error while deleting report');
+    throw new Error('Error while resolving report');
   }
   return res.data;
 };
 
-export { addReport, getUnresolvedReport, deleteReported };
+export { addReport, getUnresolvedReport, resolveReport };

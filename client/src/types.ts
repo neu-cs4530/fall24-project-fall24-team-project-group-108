@@ -10,6 +10,7 @@ export interface User {
   username: string;
   password: string;
   isModerator: boolean;
+  infractions: string[];
 }
 
 /**

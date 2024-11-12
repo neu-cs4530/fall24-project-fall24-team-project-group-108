@@ -14,6 +14,8 @@ import { Schema } from 'mongoose';
  * - `upVotes`: An array of usernames that have upvoted the question.
  * - `downVotes`: An array of usernames that have downvoted the question.
  * - `comments`: Comments that have been added to the question by users.
+ * - `reports`: List of reports made on the question.
+ * - `isRemoved`: Determines the removal state of the answer, true if removed by mod, otherwise false.
  */
 const questionSchema: Schema = new Schema(
   {
@@ -36,6 +38,10 @@ const questionSchema: Schema = new Schema(
     downVotes: [{ type: String }],
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     reports: [{ type: Schema.Types.ObjectId, ref: 'UserReport' }],
+    isRemoved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { collection: 'Question' },
 );

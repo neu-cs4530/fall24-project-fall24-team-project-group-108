@@ -5,13 +5,13 @@ import { UserReport } from '../types';
 import { addReport } from '../services/reportService';
 
 /**
- * Custom hook for managing the answer page's state, navigation, and real-time updates.
+ * Custom hook for managing the report page's state, navigation, and real-time updates.
  *
- * @returns questionID - The current question ID retrieved from the URL parameters.
- * @returns question - The current question object with its answers, comments, and votes.
- * @returns handleNewComment - Function to handle the submission of a new comment to a question or answer.
+ * @returns text - The supplemental text provided by the user about their report.
+ * @returns setText - Function to handle setting the text from the input.
+ * @returns reportErr - Value of the error.
  * @returns handleNewReport - Function to handle the submission of a new report to a question or answer.
- * @returns handleNewAnswer - Function to navigate to the "New Answer" page
+ *
  */
 const useReportPage = () => {
   const { user } = useUserContext();
@@ -22,9 +22,9 @@ const useReportPage = () => {
   /**
    * Function to handle the submission of a new report to a question or answer.
    *
-   * @param report - The report object to be added.
    * @param targetType - The type of target being commented on, either 'question' or 'answer'.
    * @param targetId - The ID of the target being commented on.
+   * @param targetLink - the link that can be used for navigating to the Question/Answer by clicking on it's text.
    */
   const handleNewReport = async (
     targetType: 'question' | 'answer',
