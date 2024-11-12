@@ -23,11 +23,11 @@ const badgeSchema: Schema = new Schema(
       type: String,
     },
     targetValue: {
-        type: Number,
+      type: Number,
     },
     tier: {
       type: String,
-  },
+    },
     users: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
   { collection: 'Badge' },

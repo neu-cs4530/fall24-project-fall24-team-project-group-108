@@ -68,7 +68,7 @@ const tagController = () => {
    */
   const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
     try {
-      const { tagName } = req.params; 
+      const { tagName } = req.params;
 
       // find the tagid of the tag with the given name
       const tag = await TagModel.findOne({ name: tagName }).exec();
@@ -77,10 +77,10 @@ const tagController = () => {
         return;
       }
 
-      // find all TagAnswerCounts 
+      // find all TagAnswerCounts
       const tagAnswerCounts = await TagAnswerCountModel.find({ tag: tag._id })
-        .sort({ count: -1 }) //  descending order 
-        .populate('user', 'username') 
+        .sort({ count: -1 }) //  descending order
+        .populate('user', 'username')
         .exec();
 
       res.status(200).json(tagAnswerCounts);
@@ -91,8 +91,8 @@ const tagController = () => {
 
   // Add appropriate HTTP verbs and their endpoints to the router.
   router.get('/getTagsWithQuestionNumber', getTagsWithQuestionNumber);
-  router.get('/getTagByName/:name', getTagByName); 
-  router.get('/getLeaderboard/:tagName', getLeaderboard); 
+  router.get('/getTagByName/:name', getTagByName);
+  router.get('/getLeaderboard/:tagName', getLeaderboard);
 
   return router;
 };

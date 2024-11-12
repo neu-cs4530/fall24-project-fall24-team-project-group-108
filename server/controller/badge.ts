@@ -1,5 +1,11 @@
 import express, { Request, Response } from 'express';
-import { FakeSOSocket, AddBadgeRequest, Badge, UserBadgeRequest, EarnedUserRequest } from '../types';
+import {
+  FakeSOSocket,
+  AddBadgeRequest,
+  Badge,
+  UserBadgeRequest,
+  EarnedUserRequest,
+} from '../types';
 import { getAllBadges, getBadgesByUser, getBadgeUsers, saveBadge } from '../models/application';
 
 const badgeController = (socket: FakeSOSocket) => {
@@ -15,10 +21,13 @@ const badgeController = (socket: FakeSOSocket) => {
   const isRequestValid = (req: AddBadgeRequest): boolean =>
     !!req.body.name &&
     !!req.body.description &&
-    (req.body.category === 'questions' || req.body.category === 'answers' || req.body.category === 'leaderboard' || req.body.category === 'comments' || req.body.category === 'votes') &&
+    (req.body.category === 'questions' ||
+      req.body.category === 'answers' ||
+      req.body.category === 'leaderboard' ||
+      req.body.category === 'comments' ||
+      req.body.category === 'votes') &&
     !!req.body.targetValue &&
     (req.body.tier === 'bronze' || req.body.tier === 'silver' || req.body.tier === 'gold');
-
 
   /**
    * Handles adding a new badge. The badge is first validated and then saved.
@@ -59,12 +68,13 @@ const badgeController = (socket: FakeSOSocket) => {
    */
   const getBadges = async (req: Request, res: Response): Promise<void> => {
     try {
-        const badges: Badge[] = await getAllBadges();
-        res.status(200).json(badges); 
-      } catch (error) {
-        console.error('Error fetching badges:', error);
-        res.status(500).json({ message: 'Internal server error' }); 
-      }
+      const badges: Badge[] = await getAllBadges();
+      res.status(200).json(badges);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching badges:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   };
 
   /**
@@ -79,10 +89,11 @@ const badgeController = (socket: FakeSOSocket) => {
     try {
       const { username } = req.params;
       const badges: Badge[] = await getBadgesByUser(username);
-      res.status(200).json(badges); 
+      res.status(200).json(badges);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching badges:', error);
-      res.status(500).json({ message: 'Internal server error' }); 
+      res.status(500).json({ message: 'Internal server error' });
     }
   };
 
@@ -98,10 +109,11 @@ const badgeController = (socket: FakeSOSocket) => {
     try {
       const { badgeName } = req.params;
       const users: string[] = await getBadgeUsers(badgeName);
-      res.status(200).json(users); 
+      res.status(200).json(users);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching users:', error);
-      res.status(500).json({ message: 'Internal server error' }); 
+      res.status(500).json({ message: 'Internal server error' });
     }
   };
 

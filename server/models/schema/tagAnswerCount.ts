@@ -2,7 +2,7 @@ import { Schema } from 'mongoose';
 /**
  * Mongoose schema for the TagAnswerCount collection.
  *
- * This schema defines the structure for storing data connecting users to the 
+ * This schema defines the structure for storing data connecting users to the
  * tags they answer.
  * Each TagAnswerCount includes the following fields:
  * - `user`: The username of the user who answers

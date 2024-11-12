@@ -1,6 +1,5 @@
 // TagAnswerCount Document Schema
 import mongoose, { Model } from 'mongoose';
-import questionSchema from './schema/question';
 import { TagAnswerCount } from '../types';
 import tagAnswerCountSchema from './schema/tagAnswerCount';
 
@@ -13,6 +12,9 @@ import tagAnswerCountSchema from './schema/tagAnswerCount';
  *
  * @type {Model<TagAnswerCount>}
  */
-const TagAnswerCountModel: Model<TagAnswerCount> = mongoose.model<TagAnswerCount>('TagAnswerCount', tagAnswerCountSchema);
+const TagAnswerCountModel: Model<TagAnswerCount> = mongoose.model<TagAnswerCount>(
+  'TagAnswerCount',
+  tagAnswerCountSchema,
+);
 
 export default TagAnswerCountModel;

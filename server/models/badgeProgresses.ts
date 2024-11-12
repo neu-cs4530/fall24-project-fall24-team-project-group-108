@@ -1,6 +1,5 @@
 import mongoose, { Model } from 'mongoose';
 import { BadgeProgress } from '../types';
-import badgeProgressController from '../controller/badgeProgress';
 import badgeProgressSchema from './schema/badgeProgress';
 
 /**
@@ -12,6 +11,9 @@ import badgeProgressSchema from './schema/badgeProgress';
  *
  * @type {Model<BadgeProgress>}
  */
-const BadgeProgressModel: Model<BadgeProgress> = mongoose.model<BadgeProgress>('BadgeProgress', badgeProgressSchema);
+const BadgeProgressModel: Model<BadgeProgress> = mongoose.model<BadgeProgress>(
+  'BadgeProgress',
+  badgeProgressSchema,
+);
 
 export default BadgeProgressModel;

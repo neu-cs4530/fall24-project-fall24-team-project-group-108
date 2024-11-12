@@ -4,7 +4,7 @@ import { Schema } from 'mongoose';
  * Mongoose schema for the BadgeProgress collection.
  *
  * This schema defines the structure for tracking one user's progress towards one badge.
- * 
+ *
  * Each answer includes the following fields:
  * - `user`: The username of the user whose progress is being tracked.
  * - `badge`: The badge being tracked.
@@ -22,11 +22,11 @@ const badgeProgressSchema: Schema = new Schema(
       type: String,
     },
     targetValue: {
-        type: Number,
+      type: Number,
     },
     currentValue: {
-        type: Number,
-    },   
+      type: Number,
+    },
   },
   { collection: 'BadgeProgress' },
 );

@@ -1,6 +1,5 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
-import { application } from 'express';
 import bcrypt from 'bcrypt';
 import {
   Answer,
@@ -17,7 +16,6 @@ import {
   Question,
   QuestionResponse,
   Tag,
-  TagAnswerCount,
   TagAnswerCountResponse,
   User,
   UserResponse,
@@ -409,7 +407,7 @@ export const filterQuestionsByAnswerer = async (answerer: string): Promise<Quest
   try {
     // find all answers from the given user
     const alist = await AnswerModel.find({ ansBy: answerer });
-  
+
     // find all questions that are linked to the answers
     const answerIds = alist.map(answer => answer._id);
     const qlist = await QuestionModel.find({ answers: { $in: answerIds } });
@@ -636,13 +634,13 @@ export const getBadgesByUser = async (username: string): Promise<Badge[]> => {
       {
         $match: {
           user: username,
-          $expr: { $gte: ["$currentValue", "$targetValue"] },
+          $expr: { $gte: ['$currentValue', '$targetValue'] },
         },
       },
     ]);
 
     // find the badges that correspond to this badgeprogress
-    const badgeIds = badgeProgresses.map(progress => progress.badge); 
+    const badgeIds = badgeProgresses.map(progress => progress.badge);
     const badges = await BadgeModel.find({
       _id: { $in: badgeIds },
     });
@@ -932,49 +930,51 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
  *
  * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
  */
-export const updateBadgeProgress = async (username: string, category: string): Promise<BadgeProgressResponse> => {
+export const updateBadgeProgress = async (
+  username: string,
+  category: string,
+): Promise<BadgeProgressResponse> => {
   try {
-    var badgeProgresses = await BadgeProgressModel.find({ user: username, category: category });
+    const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
 
-    if (badgeProgresses.length == 0) {
+    if (badgeProgresses.length === 0) {
       // if no existing badgeProgresses, create new ones for all badges in the given category
-      const badges = await BadgeModel.find({category: category});
+      const badges = await BadgeModel.find({ category });
 
       // create a badgeprogress for all badges
       await Promise.all(
-        badges.map(async (badge) => {
-          const newBadgeProgress = await BadgeProgressModel.create({
+        badges.map(async badge => {
+          await BadgeProgressModel.create({
             user: username,
             badge: badge._id,
-            category: category,
+            category,
             targetValue: badge.targetValue,
             currentValue: 1,
           });
-        })
+        }),
       );
     } else {
       // loop through all badgeProgresses and increment their values by one
-      const updatedBadgeProgresses = await Promise.all(
-        badgeProgresses.map(async (badgeProgress) => {
+      await Promise.all(
+        badgeProgresses.map(async badgeProgress => {
           badgeProgress.currentValue += 1;
           await badgeProgress.save();
 
-          // if the user just acquired the badge, 
+          // if the user just acquired the badge,
           // add them to the badge's list
           if (badgeProgress.currentValue === badgeProgress.targetValue) {
-            console.log('adding user to badge progress');
-            const user = await UserModel.findOne({ username: username });
+            const user = await UserModel.findOne({ username });
             if (user) {
               await BadgeModel.findOneAndUpdate(
                 { _id: badgeProgress.badge },
                 { $addToSet: { users: user._id } },
-                { new: true }
+                { new: true },
               );
             }
           }
 
           return badgeProgress;
-        })
+        }),
       );
     }
 
@@ -993,37 +993,43 @@ export const updateBadgeProgress = async (username: string, category: string): P
  * @returns Promise<void> - The updated badgeProgress or an error message
  */
 
-export const updateTagAnswers = async (username: string, qid: string): Promise<TagAnswerCountResponse> => {
+export const updateTagAnswers = async (
+  username: string,
+  qid: string,
+): Promise<TagAnswerCountResponse> => {
   try {
-    // get all tags associated with the question
+    // Get all tags associated with the question
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
-      return { error: 'Question not found' }; // return an error if the question doesnt exist
+      return { error: 'Question not found' }; // Return an error if the question doesn't exist
     }
 
-    // for each tag, check if a TagAnswerCount exists 
-    const tags = question.tags; 
-    for (const tagId of tags) {
-      let tagAnswerCount = await TagAnswerCountModel.findOne({ user: username, tag: tagId }).exec();
+    // Prepare an array to hold all promises
+    const updatePromises = question.tags.map(async tagId => {
+      const tagAnswerCount = await TagAnswerCountModel.findOne({
+        user: username,
+        tag: tagId,
+      }).exec();
 
       if (tagAnswerCount) {
-        // if it exists, update the count by incrementing it
+        // If it exists, update the count by incrementing it
         tagAnswerCount.count += 1;
-        await tagAnswerCount.save();
-      } else {
-        // if it doesn't exist, create a new TagAnswerCount with count initialized to 1
-        await TagAnswerCountModel.create({
-          tag: tagId,
-          user: username,
-          count: 1,
-        });
+        return tagAnswerCount.save();
       }
-    }
+      // If it doesn't exist, create a new TagAnswerCount with count initialized to 1
+      return TagAnswerCountModel.create({
+        tag: tagId,
+        user: username,
+        count: 1,
+      });
+    });
 
-    // return the updated question
+    // Execute all updates concurrently
+    await Promise.all(updatePromises);
+
+    // Return the updated question
     return question;
   } catch (error) {
     return { error: 'Error when updating tag progress' };
   }
 };
-
