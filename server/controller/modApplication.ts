@@ -1,10 +1,6 @@
 import express, { Response } from 'express';
-import { AddModApplicationRequest, DeleteModApplicationRequest } from '../types';
-import {
-  addModApplication,
-  fetchModApplications,
-  removeModApplication,
-} from '../models/application';
+import { AddModApplicationRequest, UpdateModApplicationStatusRequest } from '../types';
+import { addModApplication, fetchModApplications, updateStatus } from '../models/application';
 
 export const modApplicationController = () => {
   const router = express.Router();
@@ -96,31 +92,31 @@ export const modApplicationController = () => {
   /**
    * Deletes a specified ModApplication in the database. If deleting the applications fails, the HTTP response status is updated.
    *
-   * @param req - The DeleteModApplicationRequest object containing the user data.
+   * @param req - The UpdateModApplicationStatusRequest object containing the application update data.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
-  const deleteModApplication = async (
-    req: DeleteModApplicationRequest,
+  const updateModApplicationStatus = async (
+    req: UpdateModApplicationStatusRequest,
     res: Response,
   ): Promise<void> => {
-    const { username } = req.body;
+    const { username, accepted } = req.body;
     try {
-      const deleted = await removeModApplication(username);
-      res.json(deleted);
+      const updated = await updateStatus(username, accepted);
+      res.json(updated);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        res.status(500).send(`Error when deleting application: ${err.message}`);
+        res.status(500).send(`Error when upating application: ${err.message}`);
       } else {
-        res.status(500).send(`Error when deleting application`);
+        res.status(500).send(`Error when updating application`);
       }
     }
   };
 
   router.post('/createModApplication', createModApplication);
   router.get('/getModApplications', getModApplications);
-  router.delete('/deleteModApplication', deleteModApplication);
+  router.post('/updateModApplicationStatus', updateModApplicationStatus);
 
   return router;
 };

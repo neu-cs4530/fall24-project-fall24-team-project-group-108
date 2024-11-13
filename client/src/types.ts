@@ -20,6 +20,7 @@ export interface ModApplication {
   _id?: string;
   username: string;
   applicationText: string;
+  status: string;
 }
 
 /**

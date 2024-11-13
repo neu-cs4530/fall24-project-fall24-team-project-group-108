@@ -37,20 +37,23 @@ const getModApplications = async (): Promise<ModApplication[]> => {
 };
 
 /**
- * Deletes an application in the database.
+ * Updates an application's status in the database.
  *
  * @param username - The username of the user whose application will be deleted.
  *
  * @returns A boolean which evaluates to true if an object was deleted, and false if there was an error.
  */
-const deleteModApplication = async (username: string): Promise<boolean> => {
-  const res = await api.delete(`${MODAPPLICATION_API_URL}/deleteModApplication?`, {
-    data: { username },
-  });
+const updateModApplicationStatus = async (
+  username: string,
+  accepted: boolean,
+): Promise<boolean> => {
+  console.log(username, accepted);
+  const data = { username, accepted };
+  const res = await api.post(`${MODAPPLICATION_API_URL}/updateModApplicationStatus`, data);
   if (res.status !== 200) {
-    throw new Error('Error while deleting mod applications');
+    throw new Error('Error while updating mod application status');
   }
   return res.data;
 };
 
-export { submitModApplication, getModApplications, deleteModApplication };
+export { submitModApplication, getModApplications, updateModApplicationStatus };

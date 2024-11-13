@@ -347,20 +347,26 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
 };
 
 /**
- * Removes a specificed moderator application from the db.
+ * Updates a specificed moderator application from the db's status.
  *
  * @param username - the username of the user's application being deleted
- * @returns {ModApplication} - the application object being deleted.
+ * @param accepted - true if application was accepted, false otherwise.
+ * @returns {ModApplication} - the updated application object.
  */
-export const removeModApplication = async (username: string): Promise<boolean> => {
+export const updateStatus = async (username: string, accepted: boolean): Promise<boolean> => {
   try {
-    const result = await ModApplicationModel.findOneAndDelete({ username });
+    const status = accepted ? 'accepted' : 'rejected';
+    const result = await ModApplicationModel.findOneAndUpdate(
+      { username },
+      { $set: { status } },
+      { new: true },
+    );
     if (!result) {
       throw new Error(`No application found`);
     }
     return true;
   } catch (error) {
-    throw new Error(`Error when deleting the application: ${(error as Error).message}`);
+    throw new Error(`Error when updating application status: ${(error as Error).message}`);
   }
 };
 

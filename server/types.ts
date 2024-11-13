@@ -133,6 +133,7 @@ export interface ModApplication {
   _id?: ObjectId;
   user: User; 
   applicationText: string;
+  status: string;
 }
 
 /**
@@ -149,9 +150,10 @@ export interface AddModApplicationRequest extends Request {
  * Interface extending the request body when deleting a ModApplication to the database which contains:
  * - username - the user whose application is being deleted.
  */
-export interface DeleteModApplicationRequest extends Request {
+export interface UpdateModApplicationStatusRequest extends Request {
   body: {
     username: string
+    accepted: boolean
   }
 }
 

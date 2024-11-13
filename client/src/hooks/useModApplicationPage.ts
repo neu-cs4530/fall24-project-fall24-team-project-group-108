@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ModApplication } from '../types';
 import useUserContext from './useUserContext';
-import { deleteModApplication, getModApplications } from '../services/modApplicationService';
+import { getModApplications, updateModApplicationStatus } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
 
 /**
@@ -37,15 +37,16 @@ const useModApplicationPage = () => {
   const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
       const { username } = application;
+      console.log(username, isAccepted);
+      const updatedApplication = await updateModApplicationStatus(username, isAccepted);
+      if (updatedApplication === false) {
+        setErr('Error updating application');
+      }
       if (isAccepted === true) {
         const updatedUser = await makeUserModerator(username);
         if (!updatedUser) {
           setErr('Error accepting application');
         }
-      }
-      const removedApplication = await deleteModApplication(username);
-      if (removedApplication === false) {
-        setErr('Error accepting application');
       }
       setApplications(prev => prev.filter(modApp => modApp._id !== application._id));
     } catch (error) {
