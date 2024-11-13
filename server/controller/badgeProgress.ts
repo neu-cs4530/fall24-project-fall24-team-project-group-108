@@ -22,7 +22,7 @@ const badgeProgressController = (socket: FakeSOSocket) => {
       req.body.category === 'votes');
 
   /**
-   * Handles adding a new badge. The badge is first validated and then saved.
+   * Handles updating progress towards a badge when a user performs an action.
    * If the badge is invalid or saving fails, the HTTP response status is updated.
    *
    * @param req The AddBadgeRequest object containing the badge data.
@@ -48,7 +48,7 @@ const badgeProgressController = (socket: FakeSOSocket) => {
 
       res.json(updatedBadgeProgress);
     } catch (err: unknown) {
-      res.status(500).send(`Error when update badge progress: ${(err as Error).message}`);
+      res.status(500).send(`Error when update badge progress`);
     }
   };
 

@@ -972,7 +972,6 @@ export const updateBadgeProgress = async (
               );
             }
           }
-
           return badgeProgress;
         }),
       );
@@ -992,19 +991,17 @@ export const updateBadgeProgress = async (
  *
  * @returns Promise<void> - The updated badgeProgress or an error message
  */
-
 export const updateTagAnswers = async (
   username: string,
   qid: string,
 ): Promise<TagAnswerCountResponse> => {
   try {
-    // Get all tags associated with the question
+    // all tags associated with the question
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
-      return { error: 'Question not found' }; // Return an error if the question doesn't exist
+      return { error: 'Question not found' }; 
     }
 
-    // Prepare an array to hold all promises
     const updatePromises = question.tags.map(async tagId => {
       const tagAnswerCount = await TagAnswerCountModel.findOne({
         user: username,
@@ -1012,11 +1009,11 @@ export const updateTagAnswers = async (
       }).exec();
 
       if (tagAnswerCount) {
-        // If it exists, update the count by incrementing it
+        // if it exists, update the count 
         tagAnswerCount.count += 1;
         return tagAnswerCount.save();
       }
-      // If it doesn't exist, create a new TagAnswerCount with count initialized to 1
+      // create a new TagAnswerCount 
       return TagAnswerCountModel.create({
         tag: tagId,
         user: username,
@@ -1024,10 +1021,8 @@ export const updateTagAnswers = async (
       });
     });
 
-    // Execute all updates concurrently
-    await Promise.all(updatePromises);
 
-    // Return the updated question
+    await Promise.all(updatePromises);
     return question;
   } catch (error) {
     return { error: 'Error when updating tag progress' };
