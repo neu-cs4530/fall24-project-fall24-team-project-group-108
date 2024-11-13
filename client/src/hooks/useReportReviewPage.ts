@@ -19,8 +19,8 @@ const useReportReviewPage = () => {
   const [qReports, setQReports] = useState<Question[]>([]);
   const [ansReports, setAnsReports] = useState<{ answer: Answer; qid: string }[]>([]);
   const [allReports, setAllReports] = useState<(Question | { answer: Answer; qid: string })[]>([]);
-  const [err, setErr] = useState<string>('');
-  const [reportsVisible, setReportsVisibile] = useState<boolean>(false);
+  const [err, setErr] = useState<{ [key: string]: string }>({});
+  const [reportsVisible, setReportsVisibile] = useState<{ [key: string]: boolean }>({});
   const { socket } = useUserContext();
 
   // Fetches applications from the database.
@@ -64,7 +64,6 @@ const useReportReviewPage = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching reports:', error);
-        setErr('Error Fetching Reports');
       }
     };
 
@@ -84,13 +83,13 @@ const useReportReviewPage = () => {
           const postRemoved = await resolveReport(reportedPost, postId, reportType, true);
 
           if (postRemoved === false) {
-            setErr('Error dismissing report');
+            setErr(prev => ({ ...prev, [postId]: 'Error removing report' }));
           }
         } else if (isPostRemoved === false) {
           const postDismissed = await resolveReport(reportedPost, postId, reportType, false);
 
           if (postDismissed === false) {
-            setErr('Error dismissing report');
+            setErr(prev => ({ ...prev, [postId]: 'Error dismissing report' }));
           }
         }
         if (reportType === 'question') {
@@ -99,16 +98,20 @@ const useReportReviewPage = () => {
           setAnsReports(prev => prev.filter(r => r.answer._id !== postId));
         }
         setNumReports(prev => prev - 1);
-      } else {
-        setErr('Invalid post id');
       }
     } catch (error) {
-      setErr('Error resolving report');
+      const { _id: postId } = reportedPost;
+      if (postId !== undefined) {
+        setErr(prev => ({ ...prev, [postId]: 'Error resolving report' }));
+      }
     }
   };
 
-  const handleReportVisible = () => {
-    setReportsVisibile(!reportsVisible);
+  const handleReportVisible = (objId: string) => {
+    setReportsVisibile(prev => ({
+      ...prev,
+      [objId]: !prev[objId],
+    }));
   };
 
   return {

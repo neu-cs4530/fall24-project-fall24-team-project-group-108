@@ -39,6 +39,10 @@ const ReviewReportsPage = () => {
         const reports = isQ ? reportedObject.reports : reportedObject.answer.reports;
         const reportedQAns = isQ ? reportedObject : reportedObject.answer;
 
+        if (!objId) {
+          return <div key='error'>Cannot retrieve ID</div>;
+        }
+
         return (
           <div className='accent-container' key={objId}>
             <h3>{reportedText}</h3>
@@ -58,7 +62,7 @@ const ReviewReportsPage = () => {
             </div>
             <div>
               <h3>{reports.length} Reports:</h3>
-              {reportsVisible && (
+              {reportsVisible[objId] && (
                 <div className='reports-container'>
                   {reports.map((report: UserReport, index: number) => (
                     <div key={index}>
@@ -73,8 +77,8 @@ const ReviewReportsPage = () => {
                   ))}
                 </div>
               )}
-              <span onClick={handleReportVisible} style={{ cursor: 'pointer' }}>
-                {reportsVisible ? 'Hide' : 'Show'} Reports
+              <span onClick={() => handleReportVisible(objId)} style={{ cursor: 'pointer' }}>
+                {reportsVisible[objId] ? 'Hide' : 'Show'} Reports
               </span>
             </div>
             <div className='button-container'>
@@ -103,7 +107,7 @@ const ReviewReportsPage = () => {
             </div>
             {err && (
               <div>
-                <p>{err}</p>
+                <p>{err[objId]}</p>
               </div>
             )}
           </div>
