@@ -999,7 +999,7 @@ export const updateTagAnswers = async (
     // all tags associated with the question
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
-      return { error: 'Question not found' }; 
+      return { error: 'Question not found' };
     }
 
     const updatePromises = question.tags.map(async tagId => {
@@ -1009,18 +1009,17 @@ export const updateTagAnswers = async (
       }).exec();
 
       if (tagAnswerCount) {
-        // if it exists, update the count 
+        // if it exists, update the count
         tagAnswerCount.count += 1;
         return tagAnswerCount.save();
       }
-      // create a new TagAnswerCount 
+      // create a new TagAnswerCount
       return TagAnswerCountModel.create({
         tag: tagId,
         user: username,
         count: 1,
       });
     });
-
 
     await Promise.all(updatePromises);
     return question;

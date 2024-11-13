@@ -1,8 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
-import { Answer, Correspondence, OrderType, Question } from '../types';
-import { getQuestionsByFilter } from '../services/questionService';
+import { Correspondence, OrderType } from '../types';
 
 /**
  * Custom hook for managing the question page state, filtering, and real-time updates.

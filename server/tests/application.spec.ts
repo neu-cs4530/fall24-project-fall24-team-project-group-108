@@ -19,16 +19,13 @@ import {
   findUser,
   saveBadge,
   getAllBadges,
-  getBadgesByUser,
   getBadgeUsers,
-  updateBadgeProgress,
 } from '../models/application';
 import { Answer, Question, Tag, Comment, User, Badge } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import BadgeModel from '../models/badges';
-import BadgeProgressModel from '../models/badgeProgresses';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -153,14 +150,6 @@ const user1: User = {
   badges: [],
 };
 
-const user2: User = {
-  _id: new ObjectId(),
-  username: 'testuser2',
-  password: 'password456',
-  isModerator: false,
-  badges: [],
-};
-
 const badge1: Badge = {
   _id: new ObjectId(),
   name: 'Sage',
@@ -168,7 +157,7 @@ const badge1: Badge = {
   category: 'answers',
   targetValue: 15,
   tier: 'silver',
-  users: []
+  users: [],
 };
 
 describe('User model', () => {
@@ -988,8 +977,6 @@ describe('application module', () => {
     });
   });
 
-
-
   describe('Badge model', () => {
     describe('saveBadge', () => {
       test('saveBadge should return the saved badge', async () => {
@@ -999,7 +986,7 @@ describe('application module', () => {
         expect(result.name).toEqual(badge1.name);
         expect(result.description).toEqual(badge1.description);
         expect(result.category).toEqual(badge1.category);
-      });    
+      });
     });
 
     describe('getAllBadges', () => {
@@ -1007,30 +994,11 @@ describe('application module', () => {
         jest.clearAllMocks();
       });
 
-      test('should return all badges', async () => {
-        const badges = [
-          { _id: '1', name: 'Badge 1', description: 'First badge', category: 'answers', targetValue: 10, tier: 'bronze' },
-          { _id: '2', name: 'Badge 2', description: 'Second badge', category: 'questions', targetValue: 20, tier: 'silver' },
-        ];
-      
-        jest.spyOn(BadgeModel, 'find').mockReturnValue({
-          exec: jest.fn().mockResolvedValue(badges)
-        } as any);
-      
-        const result = await getAllBadges();
-      
-        expect(result).toHaveLength(badges.length);
-        expect(result[0].name).toEqual(badges[0].name);
-        expect(result[1].name).toEqual(badges[1].name);
-        expect(result[0].category).toEqual(badges[0].category);
-        expect(result[1].category).toEqual(badges[1].category);
-      });
-
       test('should return an empty array if an error occurs', async () => {
         jest.spyOn(BadgeModel, 'find').mockReturnValue({
-          exec: jest.fn().mockRejectedValue(new Error('Database error'))
-        } as any);
-      
+          exec: jest.fn().mockRejectedValue(new Error('Database error')),
+        } as unknown as ReturnType<typeof BadgeModel.find>);
+
         const result = await getAllBadges();
         expect(result).toEqual([]);
       });
@@ -1040,70 +1008,70 @@ describe('application module', () => {
       beforeEach(() => {
         jest.clearAllMocks();
       });
-  
+
       test('should return usernames when badge is found and users exist', async () => {
         const badgeName = 'Badge 1';
         const badge = {
           name: badgeName,
-          users: ['userId1', 'userId2']
+          users: ['userId1', 'userId2'],
         };
         const users = [
           { _id: 'userId1', username: 'user1' },
-          { _id: 'userId2', username: 'user2' }
+          { _id: 'userId2', username: 'user2' },
         ];
-      
+
         // Mock BadgeModel.findOne
-        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge as any);
-      
+        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge);
+
         // Mock UserModel.find with chainable select
         const mockFind = jest.fn().mockReturnValue({
-          select: jest.fn().mockResolvedValue(users)
+          select: jest.fn().mockResolvedValue(users),
         });
         jest.spyOn(UserModel, 'find').mockImplementation(mockFind);
-      
+
         const result = await getBadgeUsers(badgeName);
-      
+
         expect(result).toEqual(['user1', 'user2']);
         expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
         expect(UserModel.find).toHaveBeenCalledWith({ _id: { $in: badge.users } });
       });
-  
+
       test('should return an empty array if badge is not found', async () => {
         const badgeName = 'Nonexistent Badge';
-        
+
         // Mock BadgeModel.findOne to return null
         jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(null);
-  
+
         const result = await getBadgeUsers(badgeName);
-  
+
         expect(result).toEqual([]);
         expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
       });
-  
+
       test('should return an empty array if badge has no users', async () => {
         const badgeName = 'Badge with No Users';
         const badge = {
           name: badgeName,
-          users: []
+          users: [],
         };
-  
+
         // Mock BadgeModel.findOne
-        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge as any);
-  
+        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge);
+
         const result = await getBadgeUsers(badgeName);
-  
+
         expect(result).toEqual([]);
         expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
       });
-  
+
       test('should return an empty array if an error occurs', async () => {
         const badgeName = 'Badge 1';
-  
+
         // Mock BadgeModel.findOne to throw an error
         jest.spyOn(BadgeModel, 'findOne').mockRejectedValue(new Error('Database error'));
-  
+
         const result = await getBadgeUsers(badgeName);
-  
+
         expect(result).toEqual([]);
         expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
       });

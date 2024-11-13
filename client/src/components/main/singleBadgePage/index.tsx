@@ -1,4 +1,3 @@
-import { useNavigate, useParams } from 'react-router-dom';
 import './index.css';
 import {
   Paper,
@@ -10,8 +9,6 @@ import {
   TableRow,
   Pagination,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { fetchEarnedUsers } from '../../../services/badgeService';
 import useSingleBadgePage from '../../../hooks/useSingleBadgePage';
 
 const SingleBadgePage = () => {

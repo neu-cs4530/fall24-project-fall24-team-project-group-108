@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import useUserContext from './useUserContext';
-import { Badge, Question } from '../types';
-import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
-import { fetchBadgesByUser, fetchEarnedUsers } from '../services/badgeService';
+import { fetchEarnedUsers } from '../services/badgeService';
 
 /**
  * Custom hook for managing the state and logic of a single badge page.
