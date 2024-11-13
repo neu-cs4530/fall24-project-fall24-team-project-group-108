@@ -37,7 +37,6 @@ const useModApplicationPage = () => {
   const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
       const { username } = application;
-      console.log(username, isAccepted);
       const updatedApplication = await updateModApplicationStatus(username, isAccepted);
       if (updatedApplication === false) {
         setErr('Error updating application');

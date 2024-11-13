@@ -88,13 +88,11 @@ const useAnswerPage = () => {
 
   const wasQReported = (q: Question) => {
     const wasReport = q.reports.some(r => r.reportBy === user.username);
-    console.log('question', wasReport);
     return wasReport;
   };
 
   const wasAnsReported = (ans: Answer) => {
     const wasReport = ans.reports.some(r => r.reportBy === user.username);
-    console.log('answer', wasReport);
     return wasReport;
   };
 

@@ -47,7 +47,6 @@ const updateModApplicationStatus = async (
   username: string,
   accepted: boolean,
 ): Promise<boolean> => {
-  console.log(username, accepted);
   const data = { username, accepted };
   const res = await api.post(`${MODAPPLICATION_API_URL}/updateModApplicationStatus`, data);
   if (res.status !== 200) {
