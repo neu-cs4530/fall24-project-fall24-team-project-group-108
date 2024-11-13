@@ -16,7 +16,7 @@ const useMessagePage = () => {
   const [searchParams] = useSearchParams();
   const [titleText, setTitleText] = useState<string>('All Questions');
   const [search, setSearch] = useState<string>('');
-  const [questionOrder, setQuestionOrder] = useState<OrderType>('newest');
+  const [questionOrder] = useState<OrderType>('newest');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
 
   useEffect(() => {
@@ -67,6 +67,7 @@ const useMessagePage = () => {
         ]);
       } catch (error) {
         // eslint-disable-next-line no-console
+        console.log(titleText);
         console.log(error);
       }
     };

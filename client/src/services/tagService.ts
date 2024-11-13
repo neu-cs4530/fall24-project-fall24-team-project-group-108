@@ -1,4 +1,4 @@
-import { Tag, TagCounts, TagData, User } from '../types';
+import { Tag, TagCounts, TagData } from '../types';
 import api from './config';
 
 const TAG_API_URL = `${process.env.REACT_APP_SERVER_URL}/tag`;

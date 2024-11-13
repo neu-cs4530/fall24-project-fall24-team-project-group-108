@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Correspondence } from '../../../../types';
@@ -19,26 +18,22 @@ interface CorrespondenceProps {
  *
  * @param correspondence - The question object containing question details.
  */
-const CorrespondenceView = ({ correspondence }: CorrespondenceProps) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className='question right_padding'>
-      <div className='correspondenceTime'>
-        {getMetaData(
-          new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
-        )}
-      </div>
-      <div className='correspondenceData'>
-        <div>
-          {correspondence.messageMembers.map((memberName, idx) => (
-            <div key={idx}>{memberName}</div>
-          ))}
-        </div>
-        <div>{correspondence.messages[correspondence.messages.length - 1].messageText}</div>
-      </div>
+const CorrespondenceView = ({ correspondence }: CorrespondenceProps) => (
+  <div className='question right_padding'>
+    <div className='correspondenceTime'>
+      {getMetaData(
+        new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
+      )}
     </div>
-  );
-};
+    <div className='correspondenceData'>
+      <div>
+        {correspondence.messageMembers.map((memberName, idx) => (
+          <div key={idx}>{memberName}</div>
+        ))}
+      </div>
+      <div>{correspondence.messages[correspondence.messages.length - 1].messageText}</div>
+    </div>
+  </div>
+);
 
 export default CorrespondenceView;

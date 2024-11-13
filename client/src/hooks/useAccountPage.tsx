@@ -89,7 +89,7 @@ const useAccountPage = () => {
     fetchQuestionData();
     fetchAnswerData();
     fetchUserBadges();
-  }, [user]);
+  }, [user, sentUser]);
 
   return {
     sentUser,

@@ -14,7 +14,6 @@ import { makeUserModerator } from '../services/userService';
 const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
   const [err, setErr] = useState<string>('');
-  const { socket } = useUserContext();
 
   // Fetches applications from the database.
   useEffect(() => {
