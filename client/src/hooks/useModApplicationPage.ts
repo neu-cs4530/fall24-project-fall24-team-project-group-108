@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { ModApplication } from '../types';
-import useUserContext from './useUserContext';
 import { deleteModApplication, getModApplications } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
 

@@ -68,6 +68,7 @@ const useMessagePage = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log(titleText);
+        // eslint-disable-next-line no-console
         console.log(error);
       }
     };
@@ -122,7 +123,7 @@ const useMessagePage = () => {
       //   socket.off('answerUpdate', handleAnswerUpdate);
       //   socket.off('viewsUpdate', handleViewsUpdate);
     };
-  }, [questionOrder, search, socket]);
+  }, [questionOrder, search, socket, titleText]);
 
   return { correspondenceList };
 };
