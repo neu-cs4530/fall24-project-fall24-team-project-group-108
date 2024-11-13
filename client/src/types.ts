@@ -107,6 +107,8 @@ export interface VoteData {
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Comments associated with the answer.
+ * - reports - UserReports associated with the answer.
+ * - isRemoved - True if a mod has removed Answer from view.
  */
 export interface Answer {
   _id?: string;
@@ -132,6 +134,8 @@ export interface Answer {
  * - upVotes - An array of usernames who upvoted the question.
  * - downVotes - An array of usernames who downvoted the question.
  * - comments - Comments associated with the question.
+ * - reports - UserReports associated with the question.
+ * - isRemoved - True if a mod has removed Question from view.
  */
 export interface Question {
   _id?: string;

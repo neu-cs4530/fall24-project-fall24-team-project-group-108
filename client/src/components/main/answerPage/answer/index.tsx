@@ -14,6 +14,7 @@ import useModStatus from '../../../../hooks/useModStatus';
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
  * - handleReport Callback function to handle adding a new report.
+ * - isReported True if user already reported answer.
  */
 interface AnswerProps {
   text: string;
@@ -37,6 +38,7 @@ interface AnswerProps {
  * @param handleAddComment Function to handle adding a new comment.
  * @param handleReport Function to handle adding a new report.
  * @param handleRemove Function to remove an answer.
+ * @param isReported True if user already reported answer.
  */
 const AnswerView = ({
   text,

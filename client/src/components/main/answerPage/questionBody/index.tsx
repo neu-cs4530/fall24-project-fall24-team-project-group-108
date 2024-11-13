@@ -12,6 +12,7 @@ import useModStatus from '../../../../hooks/useModStatus';
  * - askby - The username of the user who asked the question.
  * - meta - Additional metadata related to the question, such as the date and time it was asked.
  * - handleAddReport - Callback function to handle adding a new report.
+ * - isReported True if user already reported question.
  */
 interface QuestionBodyProps {
   views: number;
@@ -34,6 +35,7 @@ interface QuestionBodyProps {
  * @param meta Additional metadata related to the question.
  * @param handleReport Function to handle adding a new report.
  * @param handleRemove Function remove a question.
+ * @param isReported True if user already reported question.
  */
 const QuestionBody = ({
   views,

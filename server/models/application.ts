@@ -997,11 +997,19 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     const tmap = new Map(tlist.map(t => [t.name, 0]));
 
     if (qlist != null && qlist !== undefined && qlist.length > 0) {
-      qlist.forEach(q => {
-        q.tags.forEach(t => {
-          tmap.set(t.name, (tmap.get(t.name) || 0) + 1);
+      qlist
+        .filter(q => !q.isRemoved)
+        .forEach(q => {
+          q.tags.forEach(t => {
+            tmap.set(t.name, (tmap.get(t.name) || 0) + 1);
+          });
         });
-      });
+    }
+
+    for (const [key, value] of tmap) {
+      if (value === 0) {
+        tmap.delete(key);
+      }
     }
 
     return tmap;
