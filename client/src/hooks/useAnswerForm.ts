@@ -60,6 +60,7 @@ const useAnswerForm = () => {
       ansDateTime: new Date(),
       comments: [],
       reports: [],
+      isRemoved: false,
     };
 
     const res = await addAnswer(questionID, answer);

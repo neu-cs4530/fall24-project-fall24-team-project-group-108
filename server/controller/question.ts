@@ -7,6 +7,7 @@ import {
   AddQuestionRequest,
   VoteRequest,
   FakeSOSocket,
+  Answer,
 } from '../types';
 import {
   addVoteToQuestion,

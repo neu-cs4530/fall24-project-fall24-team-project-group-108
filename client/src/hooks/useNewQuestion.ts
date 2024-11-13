@@ -103,6 +103,7 @@ const useNewQuestion = () => {
       views: [],
       comments: [],
       reports: [],
+      isRemoved: false,
     };
 
     const res = await addQuestion(question);

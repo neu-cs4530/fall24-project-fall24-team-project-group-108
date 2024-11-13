@@ -115,6 +115,7 @@ export interface Answer {
   ansDateTime: Date;
   comments: Comment[];
   reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**
@@ -145,6 +146,7 @@ export interface Question {
   downVotes: string[];
   comments: Comment[];
   reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**

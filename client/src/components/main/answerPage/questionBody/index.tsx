@@ -2,6 +2,7 @@ import React from 'react';
 import './index.css';
 import { useNavigate } from 'react-router-dom';
 import { handleHyperlink } from '../../../../tool';
+import useModStatus from '../../../../hooks/useModStatus';
 
 /**
  * Interface representing the props for the QuestionBody component.
@@ -18,6 +19,7 @@ interface QuestionBodyProps {
   askby: string;
   meta: string;
   handleReport: () => void;
+  handleRemove: () => void;
 }
 
 /**
@@ -30,19 +32,35 @@ interface QuestionBodyProps {
  * @param askby The username of the question's author.
  * @param meta Additional metadata related to the question.
  * @param handleReport Function to handle adding a new report.
+ * @param handleRemove Function remove a question.
  */
-const QuestionBody = ({ views, text, askby, meta, handleReport }: QuestionBodyProps) => (
-  <div id='questionBody' className='questionBody right_padding'>
-    <div className='bold_title answer_question_view'>{views} views</div>
-    <div className='answer_question_text'>{handleHyperlink(text)}</div>
-    <div className='answer_question_right'>
-      <div className='question_author'>{askby}</div>
-      <div className='answer_question_meta'>asked {meta}</div>
+const QuestionBody = ({
+  views,
+  text,
+  askby,
+  meta,
+  handleReport,
+  handleRemove,
+}: QuestionBodyProps) => {
+  const { moderatorStatus } = useModStatus();
+  return (
+    <div id='questionBody' className='questionBody right_padding'>
+      <div className='bold_title answer_question_view'>{views} views</div>
+      <div className='answer_question_text'>{handleHyperlink(text)}</div>
+      <div className='answer_question_right'>
+        <div className='question_author'>{askby}</div>
+        <div className='answer_question_meta'>asked {meta}</div>
+      </div>
+      <button onClick={handleReport} className='report-button'>
+        Report
+      </button>
+      {moderatorStatus && (
+        <button className='remove-button' onClick={() => handleRemove()}>
+          Remove
+        </button>
+      )}
     </div>
-    <button onClick={handleReport} className='report-button'>
-      Report
-    </button>
-  </div>
-);
+  );
+};
 
 export default QuestionBody;

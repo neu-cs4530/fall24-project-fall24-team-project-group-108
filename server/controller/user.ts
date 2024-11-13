@@ -64,7 +64,7 @@ export const userController = () => {
       return;
     }
     try {
-      const user = await addUser({ username, password, isModerator: false });
+      const user = await addUser({ username, password, isModerator: false, infractions: [] });
       if (!user) {
         res.status(400).send('Username already taken');
         return;

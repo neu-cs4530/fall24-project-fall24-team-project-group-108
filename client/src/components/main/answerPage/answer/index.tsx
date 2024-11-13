@@ -3,6 +3,7 @@ import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
 import { Comment } from '../../../../types';
+import useModStatus from '../../../../hooks/useModStatus';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -21,6 +22,7 @@ interface AnswerProps {
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
   handleReport: () => void;
+  handleRemove: () => void;
 }
 
 /**
@@ -33,6 +35,7 @@ interface AnswerProps {
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
  * @param handleReport Function to handle adding a new report.
+ * @param handleRemove Function to remove an answer.
  */
 const AnswerView = ({
   text,
@@ -41,20 +44,29 @@ const AnswerView = ({
   comments,
   handleAddComment,
   handleReport,
-}: AnswerProps) => (
-  <div className='answer right_padding'>
-    <div id='answerText' className='answerText'>
-      {handleHyperlink(text)}
+  handleRemove,
+}: AnswerProps) => {
+  const { moderatorStatus } = useModStatus();
+  return (
+    <div className='answer right_padding'>
+      <div id='answerText' className='answerText'>
+        {handleHyperlink(text)}
+      </div>
+      <div className='answerAuthor'>
+        <div className='answer_author'>{ansBy}</div>
+        <div className='answer_question_meta'>{meta}</div>
+      </div>
+      <CommentSection comments={comments} handleAddComment={handleAddComment} />
+      <button onClick={handleReport} className='report-button'>
+        Report
+      </button>
+      {moderatorStatus && (
+        <button className='remove-button' onClick={() => handleRemove()}>
+          Remove
+        </button>
+      )}
     </div>
-    <div className='answerAuthor'>
-      <div className='answer_author'>{ansBy}</div>
-      <div className='answer_question_meta'>{meta}</div>
-    </div>
-    <CommentSection comments={comments} handleAddComment={handleAddComment} />
-    <button onClick={handleReport} className='report-button'>
-      Report
-    </button>
-  </div>
-);
+  );
+};
 
 export default AnswerView;

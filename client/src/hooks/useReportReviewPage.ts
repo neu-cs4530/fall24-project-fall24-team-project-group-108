@@ -103,7 +103,7 @@ const useReportReviewPage = () => {
         setErr('Invalid post id');
       }
     } catch (error) {
-      setErr('Error processing application');
+      setErr('Error resolving report');
     }
   };
 

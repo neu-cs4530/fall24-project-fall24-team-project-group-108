@@ -84,6 +84,7 @@ const resolveReport = async (
     type,
     isRemoved,
   };
+  console.log(reportedPost, postId, type, isRemoved);
   const res = await api.post(`${USERREPORT_API_URL}/resolveReport`, reqBody);
   if (res.status !== 200) {
     throw new Error('Error while resolving report');

@@ -4,6 +4,7 @@ import { Comment, Answer, Question, VoteData } from '../types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
+import { resolveReport } from '../services/reportService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -58,6 +59,30 @@ const useAnswerPage = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleReportDecision = async (
+    reportedPost: Question | Answer,
+    reportType: 'question' | 'answer',
+  ) => {
+    try {
+      const { _id: postId } = reportedPost;
+      if (postId !== undefined) {
+        const postRemoved = await resolveReport(reportedPost, postId, reportType, true);
+
+        if (postRemoved === false) {
+          throw new Error('Error dismissing report');
+        }
+
+        if (reportType === 'question') {
+          navigate('/home');
+        }
+      } else {
+        throw new Error('Invalid post id');
+      }
+    } catch (error) {
+      throw new Error('Error deleting post');
     }
   };
 
@@ -178,6 +203,7 @@ const useAnswerPage = () => {
     question,
     handleNewComment,
     handleNewAnswer,
+    handleReportDecision,
   };
 };
 

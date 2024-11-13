@@ -1,6 +1,7 @@
-import { Form, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './index.css';
 import useReportPage from '../../../hooks/useReportPage';
+import Form from '../baseComponents/form';
 import TextArea from '../baseComponents/textarea';
 import useBan from '../../../hooks/useBan';
 
@@ -8,10 +9,10 @@ import useBan from '../../../hooks/useBan';
  * ReportPage component that renders a page where a user can create a report on a question or answer.
  */
 const ReportPage = () => {
-  useBan();
   const location = useLocation();
   const { targetId, targetType, targetText, targetBy, targetLink } = location.state;
   const { text, setText, reportErr, handleNewReport } = useReportPage();
+  useBan();
 
   if (!targetId || !targetType || !targetText || !targetBy || !targetLink) {
     return <div className='container'>Cannot find information on question/answer</div>;
