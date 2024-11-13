@@ -23,6 +23,7 @@ interface AnswerProps {
   handleAddComment: (comment: Comment) => void;
   handleReport: () => void;
   handleRemove: () => void;
+  isReported: boolean;
 }
 
 /**
@@ -45,6 +46,7 @@ const AnswerView = ({
   handleAddComment,
   handleReport,
   handleRemove,
+  isReported,
 }: AnswerProps) => {
   const { moderatorStatus } = useModStatus();
   return (
@@ -57,9 +59,13 @@ const AnswerView = ({
         <div className='answer_question_meta'>{meta}</div>
       </div>
       <CommentSection comments={comments} handleAddComment={handleAddComment} />
-      <button onClick={handleReport} className='report-button'>
-        Report
-      </button>
+      {isReported ? (
+        <button className='reported-button'>Reported</button>
+      ) : (
+        <button onClick={handleReport} className='report-button'>
+          Report
+        </button>
+      )}
       {moderatorStatus && (
         <button className='remove-button' onClick={() => handleRemove()}>
           Remove

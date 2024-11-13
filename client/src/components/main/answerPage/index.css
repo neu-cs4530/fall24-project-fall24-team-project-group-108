@@ -50,3 +50,17 @@
 .remove-button:active {
   background-color: #910000;
 }
+
+.reported-button {
+  font-size: 15px;
+  width: 100%;
+  max-width: 75px;
+  max-height: 35px;
+  background-color: #00d90e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 25px;
+  margin-top: 10px;
+}

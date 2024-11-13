@@ -86,6 +86,18 @@ const useAnswerPage = () => {
     }
   };
 
+  const wasQReported = (q: Question) => {
+    const wasReport = q.reports.some(r => r.reportBy === user.username);
+    console.log('question', wasReport);
+    return wasReport;
+  };
+
+  const wasAnsReported = (ans: Answer) => {
+    const wasReport = ans.reports.some(r => r.reportBy === user.username);
+    console.log('answer', wasReport);
+    return wasReport;
+  };
+
   useEffect(() => {
     /**
      * Function to fetch the question data based on the question ID.
@@ -204,6 +216,8 @@ const useAnswerPage = () => {
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,
+    wasQReported,
+    wasAnsReported,
   };
 };
 

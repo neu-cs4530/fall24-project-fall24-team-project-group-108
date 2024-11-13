@@ -20,6 +20,7 @@ interface QuestionBodyProps {
   meta: string;
   handleReport: () => void;
   handleRemove: () => void;
+  isReported: boolean;
 }
 
 /**
@@ -41,6 +42,7 @@ const QuestionBody = ({
   meta,
   handleReport,
   handleRemove,
+  isReported,
 }: QuestionBodyProps) => {
   const { moderatorStatus } = useModStatus();
   return (
@@ -51,9 +53,13 @@ const QuestionBody = ({
         <div className='question_author'>{askby}</div>
         <div className='answer_question_meta'>asked {meta}</div>
       </div>
-      <button onClick={handleReport} className='report-button'>
-        Report
-      </button>
+      {isReported ? (
+        <button className='reported-button'>Reported</button>
+      ) : (
+        <button onClick={handleReport} className='report-button'>
+          Report
+        </button>
+      )}
       {moderatorStatus && (
         <button className='remove-button' onClick={() => handleRemove()}>
           Remove

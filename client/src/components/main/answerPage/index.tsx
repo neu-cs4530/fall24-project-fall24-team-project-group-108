@@ -17,8 +17,15 @@ import useBan from '../../../hooks/useBan';
  */
 const AnswerPage = () => {
   useBan();
-  const { questionID, question, handleNewComment, handleNewAnswer, handleReportDecision } =
-    useAnswerPage();
+  const {
+    questionID,
+    question,
+    handleNewComment,
+    handleNewAnswer,
+    handleReportDecision,
+    wasQReported,
+    wasAnsReported,
+  } = useAnswerPage();
   const navigate = useNavigate();
 
   if (!question) {
@@ -51,6 +58,7 @@ const AnswerPage = () => {
           handleReport(question._id, 'question', question.text, question.askedBy, question._id)
         }
         handleRemove={() => handleReportDecision(question, 'question')}
+        isReported={wasQReported(question)}
       />
       <CommentSection
         comments={question.comments}
@@ -68,6 +76,7 @@ const AnswerPage = () => {
             handleAddComment={(comment: Comment) => handleNewComment(comment, 'answer', a._id)}
             handleReport={() => handleReport(a._id, 'answer', a.text, a.ansBy, question._id)}
             handleRemove={() => handleReportDecision(a, 'answer')}
+            isReported={wasAnsReported(a)}
           />
         ))}
       <button
