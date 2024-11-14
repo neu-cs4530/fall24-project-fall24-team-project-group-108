@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { isValidObjectId, QueryOptions } from 'mongoose';
+import { QueryOptions } from 'mongoose';
 import { application } from 'express';
 import bcrypt from 'bcrypt';
 import {
@@ -297,14 +297,24 @@ export const addModApplication = async (
   try {
     const existingApplication = await ModApplicationModel.findOne({
       username,
-      status: { $ne: true },
+      status: 'unresolved',
     });
     if (existingApplication) {
       return { error: 'User already created an application request' };
     }
+    const acceptedApplication = await ModApplicationModel.findOne({
+      username,
+      status: 'accepted',
+    });
+    if (acceptedApplication) {
+      return { error: 'User is already a moderator' };
+    }
 
-    const savedApplication = await ModApplicationModel.create({ username, applicationText });
-    return savedApplication as ModApplication;
+    const newApplication = await ModApplicationModel.create({
+      username,
+      applicationText,
+    });
+    return newApplication as ModApplication;
   } catch (error) {
     return { error: 'Error when saving the mod application' };
   }
@@ -317,10 +327,10 @@ export const addModApplication = async (
  */
 export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
   try {
-    const applications = await ModApplicationModel.find();
+    const applications = await ModApplicationModel.find({ status: 'unresolved' });
     return applications;
   } catch (error) {
-    return { error: 'Error when saving the mod application' };
+    return { error: 'Error when fetching the mod application' };
   }
 };
 
@@ -353,18 +363,22 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
  * @param accepted - true if application was accepted, false otherwise.
  * @returns {ModApplication} - the updated application object.
  */
-export const updateStatus = async (username: string, accepted: boolean): Promise<boolean> => {
+export const updateStatus = async (
+  id: string,
+  username: string,
+  accepted: boolean,
+): Promise<ModApplicationResponse> => {
   try {
     const status = accepted ? 'accepted' : 'rejected';
     const result = await ModApplicationModel.findOneAndUpdate(
-      { username },
+      { _id: id, username },
       { $set: { status } },
       { new: true },
     );
     if (!result) {
       throw new Error(`No application found`);
     }
-    return true;
+    return result;
   } catch (error) {
     throw new Error(`Error when updating application status: ${(error as Error).message}`);
   }
@@ -939,27 +953,28 @@ export const updateReportStatus = async (
   postId: string,
   type: 'question' | 'answer',
   isRemoved: boolean,
-): Promise<boolean> => {
+): Promise<QuestionResponse | AnswerResponse> => {
   try {
+    let result: QuestionResponse | AnswerResponse | null;
     const status = isRemoved ? 'removed' : 'dismissed';
     if (type === 'question' && isRemoved === true) {
-      const result = await QuestionModel.findOneAndUpdate(
+      result = await QuestionModel.findOneAndUpdate(
         { _id: postId },
         { $set: { isRemoved: true } },
         { new: true },
       );
-      if (!result) {
-        throw new Error(`No question found`);
-      }
     } else if (type === 'answer' && isRemoved === true) {
-      const result = await AnswerModel.findOneAndUpdate(
+      result = await AnswerModel.findOneAndUpdate(
         { _id: postId },
         { $set: { isRemoved: true } },
         { new: true },
       );
-      if (!result) {
-        throw new Error(`No answer found`);
-      }
+    } else {
+      result = reportedPost;
+    }
+
+    if (result === null) {
+      throw new Error(`Failed to remove post`);
     }
 
     const reportPromises = reportedPost.reports.map(async (report: UserReport) => {
@@ -976,7 +991,7 @@ export const updateReportStatus = async (
     if (status === 'removed') {
       await addUserInfraction(reportedPost, postId);
     }
-    return true;
+    return result;
   } catch (error) {
     throw new Error(`Error when resolving the reported object: ${(error as Error).message}`);
   }

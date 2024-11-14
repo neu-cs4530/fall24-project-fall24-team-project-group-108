@@ -19,6 +19,7 @@ const useAnswerPage = () => {
   const navigate = useNavigate();
 
   const { user, socket } = useUserContext();
+  const [numAnswers, setNumAnswers] = useState<number>(0);
   const [questionID, setQuestionID] = useState<string>(qid || '');
   const [question, setQuestion] = useState<Question | null>(null);
 
@@ -69,11 +70,7 @@ const useAnswerPage = () => {
     try {
       const { _id: postId } = reportedPost;
       if (postId !== undefined) {
-        const postRemoved = await resolveReport(reportedPost, postId, reportType, true);
-
-        if (postRemoved === false) {
-          throw new Error('Error dismissing report');
-        }
+        await resolveReport(reportedPost, questionID, postId, reportType, true);
 
         if (reportType === 'question') {
           navigate('/home');
@@ -87,12 +84,14 @@ const useAnswerPage = () => {
   };
 
   const wasQReported = (q: Question) => {
-    const wasReport = q.reports.some(r => r.reportBy === user.username);
+    const wasReport = q.reports.some(r => r.reportBy === user.username && r.status !== 'dismissed');
     return wasReport;
   };
 
   const wasAnsReported = (ans: Answer) => {
-    const wasReport = ans.reports.some(r => r.reportBy === user.username);
+    const wasReport = ans.reports.some(
+      r => r.reportBy === user.username && r.status !== 'dismissed',
+    );
     return wasReport;
   };
 
@@ -104,6 +103,9 @@ const useAnswerPage = () => {
       try {
         const res = await getQuestionById(questionID, user.username);
         setQuestion(res || null);
+        if (res && res.answers) {
+          setNumAnswers(res.answers.filter(ans => !ans.isRemoved).length);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching question:', error);
@@ -195,22 +197,99 @@ const useAnswerPage = () => {
       }
     };
 
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      if (id === questionID && 'ansBy' in updatedPost) {
+        setQuestion(prevQuestion =>
+          prevQuestion
+            ? {
+                ...prevQuestion,
+                answers: prevQuestion.answers.filter(ans => ans._id !== updatedPost._id),
+              }
+            : prevQuestion,
+        );
+      } else if (id === questionID && 'askedBy' in updatedPost) {
+        navigate('/home');
+      }
+    };
+
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleReportDismissedUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      if (id === questionID && 'ansBy' in updatedPost) {
+        setQuestion(prev =>
+          prev
+            ? {
+                ...prev,
+                answers: prev.answers.map(ans =>
+                  ans._id === updatedPost._id
+                    ? {
+                        ...ans,
+                        reports: ans.reports.map(r =>
+                          r.status !== 'dismissed' ? { ...r, status: 'dismissed' } : r,
+                        ),
+                      }
+                    : ans,
+                ),
+              }
+            : prev,
+        );
+      } else if (id === questionID && 'askedBy' in updatedPost) {
+        setQuestion(prev =>
+          prev
+            ? {
+                ...prev,
+                reports: prev.reports.map(r =>
+                  r.status !== 'dismissed' ? { ...r, status: 'dismissed' } : r,
+                ),
+              }
+            : prev,
+        );
+      }
+    };
+
     socket.on('answerUpdate', handleAnswerUpdate);
     socket.on('viewsUpdate', handleViewsUpdate);
     socket.on('commentUpdate', handleCommentUpdate);
     socket.on('voteUpdate', handleVoteUpdate);
+    socket.on('removePostUpdate', handleRemovePostUpdate);
+    socket.on('reportDismissedUpdate', handleReportDismissedUpdate);
 
     return () => {
       socket.off('answerUpdate', handleAnswerUpdate);
       socket.off('viewsUpdate', handleViewsUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('voteUpdate', handleVoteUpdate);
+      socket.off('removePostUpdate', handleRemovePostUpdate);
+      socket.off('reportDismissedUpdate', handleReportDismissedUpdate);
     };
   }, [questionID, socket]);
 
   return {
     questionID,
     question,
+    numAnswers,
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,

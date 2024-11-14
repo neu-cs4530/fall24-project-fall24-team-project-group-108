@@ -100,10 +100,7 @@ const userReportController = (socket: FakeSOSocket) => {
         throw new Error(populatedDoc.error);
       }
 
-      //   socket.emit('commentUpdate', {
-      //     result: populatedDoc,
-      //     type,
-      //   });
+      socket.emit('userReportsUpdate', { result: populatedDoc, type });
       res.json(reportFromDb);
     } catch (err: unknown) {
       res.status(500).send(`Error when adding comment: ${(err as Error).message}`);
@@ -141,9 +138,20 @@ const userReportController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const resolveReport = async (req: ResolveReportedRequest, res: Response): Promise<void> => {
-    const { reportedPost, postId, type, isRemoved } = req.body;
+    const { reportedPost, qid, postId, type, isRemoved } = req.body;
     try {
       const resolved = await updateReportStatus(reportedPost, postId, type, isRemoved);
+      if (isRemoved === true) {
+        socket.emit('removePostUpdate', {
+          qid,
+          updatedPost: resolved,
+        });
+      } else {
+        socket.emit('reportDismissedUpdate', {
+          qid,
+          updatedPost: resolved,
+        });
+      }
       res.json(resolved);
     } catch (err: unknown) {
       if (err instanceof Error) {

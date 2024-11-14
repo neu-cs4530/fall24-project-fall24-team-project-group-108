@@ -17,6 +17,7 @@ interface AddReportRequestBody {
 
 interface ResolveReportedRequest {
   reportedPost: Question | Answer;
+  qid: string;
   postId: string;
   type: 'question' | 'answer';
   isRemoved: boolean;
@@ -74,17 +75,18 @@ const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Questio
  */
 const resolveReport = async (
   reportedPost: Question | Answer,
+  qid: string,
   postId: string,
   type: 'question' | 'answer',
   isRemoved: boolean,
 ): Promise<boolean> => {
   const reqBody: ResolveReportedRequest = {
     reportedPost,
+    qid,
     postId,
     type,
     isRemoved,
   };
-  console.log(reportedPost, postId, type, isRemoved);
   const res = await api.post(`${USERREPORT_API_URL}/resolveReport`, reqBody);
   if (res.status !== 200) {
     throw new Error('Error while resolving report');

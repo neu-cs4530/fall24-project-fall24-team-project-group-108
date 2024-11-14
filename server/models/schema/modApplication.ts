@@ -13,7 +13,6 @@ const modApplicationSchema: Schema = new Schema(
   {
     username: {
       type: String,
-      unique: true,
     },
     applicationText: {
       type: String,

@@ -5,15 +5,16 @@ import { getModApplications, updateModApplicationStatus } from '../services/modA
 import { makeUserModerator } from '../services/userService';
 
 /**
- * Custom hook for managing the answer page's state, navigation, and real-time updates.
+ * Custom hook for managing the Review Application page's state, navigation, and real-time updates.
  *
- * @returns questionID - The current question ID retrieved from the URL parameters.
- * @returns question - The current question object with its answers, comments, and votes.
- * @returns handleNewComment - Function to handle the submission of a new comment to a question or answer.
- * @returns handleNewAnswer - Function to navigate to the "New Answer" page
+ * @returns applications - The current list of mod applications.
+ * @returns numApps - The current number of unresolved applications.
+ * @returns err - The current error message.
+ * @returns handleApplicationDecision - Function to handle the acceptance or rejection of a mod application.
  */
 const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
+  const [numApps, setNumApps] = useState<number>(0);
   const [err, setErr] = useState<string>('');
   const { socket } = useUserContext();
 
@@ -23,6 +24,8 @@ const useModApplicationPage = () => {
       try {
         const res = await getModApplications();
         setApplications(res || []);
+        const apps = res.length;
+        setNumApps(apps);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching applications:', error);
@@ -37,7 +40,12 @@ const useModApplicationPage = () => {
   const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
       const { username } = application;
-      const updatedApplication = await updateModApplicationStatus(username, isAccepted);
+      const id = application._id;
+      if (id === undefined) {
+        setErr('Application id not found');
+        return;
+      }
+      const updatedApplication = await updateModApplicationStatus(id, username, isAccepted);
       if (updatedApplication === false) {
         setErr('Error updating application');
       }
@@ -48,30 +56,28 @@ const useModApplicationPage = () => {
         }
       }
       setApplications(prev => prev.filter(modApp => modApp._id !== application._id));
+      setNumApps(prev => prev - 1);
     } catch (error) {
       setErr('Error processing application');
     }
   };
 
-  //   useEffect(() => {
-  //     /**
-  //      * Function to handle updates to the answers of a question.
-  //      *
-  //      * @param answer - The updated answer object.
-  //      */
-  //     const handleNewApplication = (newApplication: ModApplication) => {
-  //       setApplications(prevApplications => [...prevApplications, newApplication]);
-  //     };
+  useEffect(() => {
+    const handleApplicationUpdate = (app: ModApplication) => {
+      setApplications(prev => [app, ...prev]);
+      setNumApps(prev => prev + 1);
+    };
 
-  //     socket.on('newApplication', handleNewApplication);
+    socket.on('modApplicationUpdate', handleApplicationUpdate);
 
-  //     return () => {
-  //       socket.off('newApplication', handleNewApplication);
-  //     };
-  //   }, []);
+    return () => {
+      socket.off('modApplicationUpdate', handleApplicationUpdate);
+    };
+  }, [socket]);
 
   return {
     applications,
+    numApps,
     err,
     handleApplicationDecision,
   };

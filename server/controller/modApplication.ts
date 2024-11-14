@@ -1,8 +1,13 @@
 import express, { Response } from 'express';
-import { AddModApplicationRequest, UpdateModApplicationStatusRequest } from '../types';
+import {
+  AddModApplicationRequest,
+  FakeSOSocket,
+  ModApplication,
+  UpdateModApplicationStatusRequest,
+} from '../types';
 import { addModApplication, fetchModApplications, updateStatus } from '../models/application';
 
-export const modApplicationController = () => {
+export const modApplicationController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
@@ -58,6 +63,7 @@ export const modApplicationController = () => {
         throw new Error(modAppFromDb.error);
       }
 
+      socket.emit('modApplicationUpdate', modAppFromDb as ModApplication);
       res.json(modAppFromDb);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -90,7 +96,7 @@ export const modApplicationController = () => {
   };
 
   /**
-   * Deletes a specified ModApplication in the database. If deleting the applications fails, the HTTP response status is updated.
+   * Updates a specified ModApplication' status in the database. If updating the application fails, the HTTP response status is updated.
    *
    * @param req - The UpdateModApplicationStatusRequest object containing the application update data.
    * @param res - The HTTP response object used to send back the result of the operation.
@@ -101,9 +107,9 @@ export const modApplicationController = () => {
     req: UpdateModApplicationStatusRequest,
     res: Response,
   ): Promise<void> => {
-    const { username, accepted } = req.body;
+    const { id, username, accepted } = req.body;
     try {
-      const updated = await updateStatus(username, accepted);
+      const updated = await updateStatus(id, username, accepted);
       res.json(updated);
     } catch (err: unknown) {
       if (err instanceof Error) {

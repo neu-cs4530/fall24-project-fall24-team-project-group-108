@@ -17,6 +17,7 @@ export type OrderType = 'newest' | 'unanswered' | 'active' | 'mostViewed';
  * - ansDateTime - The date and time when the answer was created
  * - comments - Object IDs of comments that have been added to the answer by users, or comments themselves if populated
  * - reports - An array of reports associated with the answer.
+ * - isRemoved - True if a mod removed answer, otherwise false.
  */
 export interface Answer {
   _id?: ObjectId;
@@ -152,8 +153,9 @@ export interface AddModApplicationRequest extends Request {
  */
 export interface UpdateModApplicationStatusRequest extends Request {
   body: {
-    username: string
-    accepted: boolean
+    id: string;
+    username: string;
+    accepted: boolean;
   }
 }
 
@@ -192,6 +194,7 @@ export type ModApplicationResponses = ModApplication[] | { error: string };
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
  * - reports - An array of reports associated with the question.
+ * - isRemoved - True if a mod removed question, otherwise false.
  */
 export interface Question {
   _id?: ObjectId;
@@ -324,15 +327,20 @@ export interface GetUserReportRequest extends Request {
 }
 
 /**
- * Interface extending the request body when deleting a question/answer from the database which contains:
- * - id - the id of the answer/question being deleted.
+ * Interface extending the request body when resolving a question/answer from the database which contains:
+ * - reportedPost - The post, Question/Answer that was reported.
+ * - qid - The question id of the answer/question that was reported.
+ * - postId - The id of the Question/Answer that was reported.
+ * - type - The type of the report, either 'question' or 'answer'.
+ * - isRemoved - True if the moderator decision on the report was removal, otherwise false.
  */
 export interface ResolveReportedRequest extends Request {
   body: {
-    reportedPost: Question | Answer,
-    postId: string
-    type: 'question' | 'answer'
-    isRemoved: boolean
+    reportedPost: Question | Answer;
+    qid: string;
+    postId: string;
+    type: 'question' | 'answer';
+    isRemoved: boolean;
   }
 }
 
@@ -413,6 +421,36 @@ export interface AnswerUpdatePayload {
 }
 
 /**
+ * Interface representing the payload for a comment update event, which contains:
+ * - result - The updated question or answer.
+ * - type - The type of the updated item, either 'question' or 'answer'.
+ */
+export interface UserReportUpdatePayload {
+  result: AnswerResponse | QuestionResponse | null;
+  type: 'question' | 'answer';
+}
+
+/**
+ * Interface representing the payload for a remove post update event, which contains:
+ * - qid - The unique identifier of the question.
+ * - updatedPost - The updated question or answer response to be removed.
+ */
+export interface RemovePostUpdatePayload {
+  qid: string;
+  updatedPost: QuestionResponse | AnswerResponse;
+}
+
+/**
+ * Interface representing the payload for a report dismissed update event, which contains:
+ * - qid - The unique identifier of the question.
+ * - updatedPost - The updated question or answer response to be dismissed.
+ */
+export interface ReportDismissedUpdatePayload {
+  qid: string;
+  updatedPost: QuestionResponse | AnswerResponse;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -421,4 +459,8 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: QuestionResponse) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
+  modApplicationUpdate: (update: ModApplicationResponse) => void;
+  userReportsUpdate: (update: UserReportUpdatePayload) => void;
+  removePostUpdate: (update: RemovePostUpdatePayload) => void;
+  reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
 }

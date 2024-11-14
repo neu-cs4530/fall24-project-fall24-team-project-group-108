@@ -39,15 +39,18 @@ const getModApplications = async (): Promise<ModApplication[]> => {
 /**
  * Updates an application's status in the database.
  *
+ * @param id - The id of the application in the db.
  * @param username - The username of the user whose application will be deleted.
+ * @param accepted - True if the mod application was accepted, false otherwise.
  *
  * @returns A boolean which evaluates to true if an object was deleted, and false if there was an error.
  */
 const updateModApplicationStatus = async (
+  id: string,
   username: string,
   accepted: boolean,
 ): Promise<boolean> => {
-  const data = { username, accepted };
+  const data = { id, username, accepted };
   const res = await api.post(`${MODAPPLICATION_API_URL}/updateModApplicationStatus`, data);
   if (res.status !== 200) {
     throw new Error('Error while updating mod application status');

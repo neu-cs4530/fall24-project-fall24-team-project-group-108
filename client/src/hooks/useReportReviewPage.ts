@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Answer, Question } from '../types';
+import { Answer, Question, UserReport } from '../types';
 import useUserContext from './useUserContext';
 import { getUnresolvedReport, resolveReport } from '../services/reportService';
 
@@ -73,6 +73,7 @@ const useReportReviewPage = () => {
 
   const handleReportDecision = async (
     reportedPost: Question | Answer,
+    qid: string,
     reportType: 'question' | 'answer',
     isPostRemoved: boolean,
   ) => {
@@ -80,17 +81,9 @@ const useReportReviewPage = () => {
       const { _id: postId } = reportedPost;
       if (postId !== undefined) {
         if (isPostRemoved === true) {
-          const postRemoved = await resolveReport(reportedPost, postId, reportType, true);
-
-          if (postRemoved === false) {
-            setErr(prev => ({ ...prev, [postId]: 'Error removing report' }));
-          }
+          await resolveReport(reportedPost, qid, postId, reportType, true);
         } else if (isPostRemoved === false) {
-          const postDismissed = await resolveReport(reportedPost, postId, reportType, false);
-
-          if (postDismissed === false) {
-            setErr(prev => ({ ...prev, [postId]: 'Error dismissing report' }));
-          }
+          await resolveReport(reportedPost, qid, postId, reportType, false);
         }
         if (reportType === 'question') {
           setQReports(prev => prev.filter(r => r._id !== postId));
@@ -113,6 +106,46 @@ const useReportReviewPage = () => {
       [objId]: !prev[objId],
     }));
   };
+
+  useEffect(() => {
+    const handleReportsUpdate = ({
+      result,
+      type,
+    }: {
+      result: Question | Answer;
+      type: 'question' | 'answer';
+    }) => {
+      if (type === 'question') {
+        const questionResult = result as Question;
+
+        setQReports(prev => {
+          const updatedReports = prev.filter(q => q._id !== questionResult._id);
+          return [...updatedReports, questionResult];
+        });
+      } else if (type === 'answer') {
+        const answerResult = result as Answer;
+        setAnsReports(prev =>
+          prev.map(report =>
+            report.answer._id === answerResult._id
+              ? {
+                  answer: {
+                    ...answerResult,
+                    qid: report.qid,
+                  },
+                  qid: report.qid,
+                }
+              : report,
+          ),
+        );
+      }
+    };
+
+    socket.on('userReportsUpdate', handleReportsUpdate);
+
+    return () => {
+      socket.off('userReportsUpdate', handleReportsUpdate);
+    };
+  }, [socket]);
 
   return {
     allReports,

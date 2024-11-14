@@ -51,6 +51,7 @@ const useReportPage = () => {
         text,
         reportBy: user.username,
         reportDateTime: new Date(),
+        status: 'unresolved',
       };
 
       await addReport(targetId, targetType, newReport);

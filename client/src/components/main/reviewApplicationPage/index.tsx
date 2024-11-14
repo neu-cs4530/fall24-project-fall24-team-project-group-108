@@ -11,12 +11,12 @@ import useBan from '../../../hooks/useBan';
 const ReviewApplicationPage = () => {
   useModNavigationPrivileges();
   useBan();
-  const { applications, err, handleApplicationDecision } = useModApplicationPage();
+  const { applications, numApps, err, handleApplicationDecision } = useModApplicationPage();
 
   if (!applications.length) {
     return (
       <>
-        <ReviewModApplicationHeader modAppCount={applications.length} />
+        <ReviewModApplicationHeader modAppCount={numApps} />
         <div className='container'>
           <h2>You are all caught up! No applications left.</h2>;
         </div>
@@ -26,7 +26,7 @@ const ReviewApplicationPage = () => {
 
   return (
     <>
-      <ReviewModApplicationHeader modAppCount={applications.length} />
+      <ReviewModApplicationHeader modAppCount={numApps} />
       {applications.map((application: ModApplication) => (
         <div className='application-container' key={application._id}>
           <h4 className='username'>{application.username}</h4>

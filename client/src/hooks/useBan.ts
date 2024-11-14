@@ -12,6 +12,7 @@ const useBan = () => {
   const numInfractions = user.infractions.length;
 
   if (numInfractions >= 3) {
+    console.log(numInfractions);
     navigate('/ban');
   }
 };

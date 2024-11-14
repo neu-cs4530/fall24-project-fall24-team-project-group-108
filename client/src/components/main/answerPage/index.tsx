@@ -20,6 +20,7 @@ const AnswerPage = () => {
   const {
     questionID,
     question,
+    numAnswers,
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,
@@ -48,14 +49,14 @@ const AnswerPage = () => {
   return (
     <>
       <VoteComponent question={question} />
-      <AnswerHeader ansCount={question.answers.length} title={question.title} />
+      <AnswerHeader ansCount={numAnswers} title={question.title} />
       <QuestionBody
         views={question.views.length}
         text={question.text}
         askby={question.askedBy}
         meta={getMetaData(new Date(question.askDateTime))}
         handleReport={() =>
-          handleReport(question._id, 'question', question.text, question.askedBy, question._id)
+          handleReport(question._id, 'question', question.text, question.askedBy, questionID)
         }
         handleRemove={() => handleReportDecision(question, 'question')}
         isReported={wasQReported(question)}

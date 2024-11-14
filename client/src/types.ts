@@ -64,6 +64,7 @@ export interface UserReport {
   text: string;
   reportBy: string;
   reportDateTime: Date;
+  status: string;
 }
 
 /**
@@ -193,6 +194,21 @@ export interface CommentUpdatePayload {
   type: 'question' | 'answer';
 }
 
+export interface UserReportUpdatePayload {
+  result: Question | Answer;
+  type: 'question' | 'answer';
+}
+
+export interface RemovePostUpdatePayload {
+  qid: string;
+  updatedPost: Question | Answer;
+}
+
+export interface ReportDismissedUpdatePayload {
+  qid: string;
+  updatedPost: Question | Answer;
+}
+
 /**
  * Interface representing the possible events that the server can emit to the client.
  */
@@ -202,4 +218,8 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: Question) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
+  modApplicationUpdate: (update: ModApplication) => void;
+  userReportsUpdate: (update: UserReportUpdatePayload) => void;
+  removePostUpdate: (update: RemovePostUpdatePayload) => void;
+  reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
 }

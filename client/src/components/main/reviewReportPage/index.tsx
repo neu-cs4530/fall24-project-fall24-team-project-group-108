@@ -17,7 +17,7 @@ const ReviewReportsPage = () => {
     useReportReviewPage();
   const navigate = useNavigate();
 
-  if (numReports === 0) {
+  if (!allReports.length) {
     return (
       <>
         <ReviewReportHeader reportCount={numReports} />
@@ -36,10 +36,11 @@ const ReviewReportsPage = () => {
         const reportedText = isQ ? 'Reported Question' : 'Reported Answer';
         const reportAskedBy = isQ ? reportedObject.askedBy : reportedObject.answer.ansBy;
         const objId = isQ ? reportedObject._id : reportedObject.answer._id;
+        const qid = isQ ? reportedObject._id : reportedObject.qid;
         const reports = isQ ? reportedObject.reports : reportedObject.answer.reports;
         const reportedQAns = isQ ? reportedObject : reportedObject.answer;
 
-        if (!objId) {
+        if (!objId || !qid) {
           return <div key='error'>Cannot retrieve ID</div>;
         }
 
@@ -87,6 +88,7 @@ const ReviewReportsPage = () => {
                 onClick={() =>
                   handleReportDecision(
                     reportedQAns,
+                    qid,
                     'askedBy' in reportedObject ? 'question' : 'answer',
                     false,
                   )
@@ -98,6 +100,7 @@ const ReviewReportsPage = () => {
                 onClick={() =>
                   handleReportDecision(
                     reportedQAns,
+                    qid,
                     'askedBy' in reportedObject ? 'question' : 'answer',
                     true,
                   )
