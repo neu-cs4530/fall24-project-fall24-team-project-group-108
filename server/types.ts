@@ -10,6 +10,16 @@ export type FakeSOSocket = Server<ServerToClientEvents>;
 export type OrderType = 'newest' | 'unanswered' | 'active' | 'mostViewed';
 
 /**
+ * Type representing the possible category options for badges and badgeProgress.
+ */
+export type BadgeCategory = 'questions' | 'answers' | 'leaderboard' | 'votes' | 'comments';
+
+/**
+ * Type representing the possible tiers for a badge.
+ */
+export type BadgeTier = 'bronze' | 'silver' | 'gold';
+
+/**
  * Interface representing an Answer document, which contains:
  * - _id - The unique identifier for the answer. Optional field
  * - text - The content of the answer
@@ -54,6 +64,126 @@ export interface Tag {
 }
 
 /**
+ * Interface representing a User document, which contains:
+ * - _id - The unique identifier for the tag. Optional field.
+ * - username - Name of the user.
+ * - password - Password to login created by the user.
+ * - isModerator - the current state of the user's moderator status.
+ * - badges - The badges obtained by the user.
+ */
+export interface User {
+  _id?: ObjectId;
+  username: string;
+  password: string;
+  isModerator: boolean;
+  badges: Badge[];
+}
+
+/**
+ * Interface extending the request body when adding a user to the database which contains:
+ * - username - The new user's username.
+ * - password - The new user's password.
+ */
+export interface AddUserRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Interface extending the request body when reseting a password in the database which contains:
+ * - username - The user's username.
+ * - password - The user's new password.
+ */
+export interface ResetPasswordRequest extends Request {
+  body: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Interface extending the request body when making a user a moderator in the db:
+ * - username - The user being made a moderator.
+ */
+export interface MakeUserModeratorRequest extends Request {
+  body: {
+    username: string;
+  }
+}
+
+/**
+ * Interface for the request query to find a user using a search string, which contains:
+ * - username - The username of the user
+ * - password - The password of the user
+ */
+export interface FindUserRequest extends Request {
+  query: {
+    username: string;
+    password: string;
+  }
+}
+
+/**
+ * Type representing the possible responses for a User-related operation.
+ */
+export type UserResponse = User | { error: string };
+
+/**
+ * Interface representing a ModApplication document, which contains:
+ * - _id - The unique identifier for the question. Optional field.
+ * - user - The user who created the application.
+ * - applicationText - The additional imformation provided by the applicant.
+ */
+export interface ModApplication {
+  _id?: ObjectId;
+  user: User; 
+  applicationText: string;
+}
+
+/**
+ * Interface extending the request body when adding a ModApplication to the database which contains:
+ * - modApplication - contains the information about the ModAplication being added to the database.
+ */
+export interface AddModApplicationRequest extends Request {
+  body: {
+    modApplication: ModApplication;
+  }
+}
+
+/**
+ * Interface extending the request body when deleting a ModApplication to the database which contains:
+ * - username - the user whose application is being deleted.
+ */
+export interface DeleteModApplicationRequest extends Request {
+  body: {
+    username: string
+  }
+}
+
+/**
+ * Interface extending the request body when finding a ModApplication in the database which contains:
+ * - username - the user whose application is being found.
+ */
+export interface FindModApplicationRequest extends Request {
+  query: {
+    username: string;
+  }
+}
+
+/**
+ * Type representing the possible responses for a ModApplication related operation.
+ */
+export type ModApplicationResponse = ModApplication | { error: string };
+
+/**
+ * Type representing the possible responses for a ModApplication[] related operation.
+ */
+export type ModApplicationResponses = ModApplication[] | { error: string };
+
+
+/**
  * Interface representing a Question document, which contains:
  * - _id - The unique identifier for the question. Optional field.
  * - title - The title of the question.
@@ -82,6 +212,26 @@ export interface Question {
 }
 
 /**
+ * Interface representing the structure of a Message object.
+ *
+ * - messageText - The content of the message
+ * - messageDateTime - The date and time the message was sent
+ * - messageBy - The username of the user who sent the message
+ * - messageTo - A list of usernames of users who the message was sent to
+ */
+ export interface Message {
+  messageText: string,
+  messageDateTime: Date,
+  messageBy: string,
+  messageTo: string[]
+}
+
+export interface Correspondence {
+  messages: Message[],
+  messageMembers: string[]
+}
+
+/**
  * Type representing the possible responses for a Question-related operation.
  */
 export type QuestionResponse = Question | { error: string };
@@ -97,6 +247,18 @@ export interface FindQuestionRequest extends Request {
     order: OrderType;
     search: string;
     askedBy: string;
+  };
+}
+
+/**
+ * Interface for the request query to find questions using a search string, which contains:
+ * - order - The order in which to sort the questions
+ * - search - The search string used to find questions
+ * - askedBy - The username of the user who asked the question
+ */
+export interface FindQuestionByAswerer extends Request {
+  params: {
+    answeredBy: string;
   };
 }
 
@@ -135,6 +297,20 @@ export interface VoteRequest extends Request {
 }
 
 /**
+ * Interface for the request body when upvoting or downvoting a question.
+ * - body - The question ID and the username of the user voting.
+ *  - qid - The unique identifier of the question.
+ *  - username - The username of the user voting.
+ */
+export interface UpdateTagsRequest extends Request {
+  query: {
+    user: string;
+    qid: string;
+  };
+}
+
+
+/**
  * Interface representing a Comment, which contains:
  * - _id - The unique identifier for the comment. Optional field.
  * - text - The content of the comment.
@@ -167,6 +343,136 @@ export interface AddCommentRequest extends Request {
  * Type representing the possible responses for a Comment-related operation.
  */
 export type CommentResponse = Comment | { error: string };
+
+
+/**
+ * Interface representing a Badge, which contains:
+ * - _id - The unique identifier for the badge. Optional field.
+ * - name - The name of the badge.
+ * - description - The description of how to obtain the badge.
+ * - category - The category of the badge, based on the action that needs to be performed to get it.
+ * - targetValue - The amount of times the category action must be performed to get the badge.
+ * - tier - The tier of this badge relative to its cateory.
+ *
+ */
+export interface Badge {
+  _id?: ObjectId;
+  name: string;
+  description: string;
+  category: BadgeCategory;
+  targetValue: number;
+  tier: BadgeTier;
+  users: User[] | ObjectId[];
+}
+
+
+/**
+ * Interface representing a TagAnswerCount, which contains:
+ * - `user`: The user id who answers
+ * - `tag`: The id of the tag being answered.
+ * - `count`: The amount of times the user has answered questions about the given tag.
+ */
+export interface TagAnswerCount {
+  _id?: ObjectId;
+  user: User;
+  tag: Tag;
+  count: number;
+}
+
+
+
+/**
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
+ */
+export interface AddBadgeRequest extends Request {
+  body: {
+    name: string;
+    description: string;
+    category: BadgeCategory;
+    targetValue: number;
+    tier: BadgeTier;
+    users: User[];
+  };
+}
+
+/**
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
+ */
+export interface UserBadgeRequest extends Request {
+  params: {
+    username: string;
+  };
+}
+
+/**
+ * Interface extending the request body when adding a badge, which contains:
+ * - name - The the name of the badge.
+ * - description - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ * - targetValue - The amount of times the action must be done to obtain the badge.
+ * - tier - The tier of the badge.
+ */
+export interface EarnedUserRequest extends Request {
+  params: {
+    badgeName: string;
+  };
+}
+
+/**
+ * Type representing the possible responses for a Badge-related operation.
+ */
+export type BadgeResponse = Badge | { error: string };
+
+/**
+ * Interface representing a BadgeProgress, which contains:
+ * - _id - The unique identifier for the badgeProgress. Optional field.
+ * - user - The username of the user whose progress is being tracked.
+ * - badge - The badge being tracked.
+ * - category - The category of the badge, based on the action that needs to be performed to get it.
+ * - targetValue - The amount of times the category action must be performed to get the badge.
+ * - currentValue - The amount of times the category action has been performed by the user.
+ */
+export interface BadgeProgress {
+  _id?: ObjectId;
+  user: string;
+  badge: ObjectId;
+  category: BadgeCategory;
+  targetValue: number;
+  currentValue: number;
+}
+
+/**
+ * Interface extending the request body when updating badge progress, which contains:
+ * - name - The username of the user.
+ * - category - How to obtain the badge.
+ * - category - The category of action that the badge measures.
+ */
+export interface UpdateBadgeProgressRequest extends Request {
+  body: {
+    username: string;
+    category: BadgeCategory;
+  };
+}
+
+/**
+ * Type representing the possible responses for a badgeProgress-related operation.
+ */
+export type BadgeProgressResponse = BadgeProgress[] | { error: string };
+
+/**
+ * Type representing the possible responses for a tagAnswerCount-related operation.
+ */
+export type TagAnswerCountResponse = Question | { error: string };
 
 /**
  * Interface representing the payload for a comment update event, which contains:

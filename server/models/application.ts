@@ -1,19 +1,34 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
+import bcrypt from 'bcrypt';
 import {
   Answer,
   AnswerResponse,
+  Badge,
+  BadgeProgressResponse,
+  BadgeResponse,
   Comment,
   CommentResponse,
+  ModApplication,
+  ModApplicationResponse,
+  ModApplicationResponses,
   OrderType,
   Question,
   QuestionResponse,
   Tag,
+  TagAnswerCountResponse,
+  User,
+  UserResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
 import TagModel from './tags';
 import CommentModel from './comments';
+import BadgeModel from './badges';
+import UserModel from './users';
+import ModApplicationModel from './modApplication';
+import BadgeProgressModel from './badgeProgresses';
+import TagAnswerCountModel from './tagAnswerCounts';
 
 /**
  * Parses tags from a search string.
@@ -193,6 +208,165 @@ export const addTag = async (tag: Tag): Promise<Tag | null> => {
 };
 
 /**
+ * Adds a user to the database if they do not already exist.
+ *
+ * @param user - the user to add
+ *
+ * @returns {Promise<User | null>} - The added or existing user, or `null` if an error occurred
+ */
+export const addUser = async (user: User): Promise<User | null> => {
+  try {
+    // Check if a user with the given id already exists
+    const existingUser = await UserModel.findOne({ username: user.username });
+
+    if (existingUser) {
+      return null;
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 5);
+    // If the user does not exist, create a new one
+    const newUser = new UserModel({ ...user, password: hashedPassword });
+    const savedUser = await newUser.save();
+
+    return savedUser as User;
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Authenticates a user by checking their input username and password and checking the database for it.
+ *
+ * @param username - The input username.
+ * @param password - The input password.
+ *
+ * @returns {Promise<boolean>} - Return true if the username and password are in the database, otherwise false.
+ */
+export const findUser = async (username: string, password: string): Promise<User | null> => {
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return null;
+    }
+
+    const passwordCorrect = await bcrypt.compare(password, user.password);
+    if (!passwordCorrect) {
+      return null;
+    }
+    return user;
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
+ * Adds a mod application to the database using the information of the application provided by a user.
+ *
+ * @param user - the user who created the application.
+ * @param applicationText - the additional information given in the application.
+ *
+ * @returns {Promise<ModApplication | null>} - The added or existing mod application, or `null` if an error occurred
+ */
+export const addModApplication = async (
+  username: string,
+  applicationText: string,
+): Promise<ModApplicationResponse> => {
+  try {
+    const existingApplication = await ModApplicationModel.findOne({
+      username,
+      status: { $ne: true },
+    });
+    if (existingApplication) {
+      return { error: 'User already created an application request' };
+    }
+
+    const savedApplication = await ModApplicationModel.create({ username, applicationText });
+    return savedApplication as ModApplication;
+  } catch (error) {
+    return { error: 'Error when saving the mod application' };
+  }
+};
+
+/**
+ * Retrieves all of the moderator applications in the database.
+ *
+ * @returns {ModApplication[]} - A list of the current active ModApplications.
+ */
+export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
+  try {
+    const applications = await ModApplicationModel.find();
+    return applications;
+  } catch (error) {
+    return { error: 'Error when saving the mod application' };
+  }
+};
+
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
+export const updatePassword = async (username: string, password: string): Promise<UserResponse> => {
+  const hashedPassword = await bcrypt.hash(password, 5);
+
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error(`Failed to reset password`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when reseting password: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Updates a user to make their isModerator value equal to true.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {User} - The updated user object.
+ */
+export const populateUser = async (username: string): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $set: { isModerator: true } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error(`Failed to fetch and populate a user`);
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Removes a specificed moderator application from the db.
+ *
+ * @param username - the username of the user's application being deleted
+ * @returns {ModApplication} - the application object being deleted.
+ */
+export const removeModApplication = async (username: string): Promise<boolean> => {
+  try {
+    const result = await ModApplicationModel.findOneAndDelete({ username });
+    if (!result) {
+      throw new Error(`No application found`);
+    }
+    return true;
+  } catch (error) {
+    throw new Error(`Error when deleting the application: ${(error as Error).message}`);
+  }
+};
+
+/**
  * Retrieves questions from the database, ordered by the specified criteria.
  *
  * @param {OrderType} order - The order type to filter the questions
@@ -217,6 +391,28 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
       return sortQuestionsByNewest(qlist);
     }
     return sortQuestionsByMostViews(qlist);
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves questions from the database that were answered by the given user.
+ *
+ * @param string answerer - The answerer to filter the questions by
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of ordered questions
+ */
+export const filterQuestionsByAnswerer = async (answerer: string): Promise<Question[]> => {
+  try {
+    // find all answers from the given user
+    const alist = await AnswerModel.find({ ansBy: answerer });
+
+    // find all questions that are linked to the answers
+    const answerIds = alist.map(answer => answer._id);
+    const qlist = await QuestionModel.find({ answers: { $in: answerIds } });
+
+    return qlist;
   } catch (error) {
     return [];
   }
@@ -393,6 +589,89 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
+  }
+};
+
+/**
+ * Saves a new badge to the database.
+ *
+ * @param {Badge} badge - The badge to save
+ *
+ * @returns {Promise<BadgeResponse>} - The saved badge, or error message
+ */
+export const saveBadge = async (badge: Badge): Promise<BadgeResponse> => {
+  try {
+    const result = await BadgeModel.create(badge);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a badge' };
+  }
+};
+
+/**
+ * Retrieves all badges from the database.
+ *
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const badges = await BadgeModel.find().exec();
+    return badges;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves all badges earned from a user from the database.
+ *
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
+ */
+export const getBadgesByUser = async (username: string): Promise<Badge[]> => {
+  try {
+    // find all badgeProgresses where the user has hit the targetValue
+    const badgeProgresses = await BadgeProgressModel.aggregate([
+      {
+        $match: {
+          user: username,
+          $expr: { $gte: ['$currentValue', '$targetValue'] },
+        },
+      },
+    ]);
+
+    // find the badges that correspond to this badgeprogress
+    const badgeIds = badgeProgresses.map(progress => progress.badge);
+    const badges = await BadgeModel.find({
+      _id: { $in: badgeIds },
+    });
+
+    return badges;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves all users who have earned a given badge.
+ *
+ * @returns {Promise<String[]>} - Promise that resolves to a list of usernames
+ */
+export const getBadgeUsers = async (badgeName: string): Promise<string[]> => {
+  try {
+    const badge = await BadgeModel.findOne({ name: badgeName });
+
+    // return empty array if error
+    if (!badge || !badge.users || badge.users.length === 0) {
+      return [];
+    }
+
+    // map users to usernames
+    const userIds = badge.users;
+    const users = await UserModel.find({ _id: { $in: userIds } }).select('username');
+    const usernames = users.map(user => user.username);
+    return usernames;
+  } catch (error) {
+    return [];
   }
 };
 
@@ -640,5 +919,111 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return tmap;
   } catch (error) {
     return { error: 'Error when construction tag map' };
+  }
+};
+
+/**
+ * Updates the badgeProgress for a user and a given category.
+ *
+ * @param {string} username - The username to update
+ * @param {category} ans - The category of badge to update
+ *
+ * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
+ */
+export const updateBadgeProgress = async (
+  username: string,
+  category: string,
+): Promise<BadgeProgressResponse> => {
+  try {
+    const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
+
+    if (badgeProgresses.length === 0) {
+      // if no existing badgeProgresses, create new ones for all badges in the given category
+      const badges = await BadgeModel.find({ category });
+
+      // create a badgeprogress for all badges
+      await Promise.all(
+        badges.map(async badge => {
+          await BadgeProgressModel.create({
+            user: username,
+            badge: badge._id,
+            category,
+            targetValue: badge.targetValue,
+            currentValue: 1,
+          });
+        }),
+      );
+    } else {
+      // loop through all badgeProgresses and increment their values by one
+      await Promise.all(
+        badgeProgresses.map(async badgeProgress => {
+          badgeProgress.currentValue += 1;
+          await badgeProgress.save();
+
+          // if the user just acquired the badge,
+          // add them to the badge's list
+          if (badgeProgress.currentValue === badgeProgress.targetValue) {
+            const user = await UserModel.findOne({ username });
+            if (user) {
+              await BadgeModel.findOneAndUpdate(
+                { _id: badgeProgress.badge },
+                { $addToSet: { users: user._id } },
+                { new: true },
+              );
+            }
+          }
+          return badgeProgress;
+        }),
+      );
+    }
+
+    return badgeProgresses;
+  } catch (error) {
+    return { error: 'Error when updating badge progress' };
+  }
+};
+
+/**
+ * Updates the tagAnswerCounts for a user and a given question.
+ *
+ * @param {string} user - The username to update
+ * @param {string} qid - The id of question to update
+ *
+ * @returns Promise<void> - The updated badgeProgress or an error message
+ */
+export const updateTagAnswers = async (
+  username: string,
+  qid: string,
+): Promise<TagAnswerCountResponse> => {
+  try {
+    // all tags associated with the question
+    const question = await QuestionModel.findById(qid).exec();
+    if (!question) {
+      return { error: 'Question not found' };
+    }
+
+    const updatePromises = question.tags.map(async tagId => {
+      const tagAnswerCount = await TagAnswerCountModel.findOne({
+        user: username,
+        tag: tagId,
+      }).exec();
+
+      if (tagAnswerCount) {
+        // if it exists, update the count
+        tagAnswerCount.count += 1;
+        return tagAnswerCount.save();
+      }
+      // create a new TagAnswerCount
+      return TagAnswerCountModel.create({
+        tag: tagId,
+        user: username,
+        count: 1,
+      });
+    });
+
+    await Promise.all(updatePromises);
+    return question;
+  } catch (error) {
+    return { error: 'Error when updating tag progress' };
   }
 };

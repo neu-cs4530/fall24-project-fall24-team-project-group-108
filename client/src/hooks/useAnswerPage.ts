@@ -4,6 +4,7 @@ import { Comment, Answer, Question, VoteData } from '../types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
+import updateBadgeProgress from '../services/badgeProgressService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -55,6 +56,9 @@ const useAnswerPage = () => {
       }
 
       await addComment(targetId, targetType, comment);
+
+      // update the user's progress towards comment related badges
+      await updateBadgeProgress(user.username, 'comments');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error adding comment:', error);

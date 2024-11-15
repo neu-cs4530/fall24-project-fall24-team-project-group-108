@@ -12,6 +12,7 @@ import useTagSelected from '../../../../hooks/useTagSelected';
 interface TagProps {
   t: TagData;
   clickTag: (tagName: string) => void;
+  clickLeaderboard: (tagName: string) => void;
 }
 
 /**
@@ -22,7 +23,7 @@ interface TagProps {
  * @param t - The tag object .
  * @param clickTag - Function to handle tag clicks.
  */
-const TagView = ({ t, clickTag }: TagProps) => {
+const TagView = ({ t, clickTag, clickLeaderboard }: TagProps) => {
   const { tag } = useTagSelected(t);
 
   return (
@@ -32,6 +33,14 @@ const TagView = ({ t, clickTag }: TagProps) => {
         clickTag(t.name);
       }}>
       <div className='tagName'>{tag.name}</div>
+      <div
+        className='leaderboard'
+        onClick={e => {
+          e.stopPropagation(); // prevent triggering the parent div's click event
+          clickLeaderboard(tag.name);
+        }}>
+        Leaderboard &gt;
+      </div>
       <div className='tagDescription'>{tag.description}</div>
       <div>{t.qcnt} questions</div>
     </div>

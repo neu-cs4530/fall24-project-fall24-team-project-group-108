@@ -12,3 +12,13 @@
 .tagName {
   color: cornflowerblue;
 }
+
+.leaderboard {
+  font-size: 12px;
+  color: #7b7b7b;
+  margin-bottom: 5%;
+  margin-top: 2%;
+}
+.leaderboard:hover {
+  text-decoration: underline;
+}

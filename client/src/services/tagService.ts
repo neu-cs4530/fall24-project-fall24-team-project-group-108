@@ -1,4 +1,4 @@
-import { Tag, TagData } from '../types';
+import { Tag, TagCounts, TagData } from '../types';
 import api from './config';
 
 const TAG_API_URL = `${process.env.REACT_APP_SERVER_URL}/tag`;
@@ -30,4 +30,18 @@ const getTagByName = async (name: string): Promise<Tag> => {
   return res.data;
 };
 
-export { getTagsWithQuestionNumber, getTagByName };
+/**
+ * Function to get leaderboard users for a given tag.
+ *
+ * @param name - The name of the tag to retrieve.
+ * @throws Error if there is an issue fetching the tag leaderboard.
+ */
+const getLeaderboardUsers = async (tagName: string): Promise<TagCounts[]> => {
+  const res = await api.get(`${TAG_API_URL}/getLeaderboard/${tagName}`);
+  if (res.status !== 200) {
+    throw new Error(`Error when fetching tag: ${tagName}`);
+  }
+  return res.data;
+};
+
+export { getTagsWithQuestionNumber, getTagByName, getLeaderboardUsers };
