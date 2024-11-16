@@ -2,7 +2,12 @@ import React from 'react';
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
-import { Comment } from '../../../../types';
+import { Answer, Comment } from '../../../../types';
+import AnswerEndorsement from '../../AnswerEndorsement';
+
+function handleEndorseAnswer(endorse: boolean): void {
+  endorse = !endorse;
+}
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -12,6 +17,7 @@ import { Comment } from '../../../../types';
  * - meta Additional metadata related to the answer.
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
+ * - endorsed Indicates if the answer is endorsed.
  */
 interface AnswerProps {
   text: string;
@@ -39,6 +45,7 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
     <div className='answerAuthor'>
       <div className='answer_author'>{ansBy}</div>
       <div className='answer_question_meta'>{meta}</div>
+      <AnswerEndorsement handleEndorseAnswer={AnswerEndorsement} />
     </div>
     <CommentSection comments={comments} handleAddComment={handleAddComment} />
   </div>

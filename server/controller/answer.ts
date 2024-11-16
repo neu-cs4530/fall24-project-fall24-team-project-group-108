@@ -1,6 +1,12 @@
 import express, { Response } from 'express';
-import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket } from '../types';
-import { addAnswerToQuestion, populateDocument, saveAnswer } from '../models/application';
+import { Answer, AnswerRequest, AnswerResponse, EndorseRequest, FakeSOSocket } from '../types';
+import {
+  addAnswerToQuestion,
+  populateDocument,
+  saveAnswer,
+  endorseAnswer,
+} from '../models/application';
+import AnswerModel from '../models/answers';
 
 const answerController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -80,8 +86,22 @@ const answerController = (socket: FakeSOSocket) => {
     }
   };
 
+  const updateEndorsement = async (req: EndorseRequest, res: Response): Promise<void> => {
+    try {
+      const { aid, endorsed } = req.body;
+
+      // Find and update the endorsement status of the answer in the database
+      const updatedAnswer = await AnswerModel.findByIdAndUpdate(aid, { endorsed }, { new: true });
+
+      res.json(updatedAnswer);
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating endorsement' });
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
+  router.patch('/endorse', updateEndorsement);
 
   return router;
 };

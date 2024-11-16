@@ -16,6 +16,7 @@ export type OrderType = 'newest' | 'unanswered' | 'active' | 'mostViewed';
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Object IDs of comments that have been added to the answer by users, or comments themselves if populated
+ * - endorsed - Boolean for if an answer is endorsed or not
  */
 export interface Answer {
   _id?: ObjectId;
@@ -23,6 +24,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
+  endorsed: { type: Boolean, default: false },
 }
 
 /**
@@ -34,6 +36,16 @@ export interface AnswerRequest extends Request {
   body: {
     qid: string;
     ans: Answer;
+  };
+}
+
+/**
+ * Interface extending the request body when 
+ */
+export interface EndorseRequest extends Request {
+  body: {
+    aid: string;
+    endorsed: boolean;
   };
 }
 

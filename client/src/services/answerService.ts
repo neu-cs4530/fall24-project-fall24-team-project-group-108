@@ -20,4 +20,20 @@ const addAnswer = async (qid: string, ans: Answer): Promise<Answer> => {
   return res.data;
 };
 
-export default addAnswer;
+/**
+ * Function to downvote a question.
+ *
+ * @param qid - The ID of the question to downvote.
+ * @param username - The username of the person downvoting the question.
+ * @throws Error if there is an issue downvoting the question.
+ */
+const endorseAnswer = async (aid: string, endosred: boolean) => {
+  const data = { aid, endosred };
+  const res = await api.post(`${ANSWER_API_URL}/endorseAnswer`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while endorsing the answer');
+  }
+  return res.data;
+};
+
+export { addAnswer, endorseAnswer };

@@ -81,6 +81,7 @@ export interface VoteData {
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Comments associated with the answer.
+ * - endorsed - Answer is endorsed by a user
  */
 export interface Answer {
   _id?: string;
@@ -88,6 +89,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[];
+  endorsed: boolean;
 }
 
 /**
