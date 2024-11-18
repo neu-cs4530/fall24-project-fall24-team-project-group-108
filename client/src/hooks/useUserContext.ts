@@ -4,7 +4,7 @@ import UserContext, { UserContextType } from '../contexts/UserContext';
 /**
  * Custom hook to access the current user context.
  *
- * @returns context - Returns the user context object, which contains user and socket information.
+ * @returns context - Returns the user context object, which contains user information.
  *
  * @throws it will throw an error if the context is not found or is null.
  */

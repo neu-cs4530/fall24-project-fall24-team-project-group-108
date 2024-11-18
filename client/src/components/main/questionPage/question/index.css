@@ -45,6 +45,10 @@
   color: red;
 }
 
+.question_author:hover {
+  text-decoration: underline;
+}
+
 .question_meta {
   color: #bbbbbb;
 }

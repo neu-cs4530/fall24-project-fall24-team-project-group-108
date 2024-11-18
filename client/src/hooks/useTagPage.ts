@@ -25,6 +25,15 @@ const useTagPage = () => {
     navigate(`/home?${searchParams.toString()}`);
   };
 
+  /**
+   * Function to navigate to the leaderboard page for a specified tab.
+   *
+   * @param tagName - The name of the tag to navigate to the leadership page of.
+   */
+  const clickLeaderboard = (tagName: string) => {
+    navigate(`/tags/${tagName}`);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,7 +48,7 @@ const useTagPage = () => {
     fetchData();
   }, []);
 
-  return { tlist, clickTag };
+  return { tlist, clickTag, clickLeaderboard };
 };
 
 export default useTagPage;

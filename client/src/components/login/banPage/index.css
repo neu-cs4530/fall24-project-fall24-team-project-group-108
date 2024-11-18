@@ -1,0 +1,23 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f7f7;
+  }
+  
+  .container h2,
+  .container p {
+    text-align: center;
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .container a {
+    color: gray;
+    font-size: 0.4rem;
+    text-decoration: none;
+    margin-top: -18px;
+    margin-bottom: 25px;
+  }

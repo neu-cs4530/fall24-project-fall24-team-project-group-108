@@ -6,7 +6,20 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
  * Represents a user in the application.
  */
 export interface User {
+  _id?: string;
   username: string;
+  password: string;
+  isModerator: boolean;
+  badges: Badge[];
+}
+
+/**
+ * Represents a mod application.
+ */
+export interface ModApplication {
+  _id?: string;
+  username: string;
+  applicationText: string;
 }
 
 /**
@@ -91,6 +104,23 @@ export interface Answer {
 }
 
 /**
+ * Interface represents a badge.
+ *
+ * name - The name of the badge.
+ * description - Description of the badge.
+ * category - The category of action required to get the badge.
+ * targetValue - The amount of times the action has to be done to obtain the badge.
+ * tier - The tier of branch in this category.
+ */
+export interface Badge {
+  name: string;
+  description: string;
+  category: string;
+  targetValue: number;
+  tier: string;
+}
+
+/**
  * Interface representing the structure of a Question object.
  *
  * - _id - The unique identifier for the question.
@@ -117,6 +147,18 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
+}
+
+/**
+ * Interface representing tag counts for the leaderboard.
+ *
+ * - user - The username.
+ * - count - The amount of times they've answered questions about a tag.
+ */
+export interface TagCounts {
+  user: string;
+  tagid: string;
+  count: number;
 }
 
 /**
