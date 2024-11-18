@@ -18,7 +18,7 @@ const useMessageView = (message: Message) => {
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(message.isCodeStyle);
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
-  const [messageId, setMessageId] = useState<string>(message._id || '');
+  const [messageId] = useState<string>(message._id || '');
 
   useEffect(() => {
     const updateMessage = async () => {
