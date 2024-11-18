@@ -18,10 +18,11 @@ const useMessageView = (message: Message) => {
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(message.isCodeStyle);
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
+  const [messageId, setMessageId] = useState<string>(message._id || '');
 
   useEffect(() => {
     const updateMessage = async () => {
-      await updateMessageById(message._id || '', editingText, isCodeStyle);
+      await updateMessageById(messageId || '', editingText, isCodeStyle);
     };
 
     // Need to update message by id, passing in new text
@@ -29,13 +30,12 @@ const useMessageView = (message: Message) => {
       updateMessage();
       setIsEditing(false);
     }
-    setIsEditing(false);
     setSaveClicked(false);
-  }, [saveClicked, editingText, isCodeStyle, message]);
+  }, [saveClicked, editingText, isCodeStyle, messageId]);
 
   useEffect(() => {
     const updateMessage = async () => {
-      await updateMessageById(message._id || '', 'Message was Deleted', false);
+      await updateMessageById(messageId || '', 'Message was Deleted', false);
     };
 
     // Need to update message by id, passing in new text
@@ -45,11 +45,11 @@ const useMessageView = (message: Message) => {
     }
     setIsEditing(false);
     setSaveClicked(false);
-  }, [isDeleted, message]);
+  }, [isDeleted, messageId]);
 
   useEffect(() => {
     const handleMessageUpdate = (updatedMessage: Message) => {
-      if (updatedMessage._id === message._id) {
+      if (updatedMessage._id === messageId) {
         setEditingText(updatedMessage.messageText);
       }
     };
@@ -59,7 +59,7 @@ const useMessageView = (message: Message) => {
     return () => {
       socket.off('messageUpdate', handleMessageUpdate);
     };
-  }, [socket, message]);
+  }, [socket, messageId]);
 
   return {
     isEditing,
