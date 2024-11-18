@@ -403,12 +403,12 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 };
 
 
- * Retrieves messages from the database, ordered by the specified criteria.
- *
- * @param {OrderType} order - The order type to filter the messages
- *
- * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
- */
+//  * Retrieves messages from the database, ordered by the specified criteria.
+//  *
+//  * @param {OrderType} order - The order type to filter the messages
+//  *
+//  * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
+//  */
 export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
@@ -424,7 +424,7 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
     { path: 'messages', model: MessageModel },
   ]);
   return clist;
-
+}
 /**
  * Retrieves questions from the database that were answered by the given user.
  *
