@@ -118,6 +118,7 @@ async function reportCreate(
   text: string,
   reportBy: string,
   reportDateTime: Date,
+  status: 'unresolved' | 'dismissed' | 'removed',
 ): Promise<UserReport> {
   if (text === '' || reportBy === '' || reportDateTime == null)
     throw new Error('Invalid Report Format');
@@ -125,6 +126,7 @@ async function reportCreate(
     text: text,
     reportBy: reportBy,
     reportDateTime: reportDateTime,
+    status: status,
   };
   return await UserReportModel.create(reportDetail);
 }
@@ -149,7 +151,14 @@ async function answerCreate(
   reports: UserReport[],
   isRemoved: boolean,
 ): Promise<Answer> {
-  if (text === '' || ansBy === '' || ansDateTime == null || comments == null || reports == null || isRemoved == null)
+  if (
+    text === '' ||
+    ansBy === '' ||
+    ansDateTime == null ||
+    comments == null ||
+    reports == null ||
+    isRemoved == null
+  )
     throw new Error('Invalid Answer Format');
   const answerDetail: Answer = {
     text: text,
@@ -196,7 +205,7 @@ async function questionCreate(
     tags.length === 0 ||
     askedBy === '' ||
     askDateTime == null ||
-    comments == null || 
+    comments == null ||
     reports == null ||
     isRemoved == null
   )
@@ -231,13 +240,32 @@ const populate = async () => {
     const t5 = await tagCreate(T5_NAME, T5_DESC);
     const t6 = await tagCreate(T6_NAME, T6_DESC);
 
-    const r1 = await reportCreate(R1_TEXT, 'sana', new Date('2023-12-12T03:30:00'));
-    const r2 = await reportCreate(R2_TEXT, 'ihba001', new Date('2023-12-01T15:24:19'));
-    const r3 = await reportCreate(R3_TEXT, 'saltyPeter', new Date('2023-12-18T09:24:00'));
-    const r4 = await reportCreate(R4_TEXT, 'monkeyABC', new Date('2023-12-20T03:24:42'));
-    const r5 = await reportCreate(R5_TEXT, 'hamkalo', new Date('2023-12-23T08:24:00'));
-    const r6 = await reportCreate(R6_TEXT, 'azad', new Date('2023-12-22T17:19:00'));
-
+    const r1 = await reportCreate(R1_TEXT, 'sana', new Date('2023-12-12T03:30:00'), 'unresolved');
+    const r2 = await reportCreate(
+      R2_TEXT,
+      'ihba001',
+      new Date('2023-12-01T15:24:19'),
+      'unresolved',
+    );
+    const r3 = await reportCreate(
+      R3_TEXT,
+      'saltyPeter',
+      new Date('2023-12-18T09:24:00'),
+      'unresolved',
+    );
+    const r4 = await reportCreate(
+      R4_TEXT,
+      'monkeyABC',
+      new Date('2023-12-20T03:24:42'),
+      'unresolved',
+    );
+    const r5 = await reportCreate(
+      R5_TEXT,
+      'hamkalo',
+      new Date('2023-12-23T08:24:00'),
+      'unresolved',
+    );
+    const r6 = await reportCreate(R6_TEXT, 'azad', new Date('2023-12-22T17:19:00'), 'unresolved');
 
     const c1 = await commentCreate(C1_TEXT, 'sana', new Date('2023-12-12T03:30:00'));
     const c2 = await commentCreate(C2_TEXT, 'ihba001', new Date('2023-12-01T15:24:19'));
@@ -252,14 +280,56 @@ const populate = async () => {
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
 
-    const a1 = await answerCreate(A1_TXT, 'hamkalo', new Date('2023-11-20T03:24:42'), [c1], [r1, r2, r3, r4], false);
+    const a1 = await answerCreate(
+      A1_TXT,
+      'hamkalo',
+      new Date('2023-11-20T03:24:42'),
+      [c1],
+      [r1, r2, r3, r4],
+      false,
+    );
     const a2 = await answerCreate(A2_TXT, 'azad', new Date('2023-11-23T08:24:00'), [c2], [], false);
-    const a3 = await answerCreate(A3_TXT, 'abaya', new Date('2023-11-18T09:24:00'), [c3], [r3, r2], false);
-    const a4 = await answerCreate(A4_TXT, 'alia', new Date('2023-11-12T03:30:00'), [c4], [r4], false);
+    const a3 = await answerCreate(
+      A3_TXT,
+      'abaya',
+      new Date('2023-11-18T09:24:00'),
+      [c3],
+      [r3, r2],
+      false,
+    );
+    const a4 = await answerCreate(
+      A4_TXT,
+      'alia',
+      new Date('2023-11-12T03:30:00'),
+      [c4],
+      [r4],
+      false,
+    );
     const a5 = await answerCreate(A5_TXT, 'sana', new Date('2023-11-01T15:24:19'), [c5], [], false);
-    const a6 = await answerCreate(A6_TXT, 'abhi3241', new Date('2023-02-19T18:20:59'), [c6], [], false);
-    const a7 = await answerCreate(A7_TXT, 'mackson3332', new Date('2023-02-22T17:19:00'), [c7], [], false);
-    const a8 = await answerCreate(A8_TXT, 'ihba001', new Date('2023-03-22T21:17:53'), [c8], [], false);
+    const a6 = await answerCreate(
+      A6_TXT,
+      'abhi3241',
+      new Date('2023-02-19T18:20:59'),
+      [c6],
+      [],
+      false,
+    );
+    const a7 = await answerCreate(
+      A7_TXT,
+      'mackson3332',
+      new Date('2023-02-22T17:19:00'),
+      [c7],
+      [],
+      false,
+    );
+    const a8 = await answerCreate(
+      A8_TXT,
+      'ihba001',
+      new Date('2023-03-22T21:17:53'),
+      [c8],
+      [],
+      false,
+    );
 
     await questionCreate(
       Q1_DESC,

@@ -5,7 +5,7 @@ import {
   ModApplication,
   UpdateModApplicationStatusRequest,
 } from '../types';
-import { addModApplication, fetchModApplications, updateStatus } from '../models/application';
+import { addModApplication, fetchModApplications, updateAppStatus } from '../models/application';
 
 export const modApplicationController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -109,11 +109,11 @@ export const modApplicationController = (socket: FakeSOSocket) => {
   ): Promise<void> => {
     const { id, username, accepted } = req.body;
     try {
-      const updated = await updateStatus(id, username, accepted);
+      const updated = await updateAppStatus(id, username, accepted);
       res.json(updated);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        res.status(500).send(`Error when upating application: ${err.message}`);
+        res.status(500).send(`Error when updating application: ${err.message}`);
       } else {
         res.status(500).send(`Error when updating application`);
       }

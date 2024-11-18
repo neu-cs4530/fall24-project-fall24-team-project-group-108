@@ -82,19 +82,7 @@ export interface AddUserRequest extends Request {
   body: {
     username: string;
     password: string;
-  }
-}
-
-/**
- * Interface extending the request body when reseting a password in the database which contains:
- * - username - The user's username.
- * - password - The user's new password.
- */
-export interface ResetPasswordRequest extends Request {
-  body: {
-    username: string;
-    password: string;
-  }
+  };
 }
 
 /**
@@ -104,7 +92,7 @@ export interface ResetPasswordRequest extends Request {
 export interface MakeUserModeratorRequest extends Request {
   body: {
     username: string;
-  }
+  };
 }
 
 /**
@@ -116,7 +104,7 @@ export interface FindUserRequest extends Request {
   query: {
     username: string;
     password: string;
-  }
+  };
 }
 
 /**
@@ -132,9 +120,9 @@ export type UserResponse = User | { error: string };
  */
 export interface ModApplication {
   _id?: ObjectId;
-  user: User; 
+  user: User;
   applicationText: string;
-  status: string;
+  status: 'unresolved' | 'accepted' | 'rejected';
 }
 
 /**
@@ -144,7 +132,7 @@ export interface ModApplication {
 export interface AddModApplicationRequest extends Request {
   body: {
     modApplication: ModApplication;
-  }
+  };
 }
 
 /**
@@ -156,7 +144,7 @@ export interface UpdateModApplicationStatusRequest extends Request {
     id: string;
     username: string;
     accepted: boolean;
-  }
+  };
 }
 
 /**
@@ -166,7 +154,7 @@ export interface UpdateModApplicationStatusRequest extends Request {
 export interface FindModApplicationRequest extends Request {
   query: {
     username: string;
-  }
+  };
 }
 
 /**
@@ -178,7 +166,6 @@ export type ModApplicationResponse = ModApplication | { error: string };
  * Type representing the possible responses for a ModApplication[] related operation.
  */
 export type ModApplicationResponses = ModApplication[] | { error: string };
-
 
 /**
  * Interface representing a Question document, which contains:
@@ -220,16 +207,16 @@ export interface Question {
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
  */
- export interface Message {
-  messageText: string,
-  messageDateTime: Date,
-  messageBy: string,
-  messageTo: string[]
+export interface Message {
+  messageText: string;
+  messageDateTime: Date;
+  messageBy: string;
+  messageTo: string[];
 }
 
 export interface Correspondence {
-  messages: Message[],
-  messageMembers: string[]
+  messages: Message[];
+  messageMembers: string[];
 }
 
 /**
@@ -298,6 +285,7 @@ export interface UserReport {
   text: string;
   reportBy: string;
   reportDateTime: Date;
+  status: 'unresolved' | 'dismissed' | 'removed';
 }
 
 /**
@@ -341,7 +329,7 @@ export interface ResolveReportedRequest extends Request {
     postId: string;
     type: 'question' | 'answer';
     isRemoved: boolean;
-  }
+  };
 }
 
 /**

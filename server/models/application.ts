@@ -259,30 +259,6 @@ export const findUser = async (username: string, password: string): Promise<User
 };
 
 /**
- * Updates a user to make their isModerator value equal to true.
- *
- * @param username - The username of the user being updated in the db.
- * @returns {User} - The updated user object.
- */
-export const updatePassword = async (username: string, password: string): Promise<UserResponse> => {
-  const hashedPassword = await bcrypt.hash(password, 18);
-
-  try {
-    const result = await UserModel.findOneAndUpdate(
-      { username },
-      { $set: { password: hashedPassword } },
-      { new: true },
-    );
-    if (result === null) {
-      throw new Error(`Failed to reset password`);
-    }
-    return result;
-  } catch (error) {
-    return { error: `Error when reseting password: ${(error as Error).message}` };
-  }
-};
-
-/**
  * Adds a mod application to the database using the information of the application provided by a user.
  *
  * @param user - the user who created the application.
@@ -295,19 +271,20 @@ export const addModApplication = async (
   applicationText: string,
 ): Promise<ModApplicationResponse> => {
   try {
-    const existingApplication = await ModApplicationModel.findOne({
-      username,
-      status: 'unresolved',
-    });
-    if (existingApplication) {
-      return { error: 'User already created an application request' };
-    }
     const acceptedApplication = await ModApplicationModel.findOne({
       username,
       status: 'accepted',
     });
-    if (acceptedApplication) {
+    if (acceptedApplication && acceptedApplication.status === 'accepted') {
       return { error: 'User is already a moderator' };
+    }
+
+    const existingApplication = await ModApplicationModel.findOne({
+      username,
+      status: 'unresolved',
+    });
+    if (existingApplication && existingApplication.status === 'unresolved') {
+      return { error: 'User already created an application request' };
     }
 
     const newApplication = await ModApplicationModel.create({
@@ -340,14 +317,14 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
  * @param username - The username of the user being updated in the db.
  * @returns {User} - The updated user object.
  */
-export const populateUser = async (username: string): Promise<UserResponse> => {
+export const updateUserModStatus = async (username: string): Promise<UserResponse> => {
   try {
     const result = await UserModel.findOneAndUpdate(
       { username },
       { $set: { isModerator: true } },
       { new: true },
     );
-    if (result === null) {
+    if (!result) {
       throw new Error(`Failed to fetch and populate a user`);
     }
     return result;
@@ -363,7 +340,7 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
  * @param accepted - true if application was accepted, false otherwise.
  * @returns {ModApplication} - the updated application object.
  */
-export const updateStatus = async (
+export const updateAppStatus = async (
   id: string,
   username: string,
   accepted: boolean,
@@ -380,7 +357,7 @@ export const updateStatus = async (
     }
     return result;
   } catch (error) {
-    throw new Error(`Error when updating application status: ${(error as Error).message}`);
+    return { error: `Error when updating application status: ${(error as Error).message}` };
   }
 };
 
@@ -609,10 +586,13 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
  */
 export const saveUserReport = async (report: UserReport): Promise<UserReportResponse> => {
   try {
+    if (!report || !report.text || !report.reportBy || !report.reportDateTime) {
+      throw new Error('Invalid report');
+    }
     const result = await UserReportModel.create(report);
     return result;
   } catch (error) {
-    return { error: 'Error when saving a comment' };
+    return { error: `Error when saving a comment: ${(error as Error).message}` };
   }
 };
 
@@ -906,7 +886,7 @@ export const fetchUnresolvedReports = async (
     }
     return [];
   } catch (error) {
-    return { error: 'Error when fetching the repored objects' };
+    return { error: 'Error when fetching the reported objects' };
   }
 };
 
@@ -921,7 +901,7 @@ export const fetchUnresolvedReports = async (
 export const addUserInfraction = async (
   reportedPost: Question | Answer,
   postId: string,
-): Promise<boolean> => {
+): Promise<UserResponse> => {
   try {
     const username = 'askedBy' in reportedPost ? reportedPost.askedBy : reportedPost.ansBy;
     const result = await UserModel.findOneAndUpdate(
@@ -932,9 +912,53 @@ export const addUserInfraction = async (
     if (!result) {
       throw new Error(`No answer found`);
     }
-    return true;
+    return result;
   } catch (error) {
-    throw new Error(`Error when adding user infraction: ${(error as Error).message}`);
+    return { error: 'Error when adding user infraction' };
+  }
+};
+
+/**
+ * Updates the post's removal status.
+ *
+ * @param post - The Question/Answer to be updated.
+ * @param postId - The id of the post to query in the database.
+ * @param type - The type of the post, either question or answer.
+ * @param isRemoved - True if the moderator removed the question or answer, true otherwise.
+ *
+ * @returns {boolean} - True if the status was successfully changed, false otherwise.
+ */
+export const updatePostRemovalStatus = async (
+  post: Question | Answer,
+  postId: string,
+  type: 'question' | 'answer',
+  isRemoved: boolean,
+): Promise<QuestionResponse | AnswerResponse> => {
+  try {
+    let result: QuestionResponse | AnswerResponse | null;
+    if (type === 'question' && isRemoved === true) {
+      result = await QuestionModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
+    } else if (type === 'answer' && isRemoved === true) {
+      result = await AnswerModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
+    } else {
+      result = post;
+    }
+
+    if (result === null) {
+      throw new Error(`Failed to remove post`);
+    }
+
+    return result;
+  } catch (error) {
+    return { error: `Error when removing the post: ${(error as Error).message}` };
   }
 };
 
@@ -955,45 +979,27 @@ export const updateReportStatus = async (
   isRemoved: boolean,
 ): Promise<QuestionResponse | AnswerResponse> => {
   try {
-    let result: QuestionResponse | AnswerResponse | null;
     const status = isRemoved ? 'removed' : 'dismissed';
-    if (type === 'question' && isRemoved === true) {
-      result = await QuestionModel.findOneAndUpdate(
-        { _id: postId },
-        { $set: { isRemoved: true } },
-        { new: true },
-      );
-    } else if (type === 'answer' && isRemoved === true) {
-      result = await AnswerModel.findOneAndUpdate(
-        { _id: postId },
-        { $set: { isRemoved: true } },
-        { new: true },
-      );
-    } else {
-      result = reportedPost;
+
+    if (reportedPost.reports.length > 0) {
+      const reportPromises = reportedPost.reports.map(async (report: UserReport) => {
+        const reportId = report._id;
+        return UserReportModel.findOneAndUpdate({ _id: reportId }, { status }, { new: true });
+      });
+
+      await Promise.all(reportPromises);
     }
 
-    if (result === null) {
-      throw new Error(`Failed to remove post`);
-    }
-
-    const reportPromises = reportedPost.reports.map(async (report: UserReport) => {
-      const reportId = report._id;
-      return UserReportModel.findOneAndUpdate({ _id: reportId }, { status }, { new: true });
-    });
-
-    const resolvedReports = await Promise.all(reportPromises);
-
-    if (!resolvedReports) {
-      throw new Error(`No answer found`);
-    }
-
+    // if the report is accepted and the post is removed, add that post to the user who posted's infractions list
     if (status === 'removed') {
       await addUserInfraction(reportedPost, postId);
     }
+
+    // Remove the associated reported post if removed, otherwise retain original post
+    const result = await updatePostRemovalStatus(reportedPost, postId, type, isRemoved);
     return result;
   } catch (error) {
-    throw new Error(`Error when resolving the reported object: ${(error as Error).message}`);
+    return { error: `Error when resolving the reported object: ${(error as Error).message}` };
   }
 };
 

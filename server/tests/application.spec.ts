@@ -18,17 +18,23 @@ import {
   addVoteToQuestion,
   addUser,
   findUser,
-  updatePassword,
   addModApplication,
   fetchModApplications,
-  removeModApplication,
-  populateUser,
+  updateUserModStatus,
+  updateAppStatus,
+  addUserInfraction,
+  updatePostRemovalStatus,
+  updateReportStatus,
+  saveUserReport,
+  fetchUnresolvedReports,
+  addReport,
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User } from '../types';
-import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
+import { Answer, Question, Tag, Comment, User, UserReport, ModApplication } from '../types';
+import { T1_DESC, T2_DESC, T3_DESC, R1_TEXT, R2_TEXT, R3_TEXT } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import ModApplicationModel from '../models/modApplication';
+import UserReportModel from '../models/userReport';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -64,6 +70,8 @@ const ans1: Answer = {
   ansBy: 'ansBy1',
   ansDateTime: new Date('2023-11-18T09:24:00'),
   comments: [],
+  reports: [],
+  isRemoved: false,
 };
 
 const ans2: Answer = {
@@ -72,6 +80,8 @@ const ans2: Answer = {
   ansBy: 'ansBy2',
   ansDateTime: new Date('2023-11-20T09:24:00'),
   comments: [],
+  reports: [],
+  isRemoved: false,
 };
 
 const ans3: Answer = {
@@ -80,6 +90,8 @@ const ans3: Answer = {
   ansBy: 'ansBy3',
   ansDateTime: new Date('2023-11-19T09:24:00'),
   comments: [],
+  reports: [],
+  isRemoved: false,
 };
 
 const ans4: Answer = {
@@ -88,6 +100,8 @@ const ans4: Answer = {
   ansBy: 'ansBy4',
   ansDateTime: new Date('2023-11-19T09:24:00'),
   comments: [],
+  reports: [],
+  isRemoved: false,
 };
 
 const QUESTIONS: Question[] = [
@@ -103,6 +117,8 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    reports: [],
+    isRemoved: false,
   },
   {
     _id: new ObjectId('65e9b5a995b6c7045a30d823'),
@@ -116,6 +132,8 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    reports: [],
+    isRemoved: false,
   },
   {
     _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
@@ -129,12 +147,14 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    reports: [],
+    isRemoved: false,
   },
   {
     _id: new ObjectId('65e9b716ff0e892116b2de09'),
     title: 'Unanswered Question #2',
     text: 'Does something like that exist?',
-    tags: [],
+    tags: [tag1],
     answers: [],
     askedBy: 'q_by4',
     askDateTime: new Date('2023-11-20T09:24:00'),
@@ -142,231 +162,773 @@ const QUESTIONS: Question[] = [
     upVotes: [],
     downVotes: [],
     comments: [],
+    reports: [],
+    isRemoved: true,
   },
 ];
 
 const user1: User = {
-  _id: new ObjectId(),
+  _id: new ObjectId('65e9b786ff0e893116b2af69'),
   username: 'user1',
   password: 'Password1!',
   isModerator: false,
+  infractions: [],
 };
 
 const user2: User = {
-  _id: new ObjectId(),
+  _id: new ObjectId('65e9b786ff0e893116b2af70'),
   username: 'user2',
   password: 'Password2!',
   isModerator: false,
+  infractions: [],
 };
 
-const mockApplication1 = { username: 'testuser1', applicationText: 'Please!' };
+const mockApplication1 = {
+  _id: new ObjectId('65e9b786ff0e893116b2af71'),
+  username: 'testuser1',
+  applicationText: 'Please!',
+  status: 'unresolved',
+};
 
 const mockApplication2 = {
+  _id: new ObjectId('65e9b786ff0e893116b2af72'),
   username: 'testuser2',
   applicationText:
     'I want to become a moderator so like I think it would be great if you accepted me and what not, ummmmmmm, anyway yeah please accept me!',
+  status: 'unresolved',
 };
 
+const r1: UserReport = {
+  _id: new ObjectId('65e9b786ff0e893116b2af73'),
+  text: R1_TEXT,
+  reportBy: 'user1',
+  reportDateTime: new Date(),
+  status: 'unresolved',
+};
+
+const r2: UserReport = {
+  _id: new ObjectId('65e9b786ff0e893116b2af74'),
+  text: R2_TEXT,
+  reportBy: 'user2',
+  reportDateTime: new Date(),
+  status: 'unresolved',
+};
+
+const r3: UserReport = {
+  _id: new ObjectId('65e9b786ff0e893116b2af75'),
+  text: R3_TEXT,
+  reportBy: 'user1',
+  reportDateTime: new Date(),
+  status: 'unresolved',
+};
+
+const reportedAns1: Answer = {
+  _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+  text: 'ans1',
+  ansBy: 'ansBy1',
+  ansDateTime: new Date('2023-11-18T09:24:00'),
+  comments: [],
+  reports: [r1, r2],
+  isRemoved: false,
+};
+
+const reportedAns2: Answer = {
+  _id: new ObjectId('65e9b58910afe6e94fc6e6dd'),
+  text: 'ans2',
+  ansBy: 'ansBy2',
+  ansDateTime: new Date('2023-11-20T09:24:00'),
+  comments: [],
+  reports: [],
+  isRemoved: false,
+};
+
+const QUESTIONSREPORTED: Question[] = [
+  {
+    _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+    title: 'Quick question about storage on android',
+    text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
+    tags: [tag3, tag2],
+    answers: [reportedAns1, reportedAns2],
+    askedBy: 'q_by1',
+    askDateTime: new Date('2023-11-16T09:24:00'),
+    views: ['question1_user', 'question2_user'],
+    upVotes: [],
+    downVotes: [],
+    comments: [],
+    reports: [],
+    isRemoved: false,
+  },
+  {
+    _id: new ObjectId('65e9b5a995b6c7045a30d823'),
+    title: 'Object storage for a web application',
+    text: 'I am currently working on a website where, roughly 40 million documents and images should be served to its users. I need suggestions on which method is the most suitable for storing content with subject to these requirements.',
+    tags: [tag1, tag2],
+    answers: [ans1, ans2, ans3],
+    askedBy: 'q_by2',
+    askDateTime: new Date('2023-11-17T09:24:00'),
+    views: ['question2_user'],
+    upVotes: [],
+    downVotes: [],
+    comments: [],
+    reports: [r2],
+    isRemoved: false,
+  },
+];
+
 const MOCK_APPLICATIONS = [mockApplication1, mockApplication2];
-
-describe('Mod Application model', () => {
-  beforeEach(() => {
-    mockingoose.resetAll();
-  });
-
-  describe('addModApplication', () => {
-    test('Should add a mod application to the database if none already exists', async () => {
-      mockingoose(ModApplicationModel).toReturn(null, 'findOne');
-      mockingoose(ModApplicationModel).toReturn(mockApplication1, 'create');
-
-      const result = await addModApplication(
-        mockApplication1.username,
-        mockApplication1.applicationText,
-      );
-      expect(result).toBeTruthy();
-    });
-
-    test('Should return an error if the user has an unresolved application in the database', async () => {
-      mockingoose(ModApplicationModel).toReturn(mockApplication2, 'findOne');
-
-      const result = await addModApplication(
-        mockApplication1.username,
-        mockApplication1.applicationText,
-      );
-      expect(result).toEqual({ error: 'User already created an application request' });
-    });
-
-    test('Should return an error if saving the application to the database fails', async () => {
-      // mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'create');
-
-      jest.spyOn(ModApplicationModel, 'create').mockImplementationOnce(() => {
-        throw new Error('Error');
-      });
-
-      const result = await addModApplication(
-        mockApplication2.username,
-        mockApplication2.applicationText,
-      );
-      expect(result).toEqual({ error: 'Error when saving the mod application' });
-    });
-  });
-  describe('fetchModApplication', () => {
-    test('Should return all mod applications', async () => {
-      mockingoose(ModApplicationModel).toReturn(MOCK_APPLICATIONS, 'find');
-
-      const result = await fetchModApplications();
-      expect(result).toBeTruthy();
-    });
-
-    test('Should return an error if the get from the database fails', async () => {
-      mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'find');
-
-      const result = await fetchModApplications();
-      expect(result).toEqual({ error: 'Error when saving the mod application' });
-    });
-  });
-  describe('removeModApplication', () => {
-    test('Should delete the mod application from the database if valid', async () => {
-      const { username } = mockApplication1;
-      mockingoose(ModApplicationModel).toReturn({ username }, 'findOneAndDelete');
-
-      const result = await removeModApplication(mockApplication1.username);
-      expect(result).toBe(true);
-    });
-
-    test('Should return an error if the user does not have an application in the database', async () => {
-      mockingoose(ModApplicationModel).toReturn(null, 'findOneAndDelete');
-
-      await expect(removeModApplication('null')).rejects.toThrow(
-        'Error when deleting the application: No application found',
-      );
-    });
-
-    test('Should return an error if findOneAndDelete encounters an error', async () => {
-      mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'findOneAndDelete');
-
-      await expect(removeModApplication(mockApplication1.username)).rejects.toThrow(
-        'Error when deleting the application: Error',
-      );
-    });
-  });
-  describe('populateUser', () => {
-    test('Should make a user a moderator', async () => {
-      mockingoose(ModApplicationModel).toReturn(user1, 'findOneAndDelete');
-
-      const result = await populateUser(user1.username);
-      expect(result).toEqual(true);
-    });
-  });
-});
-
-describe('User model', () => {
-  beforeEach(() => {
-    mockingoose.resetAll();
-  });
-
-  describe('addUser', () => {
-    test('should add a new user to the database if not already present', async () => {
-      mockingoose(UserModel).toReturn(null, 'findOne');
-      mockingoose(UserModel).toReturn(user2, 'save');
-
-      const result = await addUser(user2);
-
-      expect(result).not.toBeNull();
-      expect(result?.username).toEqual('user2');
-      expect(result?.isModerator).toBe(false);
-    });
-
-    test('should be null if the user is already in the database', async () => {
-      mockingoose(UserModel).toReturn(user1, 'findOne');
-
-      const result = await addUser(user1);
-
-      expect(result).toBeNull();
-    });
-
-    test('should return null if an error occurs', async () => {
-      mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
-
-      const result = await addUser(user1);
-
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('findUser', () => {
-    test('should return user if username and password are correct', async () => {
-      bcrypt.compare = jest.fn().mockResolvedValue(true);
-
-      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
-
-      const result = await findUser(user1.username, user1.password);
-
-      expect(result).toBeTruthy();
-      expect(result?.username).toBe(user1.username);
-    });
-
-    test('should return null if username is not in the database', async () => {
-      mockingoose(UserModel).toReturn(null, 'findOne');
-
-      const result = await findUser(user1.username, user1.password);
-
-      expect(result).toBeNull();
-    });
-
-    test('should return null if password is incorrect', async () => {
-      bcrypt.compare = jest.fn().mockResolvedValue(false);
-      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
-
-      const result = await findUser(user1.username, user1.password);
-
-      expect(result).toBeNull();
-    });
-
-    test('should return null if an error occurs', async () => {
-      mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
-
-      const result = await findUser(user1.username, user1.password);
-
-      expect(result).toBeNull();
-    });
-  });
-  describe('updatePassword', () => {
-    test('should update the user password then the user', async () => {
-      const newPassword = 'NewPassword1!';
-      bcrypt.hash = jest.fn().mockResolvedValue('mock-hash');
-      bcrypt.compare = jest.fn().mockResolvedValue(false);
-      mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOneAndUpdate');
-
-      const result = await updatePassword(user1.username, newPassword);
-
-      expect(result).toBeTruthy();
-    });
-
-    test('should throw a new error if the user is found in the database', async () => {
-      const newPassword = 'NewPassword1!';
-      mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
-
-      const result = await updatePassword(user1.username, newPassword);
-
-      expect(result).toEqual({ error: 'Error when reseting password: Failed to reset password' });
-    });
-
-    test('should handle an error being returned', async () => {
-      const newPassword = 'NewPassword1!';
-      mockingoose(UserModel).toReturn(new Error('Error'), 'findOneAndUpdate');
-
-      const result = await updatePassword(user1.username, newPassword);
-
-      expect(result).toEqual({ error: 'Error when reseting password: Error' });
-    });
-  });
-});
 
 describe('application module', () => {
   beforeEach(() => {
     mockingoose.resetAll();
   });
+
+  describe('Mod Application model', () => {
+    describe('addModApplication', () => {
+      test('Should add a mod application to the database if none already exists', async () => {
+        mockingoose(ModApplicationModel).toReturn(null, 'findOne');
+        mockingoose(ModApplicationModel).toReturn(mockApplication1, 'create');
+
+        const result = await addModApplication(
+          mockApplication1.username,
+          mockApplication1.applicationText,
+        );
+        expect(result).toBeTruthy();
+      });
+
+      test('Should return an error if the user has an unresolved application in the database', async () => {
+        mockingoose(ModApplicationModel).toReturn(mockApplication2, 'findOne');
+
+        const result = await addModApplication(
+          mockApplication1.username,
+          mockApplication1.applicationText,
+        );
+        expect(result).toEqual({ error: 'User already created an application request' });
+      });
+
+      test('Should return an error if saving the application to the database fails', async () => {
+        jest.spyOn(ModApplicationModel, 'create').mockImplementationOnce(() => {
+          throw new Error('Error');
+        });
+
+        const result = await addModApplication(
+          mockApplication2.username,
+          mockApplication2.applicationText,
+        );
+        expect(result).toEqual({ error: 'Error when saving the mod application' });
+      });
+
+      test('Should return an error if saving the application to the database fails', async () => {
+        const mockModUser: User = {
+          _id: new ObjectId('65e9b786ff0e893116b2af69'),
+          username: 'user4',
+          password: 'Password1!',
+          isModerator: true,
+          infractions: [],
+        };
+        const mockAcceptedApp = {
+          username: mockModUser.username,
+          applicationText:
+            'I want to become a moderator so like I think it would be great if you accepted me and what not, ummmmmmm, anyway yeah please accept me!',
+          status: 'accepted',
+        };
+
+        mockingoose(ModApplicationModel).toReturn(mockAcceptedApp, 'findOne');
+
+        const result = await addModApplication(mockModUser.username, 'test');
+        expect(result).toEqual({ error: 'User is already a moderator' });
+      });
+    });
+
+    describe('fetchModApplication', () => {
+      test('Should return all mod applications', async () => {
+        mockingoose(ModApplicationModel).toReturn(MOCK_APPLICATIONS, 'find');
+
+        const result = await fetchModApplications();
+        expect(result).toBeTruthy();
+      });
+
+      test('Should return an error if the get from the database fails', async () => {
+        mockingoose(ModApplicationModel).toReturn(new Error('Error'), 'find');
+
+        const result = await fetchModApplications();
+        expect(result).toEqual({ error: 'Error when fetching the mod application' });
+      });
+    });
+    describe('updateAppStatus', () => {
+      test('Should update the mod status to accepted', async () => {
+        const updatedApp = { ...mockApplication1, status: 'accepted' };
+        const updateSpy = jest.spyOn(ModApplicationModel, 'findOneAndUpdate');
+        const appId = mockApplication1._id?.toString() as string;
+        mockingoose(ModApplicationModel).toReturn(updatedApp, 'findOneAndUpdate');
+
+        const result = (await updateAppStatus(
+          appId,
+          mockApplication1.username,
+          true,
+        )) as ModApplication;
+
+        expect(result.status).toBe('accepted');
+        expect(updateSpy).toHaveBeenCalledWith(
+          { _id: appId, username: mockApplication1.username },
+          { $set: { status: 'accepted' } },
+          { new: true },
+        );
+      });
+
+      test('Should update the mod status to rejected', async () => {
+        const updatedApp = { ...mockApplication2, status: 'rejected' };
+        const updateSpy = jest.spyOn(ModApplicationModel, 'findOneAndUpdate');
+        const appId = mockApplication2._id?.toString() as string;
+        mockingoose(ModApplicationModel).toReturn(updatedApp, 'findOneAndUpdate');
+
+        const result = (await updateAppStatus(
+          appId,
+          mockApplication2.username,
+          false,
+        )) as ModApplication;
+
+        expect(result.status).toBe('rejected');
+        expect(updateSpy).toHaveBeenCalledWith(
+          { _id: appId, username: mockApplication2.username },
+          { $set: { status: 'rejected' } },
+          { new: true },
+        );
+      });
+
+      test('Should throw an error if the ModApplication is not in the db', async () => {
+        mockingoose(ModApplicationModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await updateAppStatus('bad_id', user2.username, true);
+
+        expect(result).toEqual({
+          error: 'Error when updating application status: No application found',
+        });
+      });
+
+      test('Should throw an error if findOneAndUpdate fails', async () => {
+        mockingoose(ModApplicationModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = await updateAppStatus(
+          mockApplication2._id?.toString() as string,
+          user2.username,
+          true,
+        );
+
+        expect(result).toEqual({ error: 'Error when updating application status: err' });
+      });
+    });
+
+    describe('updateUserModStatus', () => {
+      test('Should make a user a moderator', async () => {
+        const updatedUser: User = {
+          _id: new ObjectId('65e9b786ff0e893116b2af69'),
+          username: 'user1',
+          password: 'Password1!',
+          isModerator: true,
+          infractions: [],
+        };
+        mockingoose(UserModel).toReturn(updatedUser, 'findOneAndUpdate');
+
+        const result = await updateUserModStatus(user1.username);
+        // used toMatchObject instead of toEqual because the order of the values in the object slightly changes
+        expect(result).toMatchObject(updatedUser);
+      });
+
+      test('Should return an error if username is bad', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await updateUserModStatus('_');
+        // used toMatchObject instead of toEqual because the order of the values in the object slightly changes
+        expect(result).toEqual({
+          error:
+            'Error when fetching and populating a document: Failed to fetch and populate a user',
+        });
+      });
+
+      test('Should return an error if error occurs while updating database', async () => {
+        mockingoose(UserModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = await updateUserModStatus('user1');
+        expect(result).toEqual({
+          error: 'Error when fetching and populating a document: err',
+        });
+      });
+    });
+  });
+
+  describe('User model', () => {
+    beforeEach(() => {
+      mockingoose.resetAll();
+    });
+
+    describe('addUser', () => {
+      test('should add a new user to the database if not already present', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+        mockingoose(UserModel).toReturn(user2, 'save');
+
+        const result = await addUser(user2);
+
+        expect(result).not.toBeNull();
+        expect(result?.username).toEqual('user2');
+        expect(result?.isModerator).toBe(false);
+      });
+
+      test('should be null if the user is already in the database', async () => {
+        mockingoose(UserModel).toReturn(user1, 'findOne');
+
+        const result = await addUser(user1);
+
+        expect(result).toBeNull();
+      });
+
+      test('should return null if an error occurs', async () => {
+        mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
+
+        const result = await addUser(user1);
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('findUser', () => {
+      test('should return user if username and password are correct', async () => {
+        bcrypt.compare = jest.fn().mockResolvedValue(true);
+
+        mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
+
+        const result = await findUser(user1.username, user1.password);
+
+        expect(result).toBeTruthy();
+        expect(result?.username).toBe(user1.username);
+      });
+
+      test('should return null if username is not in the database', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOne');
+
+        const result = await findUser(user1.username, user1.password);
+
+        expect(result).toBeNull();
+      });
+
+      test('should return null if password is incorrect', async () => {
+        bcrypt.compare = jest.fn().mockResolvedValue(false);
+        mockingoose(UserModel).toReturn({ ...user1, password: 'mock-hash' }, 'findOne');
+
+        const result = await findUser(user1.username, user1.password);
+
+        expect(result).toBeNull();
+      });
+
+      test('should return null if an error occurs', async () => {
+        mockingoose(UserModel).toReturn(new Error('Error'), 'findOne');
+
+        const result = await findUser(user1.username, user1.password);
+
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('addUserInfraction', () => {
+      test('should add an infraction to a user', async () => {
+        const ansInfraction: Answer = {
+          _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+          text: 'ans1',
+          ansBy: 'user1',
+          ansDateTime: new Date('2023-11-18T09:24:00'),
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+        const ansID = ansInfraction._id?.toString() as string;
+        mockingoose(UserModel).toReturn({ ...user1, infractions: [ansID] }, 'findOneAndUpdate');
+
+        expect(user1.infractions.length).toEqual(0);
+        const result = (await addUserInfraction(ansInfraction, ansID)) as User;
+
+        expect(result.infractions.length).toEqual(1);
+      });
+
+      test('should return an error if ansBy does not find a user', async () => {
+        const ansID = ans2._id?.toString() as string;
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addUserInfraction(ans1, ansID);
+
+        expect(result).toEqual({ error: 'Error when adding user infraction' });
+      });
+
+      test('should return an error if an error occurs in findOneAndUpdate', async () => {
+        const ansID = ans2._id?.toString() as string;
+        mockingoose(UserModel).toReturn(new Error('Error'), 'findOneAndUpdate');
+
+        const result = (await addUserInfraction(ans1, ansID)) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when adding user infraction');
+      });
+    });
+  });
+
+  describe('UserReport model', () => {
+    beforeEach(() => {
+      mockingoose.resetAll();
+    });
+
+    describe('addReport', () => {
+      test('should add a report to a question', async () => {
+        const question = { ...QUESTIONS[0], reports: [r1._id] };
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn(question, 'findOneAndUpdate');
+
+        const result = (await addReport(qid, 'question', r1)) as Question;
+
+        expect(result.reports.length).toEqual(1);
+      });
+
+      test('should add a report to an answer', async () => {
+        const answer = { ...ans1, reports: [r1._id] };
+        const aid = ans1._id?.toString() as string;
+        mockingoose(AnswerModel).toReturn(answer, 'findOneAndUpdate');
+
+        const result = (await addReport(aid, 'answer', r1)) as Answer;
+
+        expect(result.reports.length).toEqual(1);
+      });
+
+      test('should return an error if the mongoDB operation fails', async () => {
+        const aid = ans1._id as unknown as string;
+        mockingoose(AnswerModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = await addReport(aid, 'answer', r1);
+
+        expect(result).toEqual({ error: 'Error when adding report: err' });
+      });
+
+      test('should return an error if the report is invalid', async () => {
+        const answer: Answer = { ...ans1 };
+        mockingoose(AnswerModel).toReturn(null, 'findOneAndUpdate');
+        const result = await addReport(answer._id?.toString() as string, 'answer', r1);
+        expect(result).toEqual({ error: 'Error when adding report: Failed to add report' });
+      });
+
+      test('should throw an error if a required field is missing in the report', async () => {
+        const invalidReport: Partial<UserReport> = {
+          text: 'This is an answer text',
+          reportBy: 'user123',
+        };
+        const question = { ...QUESTIONS[0], reports: [r1._id] };
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn(question, 'findOneAndUpdate');
+
+        try {
+          await addReport(qid, 'question', invalidReport as UserReport);
+        } catch (err: unknown) {
+          expect(err).toBeInstanceOf(Error);
+          if (err instanceof Error) expect(err.message).toBe('Invalid report');
+        }
+      });
+    });
+
+    describe('updatePostRemovalStatus', () => {
+      test('should remove a question post', async () => {
+        const question = QUESTIONS[0];
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn({ question, isRemoved: true }, 'findOneAndUpdate');
+
+        expect(question.isRemoved).toBe(false);
+        const result = (await updatePostRemovalStatus(question, qid, 'question', true)) as Question;
+
+        expect(result.isRemoved).toBe(true);
+      });
+
+      test('should remove an answer post', async () => {
+        const ansId = ans1._id?.toString() as string;
+        mockingoose(AnswerModel).toReturn({ ans1, isRemoved: true }, 'findOneAndUpdate');
+
+        expect(ans1.isRemoved).toBe(false);
+        const result = (await updatePostRemovalStatus(ans1, ansId, 'answer', true)) as Answer;
+
+        expect(result.isRemoved).toBe(true);
+      });
+
+      test('should NOT remove a question post', async () => {
+        const question = QUESTIONS[0];
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn({ question, isRemoved: true }, 'findOneAndUpdate');
+
+        expect(question.isRemoved).toBe(false);
+        const result = (await updatePostRemovalStatus(
+          question,
+          qid,
+          'question',
+          false,
+        )) as Question;
+
+        expect(result.isRemoved).toBe(false);
+      });
+
+      test('should NOT remove an answer post', async () => {
+        const ansId = ans1._id?.toString() as string;
+        mockingoose(AnswerModel).toReturn({ ans1, isRemoved: true }, 'findOneAndUpdate');
+
+        expect(ans1.isRemoved).toBe(false);
+        const result = (await updatePostRemovalStatus(ans1, ansId, 'answer', false)) as Answer;
+
+        expect(result.isRemoved).toBe(false);
+      });
+
+      test('should throw an error if question is invalid', async () => {
+        const question = QUESTIONS[0];
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = (await updatePostRemovalStatus(question, qid, 'question', true)) as Question;
+
+        expect(result).toEqual({ error: 'Error when removing the post: Failed to remove post' });
+      });
+
+      test('should throw an error if an error occurs while updating the database', async () => {
+        const question = QUESTIONS[0];
+        const qid = question._id?.toString() as string;
+        mockingoose(QuestionModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = (await updatePostRemovalStatus(question, qid, 'question', true)) as Question;
+
+        expect(result).toEqual({ error: 'Error when removing the post: err' });
+      });
+    });
+
+    describe('updateReportStatus', () => {
+      const mockQuestion: Question = {
+        _id: new ObjectId('65e9b716ff0e892116b2de6c'),
+        title: 'Test Q',
+        text: 'Test',
+        tags: [],
+        answers: [],
+        askedBy: 'q_by4',
+        askDateTime: new Date('2023-11-20T09:24:00'),
+        views: [],
+        upVotes: [],
+        downVotes: [],
+        comments: [],
+        reports: [r1, r2],
+        isRemoved: false,
+      };
+
+      const mockAns: Answer = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6df'),
+        text: 'ans4',
+        ansBy: 'ansBy4',
+        ansDateTime: new Date('2023-11-19T09:24:00'),
+        comments: [],
+        reports: [r3],
+        isRemoved: false,
+      };
+
+      test('should update report on removed question', async () => {
+        const qid = mockQuestion._id?.toString() as string;
+        const reportUpdateSpy = jest.spyOn(UserReportModel, 'findOneAndUpdate');
+        mockingoose(UserReportModel).toReturn(
+          { ...mockQuestion.reports[0], status: 'removed' },
+          'findOneAndUpdate',
+        );
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, isRemoved: true },
+          'findOneAndUpdate',
+        );
+        mockingoose(AnswerModel).toReturn(mockAns, 'findOneAndUpdate');
+
+        expect(mockQuestion.isRemoved).toBe(false);
+        expect(mockQuestion.reports[0].status).toBe('unresolved');
+        const result = (await updateReportStatus(mockQuestion, qid, 'question', true)) as Question;
+
+        expect(result.isRemoved).toBe(true);
+        expect(reportUpdateSpy).toHaveBeenCalledWith(
+          { _id: new ObjectId('65e9b786ff0e893116b2af74') },
+          { status: 'removed' },
+          { new: true },
+        );
+      });
+
+      test('should update report on removed answer', async () => {
+        const aid = mockAns._id?.toString() as string;
+        const reportUpdateSpy = jest.spyOn(UserReportModel, 'findOneAndUpdate');
+        mockingoose(UserReportModel).toReturn(
+          { ...mockAns.reports[0], status: 'removed' },
+          'findOneAndUpdate',
+        );
+        mockingoose(AnswerModel).toReturn({ ...mockAns, isRemoved: true }, 'findOneAndUpdate');
+
+        expect(mockAns.isRemoved).toBe(false);
+        expect(mockAns.reports[0].status).toBe('unresolved');
+        const result = (await updateReportStatus(mockAns, aid, 'answer', true)) as Answer;
+
+        expect(result.isRemoved).toBe(true);
+        expect(reportUpdateSpy).toHaveBeenCalledWith(
+          { _id: new ObjectId('65e9b786ff0e893116b2af75') },
+          { status: 'removed' },
+          { new: true },
+        );
+      });
+
+      test('should update report on dismissed question', async () => {
+        const qid = mockQuestion._id?.toString() as string;
+        const reportUpdateSpy = jest.spyOn(UserReportModel, 'findOneAndUpdate');
+        mockingoose(UserReportModel).toReturn(
+          { ...mockQuestion.reports[0], status: 'dismissed' },
+          'findOneAndUpdate',
+        );
+        mockingoose(QuestionModel).toReturn(
+          { ...mockQuestion, isRemoved: false },
+          'findOneAndUpdate',
+        );
+        mockingoose(AnswerModel).toReturn(mockAns, 'findOneAndUpdate');
+
+        expect(mockQuestion.isRemoved).toBe(false);
+        expect(mockQuestion.reports[0].status).toBe('unresolved');
+        const result = (await updateReportStatus(mockQuestion, qid, 'question', false)) as Question;
+
+        expect(result.isRemoved).toBe(false);
+        expect(reportUpdateSpy).toHaveBeenCalledWith(
+          { _id: new ObjectId('65e9b786ff0e893116b2af74') },
+          { status: 'dismissed' },
+          { new: true },
+        );
+      });
+
+      test('should update report on dismissed answer', async () => {
+        const aid = mockAns._id?.toString() as string;
+        const reportUpdateSpy = jest.spyOn(UserReportModel, 'findOneAndUpdate');
+        mockingoose(UserReportModel).toReturn(
+          { ...mockAns.reports[0], status: 'dismissed' },
+          'findOneAndUpdate',
+        );
+        mockingoose(AnswerModel).toReturn({ ...mockAns, isRemoved: false }, 'findOneAndUpdate');
+
+        expect(mockAns.isRemoved).toBe(false);
+        expect(mockAns.reports[0].status).toBe('unresolved');
+        const result = (await updateReportStatus(mockAns, aid, 'answer', false)) as Answer;
+
+        expect(result.isRemoved).toBe(false);
+        expect(reportUpdateSpy).toHaveBeenCalledWith(
+          { _id: new ObjectId('65e9b786ff0e893116b2af75') },
+          { status: 'dismissed' },
+          { new: true },
+        );
+      });
+
+      test('should throw an error if no reports are found on the post', async () => {
+        const q = QUESTIONS[0];
+        const qid = q._id?.toString() as string;
+
+        const result = await updateReportStatus(q, qid, 'question', true);
+
+        expect(result).toEqual({
+          error: 'Error when resolving the reported object: No reports found',
+        });
+      });
+
+      test('should throw an error if an error occurs in the database operations', async () => {
+        const qid = mockQuestion._id?.toString() as string;
+        mockingoose(UserReportModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = await updateReportStatus(mockQuestion, qid, 'question', true);
+
+        expect(result).toEqual({ error: 'Error when resolving the reported object: err' });
+      });
+    });
+
+    describe('saveUserReport', () => {
+      test('should save a report', async () => {
+        mockingoose(UserReportModel).toReturn(r1, 'create');
+
+        const result = await saveUserReport(r1);
+
+        expect(result).toMatchObject(r1);
+      });
+
+      test('should save a report', async () => {
+        jest.spyOn(UserReportModel, 'create').mockRejectedValue(new Error('err'));
+
+        const result = await saveUserReport(r1);
+
+        expect(result).toEqual({ error: 'Error when saving a comment: err' });
+      });
+
+      test('should save a report', async () => {
+        const badReport = { ...r1, text: undefined as unknown as string };
+        mockingoose(UserReportModel).toReturn(badReport, 'create');
+
+        const result = await saveUserReport(badReport);
+
+        expect(result).toEqual({ error: 'Error when saving a comment: Invalid report' });
+      });
+    });
+    describe('fetchUnresolvedReports', () => {
+      beforeEach(() => {
+        mockingoose.resetAll();
+      });
+
+      test('should return nothing if there are no reported questions', async () => {
+        mockingoose(QuestionModel).toReturn([], 'find');
+
+        const result = (await fetchUnresolvedReports('question')) as unknown as UserReport[];
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('should return nothing if there are no reported answers', async () => {
+        mockingoose(QuestionModel).toReturn([], 'find');
+
+        const result = (await fetchUnresolvedReports('answer')) as unknown as UserReport[];
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('should return an error if a mongoDB operation fails', async () => {
+        mockingoose(QuestionModel).toReturn(new Error('err'), 'find');
+
+        const result = await fetchUnresolvedReports('answer');
+
+        expect(result).toEqual({ error: 'Error when fetching the reported objects' });
+      });
+
+      test('should receive empty array if type is incorrect', async () => {
+        const result = await fetchUnresolvedReports('answerz' as 'answer');
+
+        expect(result).toEqual([]);
+      });
+
+      test('should return reports on questions in a list of questions ', async () => {
+        mockingoose(QuestionModel).toReturn(
+          QUESTIONSREPORTED.filter(q => q.reports.length > 0).map(q => ({ ...q, reports: [r2] })),
+          'find',
+        );
+
+        const result = (await fetchUnresolvedReports('question')) as unknown as UserReport[];
+
+        expect(result.length).toEqual(1);
+      });
+    });
+
+    test('should return reports on answers in a list of questions', async () => {
+      mockingoose(QuestionModel).toReturn(
+        QUESTIONSREPORTED.map(question => {
+          question.answers = (question.answers as Answer[]).filter(
+            answer => answer.reports && answer.reports.length > 0,
+          );
+          return question;
+        }),
+        'find',
+      );
+
+      const result = (await fetchUnresolvedReports('answer')) as unknown as UserReport[];
+
+      expect(result.length).toEqual(2);
+    });
+  });
+
   describe('Question model', () => {
     beforeEach(() => {
       mockingoose.resetAll();
@@ -401,7 +963,7 @@ describe('application module', () => {
       test('filter question by multiple tags', () => {
         const result = filterQuestionsBySearch(QUESTIONS, '[android] [react]');
 
-        expect(result.length).toEqual(2);
+        expect(result.length).toEqual(3);
         expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
         expect(result[1]._id?.toString()).toEqual('65e9b5a995b6c7045a30d823');
       });
@@ -641,6 +1203,8 @@ describe('application module', () => {
           upVotes: [],
           downVotes: [],
           comments: [],
+          reports: [],
+          isRemoved: false,
         };
 
         const result = (await saveQuestion(mockQn)) as Question;
@@ -826,6 +1390,8 @@ describe('application module', () => {
           ansBy: 'dummyUserId',
           ansDateTime: new Date('2024-06-06'),
           comments: [],
+          reports: [],
+          isRemoved: false,
         };
 
         const result = (await saveAnswer(mockAnswer)) as Answer;
@@ -1014,13 +1580,22 @@ describe('application module', () => {
         expect(result).toBeNull();
       });
 
-      test('getTagCountMap should return default map if QuestionModel find returns null but not tag find', async () => {
+      test('getTagCountMap should not return the tag if QuestionModel find returns null but not tag find', async () => {
         mockingoose(QuestionModel).toReturn(null, 'find');
         mockingoose(Tags).toReturn([tag1], 'find');
 
         const result = (await getTagCountMap()) as Map<string, number>;
 
-        expect(result.get('react')).toBe(0);
+        expect(result.get('react')).toBeUndefined();
+      });
+
+      test('getTagCountMap should not return tags if a question is removed', async () => {
+        mockingoose(QuestionModel).toReturn(null, 'find');
+        mockingoose(Tags).toReturn([tag1, tag2], 'find');
+
+        const result = (await getTagCountMap()) as Map<string, number>;
+
+        expect(result.get('react')).toBeUndefined();
       });
 
       test('getTagCountMap should return null if find returns []', async () => {

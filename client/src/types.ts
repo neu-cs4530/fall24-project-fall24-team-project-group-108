@@ -64,7 +64,7 @@ export interface UserReport {
   text: string;
   reportBy: string;
   reportDateTime: Date;
-  status: string;
+  status: 'unresolved' | 'dismissed' | 'removed';
 }
 
 /**

@@ -50,7 +50,7 @@ const userReportController = (socket: FakeSOSocket) => {
     report.reportDateTime !== null;
 
   /**
-   * Handles adding a new report to the specified question or answer. The report is first validated and then saved.
+   * Handles adding aF new report to the specified question or answer. The report is first validated and then saved.
    * If the report is invalid or saving fails, the HTTP response status is updated.
    *
    * @param req - The AddReportRequest object containing the report data.
@@ -103,7 +103,11 @@ const userReportController = (socket: FakeSOSocket) => {
       socket.emit('userReportsUpdate', { result: populatedDoc, type });
       res.json(reportFromDb);
     } catch (err: unknown) {
-      res.status(500).send(`Error when adding comment: ${(err as Error).message}`);
+      if (err instanceof Error) {
+        res.status(500).send(`Error when adding report: ${(err as Error).message}`);
+      } else {
+        res.status(500).send(`Error when adding report`);
+      }
     }
   };
 
