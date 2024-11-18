@@ -231,6 +231,28 @@ export interface Correspondence {
   messageMembers: string[]
 }
 
+
+/**
+ * Interface representing the structure of a Notification object.
+ *
+ * - notificationDateTime - The date and time the notification was sent
+ * - notificationText - The content of the notification
+ * - referencedUsers - A list of users who are being referenced in the notification
+ * - referencedPage - A link to the page that is being referenced
+ */
+export interface Notification {
+  notificationDateTime: Date,
+  notificationText: string,
+  referencedUsers: string[],
+  referencedPage: string
+
+}
+
+/**
+ * Type representing the possible responses for an Notification-related operation.
+ */
+export type NotificationResponse = Notification | { error: string };
+
 /**
  * Type representing the possible responses for a Question-related operation.
  */
@@ -515,4 +537,5 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: QuestionResponse) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
+  notificationUpdate: (notification: NotificationResponse) => void;
 }

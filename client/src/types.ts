@@ -150,6 +150,22 @@ export interface Question {
 }
 
 /**
+ * Interface representing the structure of a Notification object.
+ *
+ * - notificationDateTime - The date and time the notification was sent
+ * - notificationText - The content of the notification
+ * - referencedUsers - A list of users who are being referenced in the notification
+ * - referencedPage - A link to the page that is being referenced
+ */
+export interface Notification {
+  notificationDateTime: Date,
+  notificationText: string,
+  referencedUsers: string[],
+  referencedPage: string
+
+}
+
+/**
  * Interface representing tag counts for the leaderboard.
  *
  * - user - The username.
@@ -209,4 +225,5 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: Question) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
+  notificationUpdate: (notification: Notification) => void;
 }
