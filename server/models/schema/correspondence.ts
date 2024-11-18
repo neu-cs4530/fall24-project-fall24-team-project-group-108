@@ -4,7 +4,7 @@ import { Schema } from 'mongoose';
  *
  * This schema defines the structure for storing correspondences in the database.
  * Each correspondence includes the following fields:
- * 
+ *
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
@@ -14,7 +14,7 @@ const correspondenceSchema: Schema = new Schema(
   {
     messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
     messageMembers: [{ type: String }],
-    views: [{ type: String }]
+    views: [{ type: String }],
   },
   { collection: 'Correspondence' },
 );

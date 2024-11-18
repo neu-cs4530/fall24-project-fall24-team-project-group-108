@@ -1,44 +1,21 @@
 import express, { Response } from 'express';
 import { ObjectId } from 'mongodb';
 import {
-  Question,
-  Message,
   Correspondence,
-  FindQuestionRequest,
-  FindMessageRequest,
   FindCorrespondenceRequest,
-  FindMessageByIdRequest,
   FindCorrespondenceByIdRequest,
-  FindQuestionByIdRequest,
-  AddQuestionRequest,
-  AddMessageRequest,
   AddCorrespondenceRequest,
   UpdateCorrespondenceRequest,
-  VoteRequest,
   FakeSOSocket,
 } from '../types';
 import {
-  addVoteToQuestion,
-  fetchAndIncrementQuestionViewsById,
-  fetchAndIncrementMessageViewsById,
   fetchAndIncrementCorrespondenceViewsById,
-  filterQuestionsByAskedBy,
-  filterQuestionsBySearch,
-  getQuestionsByOrder,
-  getMessagesByOrder,
   getCorrespondencesByOrder,
-  processTags,
-  populateDocument,
-  saveQuestion,
-  saveMessage,
   saveCorrespondence,
-  updateCorrespondenceById
+  updateCorrespondenceById,
 } from '../models/application';
-import MessageModel from '../models/message';
 
 const correspondenceController = (socket: FakeSOSocket) => {
-
-  console.log('At Correspondence Router Start');
   const router = express.Router();
 
   /**
@@ -54,11 +31,8 @@ const correspondenceController = (socket: FakeSOSocket) => {
     req: FindCorrespondenceRequest,
     res: Response,
   ): Promise<void> => {
-    console.log('At getCorrespondencesByFilter');
     try {
       const clist: Correspondence[] = await getCorrespondencesByOrder();
-      console.log('clist');
-      console.log(clist);
       res.json(clist);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -136,8 +110,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
    * @returns A Promise that resolves to void.
    */
   const addCorrespondence = async (req: AddCorrespondenceRequest, res: Response): Promise<void> => {
-    console.log('In addCorrespondence Controller');
-    console.log(req.body);
     if (!isCorrespondenceBodyValid(req.body)) {
       res.status(400).send('Invalid correspondence body');
       return;
@@ -148,7 +120,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
       if ('error' in result) {
         throw new Error(result.error);
       }
-      console.log(result);
 
       socket.emit('correspondenceUpdate', result);
       res.json(result);
@@ -170,18 +141,16 @@ const correspondenceController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const updateCorrespondence = async (req: UpdateCorrespondenceRequest, res: Response): Promise<void> => {
+  const updateCorrespondence = async (
+    req: UpdateCorrespondenceRequest,
+    res: Response,
+  ): Promise<void> => {
     const { cid, updatedMessageMembers } = req.body;
     try {
-      console.log('At updateCorrespondenceById');
-      console.log(cid);
-      console.log(updatedMessageMembers);
       const result = await updateCorrespondenceById(cid, updatedMessageMembers);
-      console.log('End updateCorrespondenceById');
       if ('error' in result) {
         throw new Error(result.error);
       }
-      console.log(result);
 
       socket.emit('correspondenceUpdate', result);
       res.json(result);
@@ -194,7 +163,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
     }
   };
 
-  console.log('At Correspondence Router');
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getCorrespondence', getCorrespondencesByFilter);
   router.get('/getCorrespondenceById/:qid', getCorrespondenceById);

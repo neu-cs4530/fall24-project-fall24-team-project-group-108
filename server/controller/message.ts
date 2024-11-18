@@ -1,61 +1,22 @@
 import express, { Response } from 'express';
 import { ObjectId } from 'mongodb';
 import {
-  Question,
   Message,
-  Correspondence,
-  FindQuestionRequest,
-  FindMessageRequest,
   FindMessageByIdRequest,
-  FindQuestionByIdRequest,
-  AddQuestionRequest,
   AddMessageRequest,
-  VoteRequest,
   FakeSOSocket,
-  UpdateMessageRequest
+  UpdateMessageRequest,
 } from '../types';
 import {
-  addVoteToQuestion,
-  fetchAndIncrementQuestionViewsById,
   fetchAndIncrementMessageViewsById,
-  filterQuestionsByAskedBy,
-  filterQuestionsBySearch,
-  getQuestionsByOrder,
   getMessagesByOrder,
-  processTags,
-  populateDocument,
-  saveQuestion,
   saveMessage,
   addMessageToCorrespondence,
-  updateMessageById
+  updateMessageById,
 } from '../models/application';
 
 const messageController = (socket: FakeSOSocket) => {
   const router = express.Router();
-
-  /**
-   * Retrieves a list of messages ordered by a specified criterion.
-   * If there is an error, the HTTP response's status is updated.
-   *
-   * @param req The FindMessageRequest object containing the query parameter `order`
-   * @param res The HTTP response object used to send back the ordered list of questions.
-   *
-   * @returns A Promise that resolves to void.
-   */
-  const getMessagesByFilter = async (req: FindMessageRequest, res: Response): Promise<void> => {
-    const { order } = req.query;
-    const { askedBy } = req.query;
-    try {
-      const mlist: Message[] = await getMessagesByOrder(order);
-      res.json(mlist);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(500).send(`Error when fetching questions by filter: ${err.message}`);
-      } else {
-        res.status(500).send(`Error when fetching questions by filter`);
-      }
-    }
-  };
 
   /**
    * Retrieves a message by its unique ID, and increments the view count for that message.
@@ -99,14 +60,6 @@ const messageController = (socket: FakeSOSocket) => {
     }
   };
 
-  //   export interface Message {
-  //     _id?: string,
-  //     messageText: string,
-  //     messageDateTime: Date,
-  //     messageBy: string,
-  //     messageTo: string[]
-  //   }
-
   /**
    * Validates the message object to ensure it contains all the necessary fields.
    *
@@ -124,16 +77,14 @@ const messageController = (socket: FakeSOSocket) => {
     message.messageDateTime !== undefined &&
     message.messageDateTime !== null;
 
-    /**
-     * Checks if the provided message request contains the required fields.
-     *
-     * @param req The request object containing the message data.
-     *
-     * @returns `true` if the request is valid, otherwise `false`.
-     */
-    const isRequestValid = (req: AddMessageRequest): boolean => {
-      return !!req.body.cid && !!req.body.message;
-    }
+  /**
+   * Checks if the provided message request contains the required fields.
+   *
+   * @param req The request object containing the message data.
+   *
+   * @returns `true` if the request is valid, otherwise `false`.
+   */
+  const isRequestValid = (req: AddMessageRequest): boolean => !!req.body.cid && !!req.body.message;
   /**
    * Adds a new message to the database. The message is first validated and then saved.
    * If saving the message fails, the HTTP response status is updated.
@@ -168,19 +119,6 @@ const messageController = (socket: FakeSOSocket) => {
         throw new Error(status.error as string);
       }
 
-      console.log('saveMessage finished!');
-      console.log(status);
-      // if ('error' in result) {
-      //   throw new Error(result.error);
-      // }
-
-      // // Populates the fields of the message that was added, and emits the new object
-      // const populatedMessage = await populateDocument(result._id?.toString(), 'question');
-
-      // if (populatedMessage && 'error' in populatedMessage) {
-      //   throw new Error(populatedMessage.error);
-      // }
-
       socket.emit('correspondenceUpdate', status);
       res.json(status);
     } catch (err: unknown) {
@@ -204,19 +142,14 @@ const messageController = (socket: FakeSOSocket) => {
   const updateMessage = async (req: UpdateMessageRequest, res: Response): Promise<void> => {
     const { mid, updatedMessageText, isCodeStyle } = req.body;
     try {
-      console.log('At updateMessageById');
-      console.log(mid);
-      console.log(updatedMessageText);
       const result = await updateMessageById(mid, updatedMessageText, isCodeStyle);
-      console.log('End updateMessageById');
       if ('error' in result) {
         throw new Error(result.error);
       }
-      console.log(result);
 
-      const messageResult = result.messages.filter((message) => (message._id ? message._id.toString(): '') === mid)[0];
-
-      console.log(messageResult);
+      const messageResult = result.messages.filter(
+        message => (message._id ? message._id.toString() : '') === mid,
+      )[0];
 
       socket.emit('correspondenceUpdate', result);
       socket.emit('messageUpdate', messageResult);

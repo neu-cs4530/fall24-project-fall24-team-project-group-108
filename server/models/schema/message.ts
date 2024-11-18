@@ -4,7 +4,7 @@ import { Schema } from 'mongoose';
  *
  * This schema defines the structure for storing messages in the database.
  * Each message includes the following fields:
- * 
+ *
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
@@ -25,7 +25,7 @@ const messageSchema: Schema = new Schema(
     views: [{ type: String }],
     isCodeStyle: {
       type: Boolean,
-    }
+    },
   },
   { collection: 'Message' },
 );

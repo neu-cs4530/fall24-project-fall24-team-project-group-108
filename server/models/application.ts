@@ -238,23 +238,6 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
-  // try {
-  //   let mlist = [];
-  //   if (order === 'active') {
-  //     mlist = await MessageModel.find().populate();
-  //     return sortMessagesByActive(mlist);
-  //   }
-  //   mlist = await MessageModel.find().populate();
-  //   if (order === 'unanswered') {
-  //     return sortMessagesByUnanswered(mlist);
-  //   }
-  //   if (order === 'newest') {
-  //     return sortMessagesByNewest(mlist);
-  //   }
-  //   return sortMessagesByMostViews(mlist);
-  // } catch (error) {
-  //   return [];
-  // }
 };
 /**
  * Retrieves correspondences from the database, ordered by the specified criteria.
@@ -267,23 +250,6 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
     { path: 'messages', model: MessageModel },
   ]);
   return clist;
-  // try {
-  //   let mlist = [];
-  //   if (order === 'active') {
-  //     mlist = await MessageModel.find().populate();
-  //     return sortMessagesByActive(mlist);
-  //   }
-  //   mlist = await MessageModel.find().populate();
-  //   if (order === 'unanswered') {
-  //     return sortMessagesByUnanswered(mlist);
-  //   }
-  //   if (order === 'newest') {
-  //     return sortMessagesByNewest(mlist);
-  //   }
-  //   return sortMessagesByMostViews(mlist);
-  // } catch (error) {
-  //   return [];
-  // }
 };
 
 /**
@@ -340,7 +306,7 @@ export const filterQuestionsBySearch = (qlist: Question[], search: string): Ques
  */
 export const populateDocument = async (
   id: string | undefined,
-  type: 'question' | 'answer',// | 'message' | 'correspondence',
+  type: 'question' | 'answer', // | 'message' | 'correspondence',
 ): Promise<QuestionResponse | AnswerResponse> => {
   try {
     if (!id) {
@@ -390,7 +356,6 @@ export const fetchAndIncrementQuestionViewsById = async (
   username: string,
 ): Promise<QuestionResponse | null> => {
   try {
-    console.log('getting question model')
     const q = await QuestionModel.findOneAndUpdate(
       { _id: new ObjectId(qid) },
       { $addToSet: { views: username } },
@@ -472,8 +437,6 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
  */
 export const saveQuestion = async (question: Question): Promise<QuestionResponse> => {
   try {
-    console.log('In saveQuestion');
-    console.log(question);
     const result = await QuestionModel.create(question);
     return result;
   } catch (error) {
@@ -490,8 +453,6 @@ export const saveQuestion = async (question: Question): Promise<QuestionResponse
  */
 export const saveMessage = async (message: Message): Promise<MessageResponse> => {
   try {
-    console.log('saveMessage being called!');
-    console.log(message);
     const result = await MessageModel.create(message);
     return result;
   } catch (error) {
@@ -510,12 +471,7 @@ export const saveCorrespondence = async (
   correspondence: Correspondence,
 ): Promise<CorrespondenceResponse> => {
   try {
-
-    console.log('saveCorrespondence called!');
-    console.log(correspondence);
     const result = await CorrespondenceModel.create(correspondence);
-
-    console.log('Correspondence object created in CorrespondenceModel!');
     return result;
   } catch (error) {
     return { error: 'Error when saving a correspondence' };
@@ -734,9 +690,18 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
- export const addMessageToCorrespondence = async (cid: string, message: Message): Promise<CorrespondenceResponse> => {
+export const addMessageToCorrespondence = async (
+  cid: string,
+  message: Message,
+): Promise<CorrespondenceResponse> => {
   try {
-    if (!message || !message.messageText || !message.messageBy || !message.messageTo || !message.messageDateTime) {
+    if (
+      !message ||
+      !message.messageText ||
+      !message.messageBy ||
+      !message.messageTo ||
+      !message.messageDateTime
+    ) {
       throw new Error('Invalid message');
     }
     const result = await CorrespondenceModel.findOneAndUpdate(
@@ -744,9 +709,7 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
       { $push: { messages: { $each: [message._id] } } },
       // { $push: { messages: { $each: [message._id], $position: 0 } } },
       { new: true },
-    ).populate([
-      { path: 'messages', model: MessageModel },
-    ]);
+    ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when adding message to correspondence');
     }
@@ -764,17 +727,15 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
- export const updateCorrespondenceById = async (cid: string, updatedMessageMembers: string[]): Promise<CorrespondenceResponse> => {
+export const updateCorrespondenceById = async (
+  cid: string,
+  updatedMessageMembers: string[],
+): Promise<CorrespondenceResponse> => {
   try {
-    console.log('At Correspondence Model');
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
       { $set: { messageMembers: [...updatedMessageMembers] } },
-    ).populate([
-      { path: 'messages', model: MessageModel },
-    ]);
-    console.log('End Correspondence Model');
-    console.log(result);
+    ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when updating correspondence');
     }
@@ -792,32 +753,30 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
  *
  * @returns Promise<CorrespondenceResponse> - The correspondence with the update message or an error message
  */
- export const updateMessageById = async (mid: string, updatedMessageText: string, isCodeStyle: boolean): Promise<CorrespondenceResponse> => {
+export const updateMessageById = async (
+  mid: string,
+  updatedMessageText: string,
+  isCodeStyle: boolean,
+): Promise<CorrespondenceResponse> => {
   try {
-    console.log('At Message Model');
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
-      { $set: { messageText: updatedMessageText, isCodeStyle: isCodeStyle } },
-      { returnDocument: 'after' }
+      { $set: { messageText: updatedMessageText, isCodeStyle } },
+      { returnDocument: 'after' },
     );
-    console.log('End Message Model');
-    console.log(result);
     if (result === null) {
       throw new Error('Error when updating message');
     }
 
-    const updatedCorrespondenceWithMessage = await CorrespondenceModel.findOne(
-      { messages: { _id: mid } } 
-    ).populate([
-      { path: 'messages', model: MessageModel },
-    ]) as Correspondence;
+    const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+      messages: { _id: mid },
+    }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
 
     if (!updatedCorrespondenceWithMessage) {
       return { error: 'Error when retrieving updated correspondence' };
     }
 
     // console.log(updatedCorrespondenceWithMessage);
-
 
     return updatedCorrespondenceWithMessage;
   } catch (error) {
