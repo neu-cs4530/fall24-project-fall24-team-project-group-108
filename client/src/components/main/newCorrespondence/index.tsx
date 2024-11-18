@@ -1,16 +1,13 @@
-import React from 'react';
 import useNewCorrespondence from '../../../hooks/useNewCorrespondence';
 import Form from '../baseComponents/form';
 import Input from '../baseComponents/input';
-import TextArea from '../baseComponents/textarea';
 import './index.css';
 
 /**
  * NewCorrespondencePage component allows users to create a new correspondence between themselves and other specified usernames
  */
 const NewCorrespondencePage = () => {
-  const { toNames, setToNames, toNamesErr, setToNamesErr, createCorrespondence } =
-    useNewCorrespondence();
+  const { toNames, setToNames, toNamesErr, createCorrespondence } = useNewCorrespondence();
 
   return (
     <Form>

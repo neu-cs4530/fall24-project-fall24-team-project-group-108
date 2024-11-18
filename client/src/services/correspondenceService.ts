@@ -1,4 +1,4 @@
-import { Question, Message, Correspondence } from '../types';
+import { Correspondence } from '../types';
 import api from './config';
 
 const CORRESPONDENCE_API_URL = `${process.env.REACT_APP_SERVER_URL}/correspondence`;
@@ -10,10 +10,7 @@ const CORRESPONDENCE_API_URL = `${process.env.REACT_APP_SERVER_URL}/corresponden
  * @throws Error if there is an issue fetching or filtering messages.
  */
 const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
-  console.log(CORRESPONDENCE_API_URL);
   const res = await api.get(`${CORRESPONDENCE_API_URL}/getCorrespondence`);
-  console.log('Returned CORRESPONDENCE_API_URL');
-  console.log(res);
   if (res.status !== 200) {
     throw new Error('Error when fetching or filtering correspondences');
   }
@@ -44,10 +41,7 @@ const getCorrespondenceById = async (cid: string, username: string): Promise<Cor
  * @throws Error if there is an issue creating the new correspondence.
  */
 const addCorrespondence = async (c: Correspondence): Promise<Correspondence> => {
-  console.log('addCorrespondence called!');
   const res = await api.post(`${CORRESPONDENCE_API_URL}/addCorrespondence`, c);
-  console.log('addCorrespondence finished!');
-  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while creating a new correspondence');
@@ -67,21 +61,11 @@ const updateCorrespondenceById = async (
   cid: string,
   updatedMessageMembers: string[],
 ): Promise<Correspondence> => {
-  console.log('updateCorrespondence called!');
-  // console.log(
-  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
-  // );
-  // const res = await api.post(
-  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
-  // );
   const updatedCId = cid.split('&')[0];
-  console.log(updatedCId);
   const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondence`, {
     cid: updatedCId,
     updatedMessageMembers,
   });
-  console.log('updateCorrespondence finished!');
-  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while updating correspondence');

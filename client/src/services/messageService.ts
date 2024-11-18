@@ -1,4 +1,4 @@
-import { Question, Message, Correspondence } from '../types';
+import { Message, Correspondence } from '../types';
 import api from './config';
 
 const MESSAGE_API_URL = `${process.env.REACT_APP_SERVER_URL}/message`;
@@ -40,10 +40,7 @@ const getMessageById = async (mid: string, username: string): Promise<Message> =
  * @throws Error if there is an issue creating the new message.
  */
 const addMessage = async (cid: string, message: Message): Promise<Correspondence> => {
-  console.log('at addMessage');
   const res = await api.post(`${MESSAGE_API_URL}/addMessage`, { cid, message });
-  console.log('end of addMessage');
-  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while creating a new message');
@@ -64,22 +61,12 @@ const updateMessageById = async (
   updatedMessageText: string,
   isCodeStyle: boolean,
 ): Promise<Correspondence> => {
-  console.log('updateMessage called!');
-  // console.log(
-  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
-  // );
-  // const res = await api.post(
-  //   `${CORRESPONDENCE_API_URL}/updateCorrespondence/cid={${cid.split('&')[0]}}&updatedMessageMembers={${updatedMessageMembers}}`,
-  // );
   const updatedMId = mid.split('&')[0];
-  console.log(updatedMId);
   const res = await api.post(`${MESSAGE_API_URL}/updateMessage`, {
     mid: updatedMId,
     updatedMessageText,
     isCodeStyle,
   });
-  console.log('updateMessage finished!');
-  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while updating message');

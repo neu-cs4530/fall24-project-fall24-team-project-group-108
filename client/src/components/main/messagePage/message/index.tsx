@@ -1,8 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
-import { Message, Correspondence } from '../../../../types';
+import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
 
 /**
@@ -20,7 +18,6 @@ interface MessageProps {
  * @param message - The message object containing message details.
  */
 const MessageView = ({ message }: MessageProps) => {
-  const navigate = useNavigate();
   const {
     isEditing,
     setIsEditing,

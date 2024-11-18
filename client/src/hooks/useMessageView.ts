@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
-import { Answer, Correspondence, OrderType, Question, Message } from '../types';
+import { Message } from '../types';
 import { updateMessageById } from '../services/messageService';
 
 /**
@@ -19,31 +19,9 @@ const useMessageView = (message: Message) => {
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
 
-  //   const handleUpdateCorrespondence = () => {
-  //     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
-  //   };
-
-  //   useEffect(() => {
-  //   }, []);
-
-  //   useEffect(() => {
-
-  //     // socket.on('questionUpdate', handleQuestionUpdate);
-  //     // socket.on('answerUpdate', handleAnswerUpdate);
-  //     // socket.on('viewsUpdate', handleViewsUpdate);
-  //     socket.on('correspondenceUpdate', handleCorrespondenceUpdate);
-
-  //     return () => {
-  //       //   socket.off('questionUpdate', handleQuestionUpdate);
-  //       //   socket.off('answerUpdate', handleAnswerUpdate);
-  //       // socket.off('viewsUpdate', handleViewsUpdate);
-  //       socket.off('correspondenceUpdate', handleCorrespondenceUpdate);
-  //     };
-  //   }, [socket]);
-
   useEffect(() => {
     const updateMessage = async () => {
-      const result = await updateMessageById(message._id || '', editingText, isCodeStyle);
+      await updateMessageById(message._id || '', editingText, isCodeStyle);
     };
 
     // Need to update message by id, passing in new text
@@ -53,11 +31,11 @@ const useMessageView = (message: Message) => {
     }
     setIsEditing(false);
     setSaveClicked(false);
-  }, [saveClicked]);
+  }, [saveClicked, editingText, isCodeStyle, message]);
 
   useEffect(() => {
     const updateMessage = async () => {
-      const result = await updateMessageById(message._id || '', 'Message was Deleted', false);
+      await updateMessageById(message._id || '', 'Message was Deleted', false);
     };
 
     // Need to update message by id, passing in new text
@@ -67,7 +45,7 @@ const useMessageView = (message: Message) => {
     }
     setIsEditing(false);
     setSaveClicked(false);
-  }, [isDeleted]);
+  }, [isDeleted, message]);
 
   useEffect(() => {
     const handleMessageUpdate = (updatedMessage: Message) => {
@@ -81,7 +59,7 @@ const useMessageView = (message: Message) => {
     return () => {
       socket.off('messageUpdate', handleMessageUpdate);
     };
-  }, [socket]);
+  }, [socket, message]);
 
   return {
     isEditing,

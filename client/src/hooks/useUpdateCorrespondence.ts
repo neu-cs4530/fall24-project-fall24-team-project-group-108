@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { validateHyperlink } from '../tool';
-import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
-import { Correspondence, Question, Message } from '../types';
 import { updateCorrespondenceById } from '../services/correspondenceService';
-import { addMessage } from '../services/messageService';
 
 /**
  * Custom hook to handle correspondence updates and form validation

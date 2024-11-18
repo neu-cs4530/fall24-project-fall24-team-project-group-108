@@ -1,9 +1,8 @@
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
-import { Answer, Correspondence, OrderType, Question, Message } from '../types';
-import { getQuestionsByFilter } from '../services/questionService';
-import { addCorrespondence, getCorrespondencesByOrder } from '../services/correspondenceService';
+import { Correspondence, Message } from '../types';
+import { getCorrespondencesByOrder } from '../services/correspondenceService';
 import { addMessage } from '../services/messageService';
 
 /**
@@ -17,10 +16,7 @@ const useMessagePage = () => {
   const { socket, user } = useUserContext();
   const navigate = useNavigate();
 
-  const [searchParams] = useSearchParams();
   const [titleText, setTitleText] = useState<string>('All Messages');
-  const [search, setSearch] = useState<string>('');
-  const [correspondenceOrder, setCorrespondenceOrder] = useState<OrderType>('newest');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
   const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
   const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
@@ -48,14 +44,11 @@ const useMessagePage = () => {
       try {
         const res = await getCorrespondencesByOrder();
 
-        console.log('res');
-        console.log(res);
         setCorrespondenceList(
           res.filter(correspondence => correspondence.messageMembers.indexOf(user.username) > -1),
         );
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+        // Handle error
       }
     };
 
@@ -72,8 +65,6 @@ const useMessagePage = () => {
       // );
       await fetchData();
       if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
-        console.log('changing selected correspondence');
-        console.log({ ...correspondence });
         setSelectedCorrespondence({ ...correspondence });
         setSelectedCorrespondenceMessages([...correspondence.messages]);
       }
@@ -92,7 +83,7 @@ const useMessagePage = () => {
       // socket.off('viewsUpdate', handleViewsUpdate);
       socket.off('correspondenceUpdate', handleCorrespondenceUpdate);
     };
-  }, [socket]);
+  }, [socket, selectedCorrespondence, user]);
 
   const handleSelectCorrespondence = (correspondence: Correspondence): void => {
     setSelectedCorrespondence(correspondence);
@@ -113,11 +104,7 @@ const useMessagePage = () => {
         isCodeStyle,
       };
 
-      console.log('handleSendMessage');
-      console.log(selectedCorrespondence);
       const updatedCorrespondence = await addMessage(cid || '', message);
-      console.log('addedMessage after');
-      console.log(updatedCorrespondence);
       const updatedCorrespondenceList = correspondenceList.filter(
         correspondence => correspondence._id !== cid,
       );

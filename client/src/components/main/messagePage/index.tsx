@@ -1,12 +1,8 @@
-import React from 'react';
 import './index.css';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
 import CorrespondenceView from './correspondence';
 import MessageView from './message';
-import Input from '../baseComponents/input';
-import NewCorrespondenceButton from '../newCorrespondenceButton';
-// import UpdateCorrespondenceButton from '../updateCorrespondenceButton';
 
 /**
  * MessagePage component renders a page displaying a list of questions
@@ -19,14 +15,11 @@ const MessagePage = () => {
     correspondenceList,
     titleText,
     selectedCorrespondence,
-    setSelectedCorrespondence,
     handleSelectCorrespondence,
     messageText,
     setMessageText,
     handleSendMessage,
     selectedCorrespondenceMessages,
-    toAddText,
-    setToAddText,
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
@@ -92,9 +85,6 @@ const MessagePage = () => {
           ) : null}
         </div>
       </div>
-      {/* {titleText === 'Search Results' && !qlist.length && (
-        <div className='bold_title right_padding'>No Questions Found</div>
-      )} */}
     </>
   );
 };
