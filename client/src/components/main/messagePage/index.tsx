@@ -1,6 +1,7 @@
 import './index.css';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
+import useBan from '../../../hooks/useBan';
 import CorrespondenceView from './correspondence';
 import MessageView from './message';
 
@@ -10,6 +11,7 @@ import MessageView from './message';
  * It includes a header with order buttons and a button to ask a new question.
  */
 const MessagePage = () => {
+  useBan();
   const {
     user,
     correspondenceList,

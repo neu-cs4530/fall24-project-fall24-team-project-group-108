@@ -66,15 +66,15 @@ const useLogin = () => {
       // Checks if the username and password provided is a valid user already in the database.
       const user = await authenticateUser(username, password);
       if (user) {
-        setUser({ username, password, isModerator: user.isModerator, badges: [] });
+        setUser({
+          username,
+          password,
+          isModerator: user.isModerator,
+          infractions: user.infractions,
+          badges: [],
+        });
         setLoginAttempts(0);
-        if (user.isModerator === false) {
-          // Navigates to normal home screen if not a moderator.
-          navigate('/home');
-        } else {
-          // Navigates to moderator screen if a moderator. (to implement!)
-          navigate('/home');
-        }
+        navigate('/home');
       } else {
         throw new Error('Authentication failed');
       }

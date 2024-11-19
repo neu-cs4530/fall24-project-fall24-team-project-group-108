@@ -9,6 +9,7 @@ const USER_API_URL = `${process.env.REACT_APP_SERVER_URL}/user`;
  * @param username - The username of the user logging in.
  * @param password - The password of the user logging in.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns the user corresponding to the information provided in the login if said User object exists.
  */
 const authenticateUser = async (username: string, password: string): Promise<User> => {
@@ -27,6 +28,7 @@ const authenticateUser = async (username: string, password: string): Promise<Use
  * @param username - The desired username of the user creating an account.
  * @param password - The desired password of the user creating an account.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns the new User object added to the database.
  */
 const createUser = async (username: string, password: string): Promise<User> => {
@@ -38,19 +40,12 @@ const createUser = async (username: string, password: string): Promise<User> => 
   return res.data;
 };
 
-const resetPassword = async (username: string, password: string): Promise<User> => {
-  const data = { username, password };
-  const res = await api.post(`${USER_API_URL}/resetPassword`, data);
-  if (res.status !== 200) {
-    throw new Error('Error while creating user');
-  }
-  return res.data;
-};
 /**
  * Makes a user in the database a moderator.
  *
  * @param username - The username of the user being made into a moderator.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns the User object with an updated isModerator field.
  */
 const makeUserModerator = async (username: string): Promise<User> => {
@@ -61,4 +56,4 @@ const makeUserModerator = async (username: string): Promise<User> => {
   }
   return res.data;
 };
-export { authenticateUser, createUser, resetPassword, makeUserModerator };
+export { authenticateUser, createUser, makeUserModerator };

@@ -26,6 +26,8 @@ describe('POST /addAnswer', () => {
         text: 'This is a test answer',
         ansBy: 'dummyUserId',
         ansDateTime: new Date('2024-06-03'),
+        reports: [],
+        isRemoved: false,
       },
     };
 
@@ -35,6 +37,8 @@ describe('POST /addAnswer', () => {
       ansBy: 'dummyUserId',
       ansDateTime: new Date('2024-06-03'),
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
 
@@ -50,6 +54,8 @@ describe('POST /addAnswer', () => {
       downVotes: [],
       answers: [mockAnswer._id],
       comments: [],
+      reports: [],
+      isRemoved: false,
     });
 
     popDocSpy.mockResolvedValueOnce({
@@ -64,6 +70,8 @@ describe('POST /addAnswer', () => {
       downVotes: [],
       answers: [mockAnswer],
       comments: [],
+      reports: [],
+      isRemoved: false,
     });
 
     const response = await supertest(app).post('/answer/addAnswer').send(mockReqBody);
@@ -75,6 +83,8 @@ describe('POST /addAnswer', () => {
       ansBy: 'dummyUserId',
       ansDateTime: mockAnswer.ansDateTime.toISOString(),
       comments: [],
+      reports: [],
+      isRemoved: false,
     });
   });
 
@@ -175,6 +185,8 @@ describe('POST /addAnswer', () => {
       ansBy: 'dummyUserId',
       ansDateTime: new Date('2024-06-03'),
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
@@ -202,6 +214,8 @@ describe('POST /addAnswer', () => {
       ansBy: 'dummyUserId',
       ansDateTime: new Date('2024-06-03'),
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     const mockQuestion = {
@@ -216,6 +230,8 @@ describe('POST /addAnswer', () => {
       downVotes: [],
       answers: [mockAnswer._id],
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);

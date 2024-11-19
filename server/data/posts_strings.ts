@@ -76,3 +76,13 @@ export const C11_TEXT =
   'I found the discussion on SharedPreferences vs apply() very useful. Great explanation of the differences!';
 export const C12_TEXT =
   "I feel like there's so much more to Android Studio that I'm just scratching the surface of. Thanks for sharing your experience!";
+
+export const R1_TEXT = 'This is a very inappropriate remark!';
+export const R2_TEXT =
+  'This guy is weird, I do not like him, please remove his post because I do not like it thank you.';
+export const R3_TEXT =
+  'Ok, so basically it is a long story but this guy killed my puppy and I want to ruin his life for doing so so please remove his post';
+export const R4_TEXT = 'YIKES!';
+export const R5_TEXT = 'This is most definitely racist.';
+export const R6_TEXT =
+  'Hate speech, please remove this so my child does not have to see this again!';

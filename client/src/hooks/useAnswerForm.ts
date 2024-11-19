@@ -61,6 +61,8 @@ const useAnswerForm = () => {
       ansBy: user.username,
       ansDateTime: new Date(),
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     const res = await addAnswer(questionID, answer);

@@ -26,6 +26,8 @@ export type BadgeTier = 'bronze' | 'silver' | 'gold';
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Object IDs of comments that have been added to the answer by users, or comments themselves if populated
+ * - reports - An array of reports associated with the answer.
+ * - isRemoved - True if a mod removed answer, otherwise false.
  */
 export interface Answer {
   _id?: ObjectId;
@@ -33,6 +35,8 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
+  reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**
@@ -56,6 +60,7 @@ export type AnswerResponse = Answer | { error: string };
  * Interface representing a Tag document, which contains:
  * - _id - The unique identifier for the tag. Optional field.
  * - name - Name of the tag
+ * - description - A description of the tag
  */
 export interface Tag {
   _id?: ObjectId;
@@ -70,6 +75,7 @@ export interface Tag {
  * - password - Password to login created by the user.
  * - isModerator - the current state of the user's moderator status.
  * - badges - The badges obtained by the user.
+ * - infractions - A list of answer/question id's that were removed by moderators
  */
 export interface User {
   _id?: ObjectId;
@@ -77,6 +83,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  infractions: string[];
 }
 
 /**
@@ -88,19 +95,7 @@ export interface AddUserRequest extends Request {
   body: {
     username: string;
     password: string;
-  }
-}
-
-/**
- * Interface extending the request body when reseting a password in the database which contains:
- * - username - The user's username.
- * - password - The user's new password.
- */
-export interface ResetPasswordRequest extends Request {
-  body: {
-    username: string;
-    password: string;
-  }
+  };
 }
 
 /**
@@ -110,7 +105,7 @@ export interface ResetPasswordRequest extends Request {
 export interface MakeUserModeratorRequest extends Request {
   body: {
     username: string;
-  }
+  };
 }
 
 /**
@@ -122,7 +117,7 @@ export interface FindUserRequest extends Request {
   query: {
     username: string;
     password: string;
-  }
+  };
 }
 
 /**
@@ -135,11 +130,13 @@ export type UserResponse = User | { error: string };
  * - _id - The unique identifier for the question. Optional field.
  * - user - The user who created the application.
  * - applicationText - The additional imformation provided by the applicant.
+ * - status - The current status of the moderator application.
  */
 export interface ModApplication {
   _id?: ObjectId;
-  user: User; 
+  user: User;
   applicationText: string;
+  status: 'unresolved' | 'accepted' | 'rejected';
 }
 
 /**
@@ -149,17 +146,21 @@ export interface ModApplication {
 export interface AddModApplicationRequest extends Request {
   body: {
     modApplication: ModApplication;
-  }
+  };
 }
 
 /**
  * Interface extending the request body when deleting a ModApplication to the database which contains:
- * - username - the user whose application is being deleted.
+ * - id - The id of the moderator application in the datbase
+ * - username - The user whose application is being deleted.
+ * - accepted - True if the moderator application was accepted, false otherwise.
  */
-export interface DeleteModApplicationRequest extends Request {
+export interface UpdateModApplicationStatusRequest extends Request {
   body: {
-    username: string
-  }
+    id: string;
+    username: string;
+    accepted: boolean;
+  };
 }
 
 /**
@@ -169,7 +170,7 @@ export interface DeleteModApplicationRequest extends Request {
 export interface FindModApplicationRequest extends Request {
   query: {
     username: string;
-  }
+  };
 }
 
 /**
@@ -181,7 +182,6 @@ export type ModApplicationResponse = ModApplication | { error: string };
  * Type representing the possible responses for a ModApplication[] related operation.
  */
 export type ModApplicationResponses = ModApplication[] | { error: string };
-
 
 /**
  * Interface representing a Question document, which contains:
@@ -196,6 +196,8 @@ export type ModApplicationResponses = ModApplication[] | { error: string };
  * - upVotes - An array of usernames that have upvoted the question.
  * - downVotes - An array of usernames that have downvoted the question.
  * - comments - Object IDs of comments that have been added to the question by users, or comments themselves if populated.
+ * - reports - An array of reports associated with the question.
+ * - isRemoved - True if a mod removed question, otherwise false.
  */
 export interface Question {
   _id?: ObjectId;
@@ -209,6 +211,8 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[] | ObjectId[];
+  reports: UserReport[];
+  isRemoved: boolean;
 }
 
 /**
@@ -356,7 +360,6 @@ export interface AddCorrespondenceRequest extends Request {
 
 /**
  * Interface for the request body when upvoting or downvoting a question.
- * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.
  *  - username - The username of the user voting.
  */
@@ -382,12 +385,79 @@ export interface UpdateTagsRequest extends Request {
 
 
 /**
+ * Interface representing a UserReport, which contains:
+ * - _id - The unique identifier for the report. Optional field.
+ * - text - The content of the report.
+ * - reportBy - The username of the user who reported.
+ * - reportDateTime - The date and time when the report was created.
+ * - status - The current status of the user report.
+ */
+export interface UserReport {
+  _id?: ObjectId;
+  text: string;
+  reportBy: string;
+  reportDateTime: Date;
+  status: 'unresolved' | 'dismissed' | 'removed';
+}
+
+/**
+ * Interface for the request body when reporting.
+ * - targetId - The unique identifier of the question or answer being reported.
+ * - targetType - The type of the report, either 'question' or 'answer'.
+ * - report - The report being added.
+ */
+export interface AddUserReportRequest extends Request {
+  body: {
+    id: string;
+    type: 'question' | 'answer';
+    report: UserReport;
+  };
+}
+
+/**
+ * Interface for the request body when fetching reports.
+ * - type - The type of the reports being fetched, either question or answer.
+ */
+export interface GetUserReportRequest extends Request {
+  query: {
+    type: 'question' | 'answer';
+  };
+}
+
+/**
+ * Interface extending the request body when resolving a question/answer from the database which contains:
+ * - reportedPost - The post, Question/Answer that was reported.
+ * - qid - The question id of the answer/question that was reported.
+ * - postId - The id of the Question/Answer that was reported.
+ * - type - The type of the report, either 'question' or 'answer'.
+ * - isRemoved - True if the moderator decision on the report was removal, otherwise false.
+ */
+export interface ResolveReportedRequest extends Request {
+  body: {
+    reportedPost: Question | Answer;
+    qid: string;
+    postId: string;
+    type: 'question' | 'answer';
+    isRemoved: boolean;
+  };
+}
+
+/**
+ * Type representing the possible responses for a UserReport-related operation.
+ */
+export type UserReportResponse = UserReport | { error: string };
+
+/**
+ * Type representing the possible responses for a ModApplication[] related operation.
+ */
+export type UserReportResponses = Question[] | { error: string };
+
+/**
  * Interface representing a Comment, which contains:
  * - _id - The unique identifier for the comment. Optional field.
  * - text - The content of the comment.
  * - commentBy - The username of the user who commented.
  * - commentDateTime - The date and time when the comment was posted.
- *
  */
 export interface Comment {
   _id?: ObjectId;
@@ -629,6 +699,36 @@ export interface FindCorrespondenceByIdRequest extends Request {
 
 
 /**
+ * Interface representing the payload for a comment update event, which contains:
+ * - result - The updated question or answer.
+ * - type - The type of the updated item, either 'question' or 'answer'.
+ */
+export interface UserReportUpdatePayload {
+  result: AnswerResponse | QuestionResponse | null;
+  type: 'question' | 'answer';
+}
+
+/**
+ * Interface representing the payload for a remove post update event, which contains:
+ * - qid - The unique identifier of the question.
+ * - updatedPost - The updated question or answer response to be removed.
+ */
+export interface RemovePostUpdatePayload {
+  qid: string;
+  updatedPost: QuestionResponse | AnswerResponse;
+}
+
+/**
+ * Interface representing the payload for a report dismissed update event, which contains:
+ * - qid - The unique identifier of the question.
+ * - updatedPost - The updated question or answer response to be dismissed.
+ */
+export interface ReportDismissedUpdatePayload {
+  qid: string;
+  updatedPost: QuestionResponse | AnswerResponse;
+}
+
+/**
  * Interface representing the possible events that the server can emit to the client.
  */
 export interface ServerToClientEvents {
@@ -639,4 +739,8 @@ export interface ServerToClientEvents {
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageResponse) => void;
   correspondenceUpdate: (message: CorrespondenceResponse) => void;
+  modApplicationUpdate: (update: ModApplicationResponse) => void;
+  userReportsUpdate: (update: UserReportUpdatePayload) => void;
+  removePostUpdate: (update: RemovePostUpdatePayload) => void;
+  reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
 }

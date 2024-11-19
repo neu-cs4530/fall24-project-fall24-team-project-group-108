@@ -2,11 +2,13 @@ import './index.css';
 import Form from '../baseComponents/form';
 import TextArea from '../baseComponents/textarea';
 import useModApplication from '../../../hooks/useNewApplication';
+import useBan from '../../../hooks/useBan';
 
 /**
  * ModApplicationPage component allows users to apply to become a moderator.
  */
 const ModApplicationPage = () => {
+  useBan();
   const { text, setText, textErr, handleApplicationSubmit } = useModApplication();
 
   return (

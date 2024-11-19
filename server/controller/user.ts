@@ -1,11 +1,6 @@
 import express, { Response } from 'express';
-import {
-  AddUserRequest,
-  FindUserRequest,
-  MakeUserModeratorRequest,
-  ResetPasswordRequest,
-} from '../types';
-import { addUser, findUser, populateUser, updatePassword } from '../models/application';
+import { AddUserRequest, FindUserRequest, MakeUserModeratorRequest } from '../types';
+import { addUser, findUser, updateUserModStatus } from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -24,8 +19,8 @@ export const userController = () => {
   /**
    * Determines if a user is in the database and then finds their information.
    *
-   * @param req The FindUserRequest object containing the input user data.
-   * @param res The HTTP response object used to send back the result of the operation.
+   * @param req - The FindUserRequest object containing the input user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
@@ -38,6 +33,9 @@ export const userController = () => {
 
     try {
       const user = await findUser(username, password);
+      if (!user) {
+        throw new Error('User not found in database');
+      }
       res.json(user);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -64,9 +62,15 @@ export const userController = () => {
       return;
     }
     try {
-      const user = await addUser({ username, password, isModerator: false, badges: [] });
+      const user = await addUser({
+        username,
+        password,
+        isModerator: false,
+        badges: [],
+        infractions: [],
+      });
       if (!user) {
-        res.status(400).send('Username already taken');
+        res.status(400).send('Username cannot be used');
         return;
       }
 
@@ -81,38 +85,6 @@ export const userController = () => {
   };
 
   /**
-   * Resets a password in the database. The user is first validated, and then the password
-   * is updated. If updating the password fails, the HTTP response status is updated.
-   *
-   * @param req - The ResetPasswordRequest object containing the user and new password data.
-   * @param res - The HTTP response object used to send back the result of the operation.
-   *
-   * @returns A Promise that resolves to void.
-   */
-  const resetPassword = async (req: ResetPasswordRequest, res: Response): Promise<void> => {
-    const { username, password } = req.body;
-    if (!isUserBodyValid(username, password)) {
-      res.status(400).send('Invalid user body');
-      return;
-    }
-    try {
-      const user = await updatePassword(username, password);
-      if (!user) {
-        res.status(400).send('New password required for reset');
-        return;
-      }
-
-      res.json(user);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(500).send(`Error when reseting password: ${err.message}`);
-      } else {
-        res.status(500).send(`Error when reseting password`);
-      }
-    }
-  };
-
-  /**
    * Makes an existing user in the database a moderator. If updating the isModerator field fails, the HTTP response status is updated.
    *
    * @param req - the MakeUserModeratorRequest containing the user data.
@@ -122,19 +94,9 @@ export const userController = () => {
    */
   const makeUserModerator = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
     const { username } = req.body;
-    // if (!isUserBodyValid(username, password)) {
-    //   res.status(400).send('Invalid user body');
-    //   return;
-    // }
     try {
-      // const authenticatedUser = await findUser(id, username);
-      // if (!authenticatedUser) {
-      //   res.status(400).send('User cannot be found in the database');
-      //   return;
-      // }
-      // const authetnicatedUsername = authenticatedUser.username;
       // New users are automatically not a moderator, need to be approved to become a moderator.
-      const populatedUser = await populateUser(username);
+      const populatedUser = await updateUserModStatus(username);
       if (populatedUser && 'error' in populatedUser) {
         throw new Error(populatedUser.error);
       }
@@ -151,7 +113,6 @@ export const userController = () => {
 
   router.get('/authenticateUser', authenticateUser);
   router.post('/createUser', createUser);
-  router.post('/resetPassword', resetPassword);
   router.post('/makeUserModerator', makeUserModerator);
 
   return router;
