@@ -9,6 +9,7 @@ import { Correspondence } from '../../../../types';
  */
 interface CorrespondenceProps {
   correspondence: Correspondence;
+  onClickHandler: (correspondence: Correspondence) => void;
 }
 
 /**
@@ -18,22 +19,33 @@ interface CorrespondenceProps {
  *
  * @param correspondence - The question object containing question details.
  */
-const CorrespondenceView = ({ correspondence }: CorrespondenceProps) => (
-  <div className='question right_padding'>
-    <div className='correspondenceTime'>
-      {getMetaData(
-        new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
-      )}
-    </div>
+const CorrespondenceView = ({ correspondence, onClickHandler }: CorrespondenceProps) => (
+  <button
+    className='correspondence right_padding'
+    onClick={() => {
+      onClickHandler(correspondence);
+    }}>
     <div className='correspondenceData'>
-      <div>
+      <div className='correspondenceNames'>
         {correspondence.messageMembers.map((memberName, idx) => (
           <div key={idx}>{memberName}</div>
         ))}
       </div>
-      <div>{correspondence.messages[correspondence.messages.length - 1].messageText}</div>
+      <div className='correspondenceLatestMessageText'>
+        {correspondence.messages.length > 0
+          ? correspondence.messages[correspondence.messages.length - 1].messageText
+          : null}
+      </div>
+
+      <div className='correspondenceTime'>
+        {correspondence.messages.length > 0
+          ? getMetaData(
+              new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
+            )
+          : 'No Time'}
+      </div>
     </div>
-  </div>
+  </button>
 );
 
 export default CorrespondenceView;
