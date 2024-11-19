@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Badge, User } from '../types';
+import { User } from '../types';
 
 const addUserSpy = jest.spyOn(util, 'addUser');
 const updateUserModStatusSpy = jest.spyOn(util, 'updateUserModStatus');

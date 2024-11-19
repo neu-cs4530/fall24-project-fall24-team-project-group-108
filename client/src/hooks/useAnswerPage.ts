@@ -288,7 +288,7 @@ const useAnswerPage = () => {
       socket.off('removePostUpdate', handleRemovePostUpdate);
       socket.off('reportDismissedUpdate', handleReportDismissedUpdate);
     };
-  }, [questionID, socket]);
+  }, [questionID, socket, navigate]);
 
   return {
     questionID,

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Answer, Question, Tag, UserReport } from '../types';
+import { Answer, Question, UserReport } from '../types';
 import { R1_TEXT, R2_TEXT, R3_TEXT } from '../data/posts_strings';
 
 const saveReportSpy = jest.spyOn(util, 'saveUserReport');
