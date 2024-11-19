@@ -59,6 +59,7 @@ export interface Comment {
  * text - The text of the comment.
  * reportBy - Username of the author of the report.
  * reportDateTime - Time at which the comment was created.
+ * status - Current status of the report.
  */
 export interface UserReport {
   text: string;
@@ -184,26 +185,41 @@ export interface VoteUpdatePayload {
   downVotes: string[];
 }
 
+/**
+ * Interface representing the payload for an answer update socket event.
+ */
 export interface AnswerUpdatePayload {
   qid: string;
   answer: Answer;
 }
 
+/**
+ * Interface representing the payload for a comment update socket event.
+ */
 export interface CommentUpdatePayload {
   result: Question | Answer;
   type: 'question' | 'answer';
 }
 
+/**
+ * Interface representing the payload for a user report update socket event.
+ */
 export interface UserReportUpdatePayload {
   result: Question | Answer;
   type: 'question' | 'answer';
 }
 
+/**
+ * Interface representing the payload for a remove post update socket event.
+ */
 export interface RemovePostUpdatePayload {
   qid: string;
   updatedPost: Question | Answer;
 }
 
+/**
+ * Interface representing the payload for a dismiss report update socket event.
+ */
 export interface ReportDismissedUpdatePayload {
   qid: string;
   updatedPost: Question | Answer;

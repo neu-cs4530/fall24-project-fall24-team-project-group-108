@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Answer, Question, UserReport } from '../types';
+import { Answer, Question } from '../types';
 import useUserContext from './useUserContext';
 import { getUnresolvedReport, resolveReport } from '../services/reportService';
 

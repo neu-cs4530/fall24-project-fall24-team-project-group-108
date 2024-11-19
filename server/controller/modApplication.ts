@@ -11,9 +11,11 @@ export const modApplicationController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
-   * Validates the mod application to ensure it contains all the necessary fields and that they are valid.
+   * Validates the ModApplication to ensure it contains all the necessary fields and that they are valid.
    *
    * @param user - The user who submitted the application.
+   * @param password - The password of the user who submitted the application.
+   * @param isModerator - The current moderator status of the user who submitted the application.
    * @param applicationText - The additional information the user provided in the application.
    *
    * @returns `true` if the user and applicationText are valid, otherwise `false`.
@@ -77,7 +79,7 @@ export const modApplicationController = (socket: FakeSOSocket) => {
   /**
    * Retrieves all ModApplications in the database. If fetching the applications fails, the HTTP response status is updated.
    *
-   * @param _ - Placeholder value.
+   * @param _ - Placeholder value since no request is needed.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.

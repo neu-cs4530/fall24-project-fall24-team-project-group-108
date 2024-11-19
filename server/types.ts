@@ -50,6 +50,7 @@ export type AnswerResponse = Answer | { error: string };
  * Interface representing a Tag document, which contains:
  * - _id - The unique identifier for the tag. Optional field.
  * - name - Name of the tag
+ * - description - A description of the tag
  */
 export interface Tag {
   _id?: ObjectId;
@@ -117,6 +118,7 @@ export type UserResponse = User | { error: string };
  * - _id - The unique identifier for the question. Optional field.
  * - user - The user who created the application.
  * - applicationText - The additional imformation provided by the applicant.
+ * - status - The current status of the moderator application.
  */
 export interface ModApplication {
   _id?: ObjectId;
@@ -137,7 +139,9 @@ export interface AddModApplicationRequest extends Request {
 
 /**
  * Interface extending the request body when deleting a ModApplication to the database which contains:
- * - username - the user whose application is being deleted.
+ * - id - The id of the moderator application in the datbase
+ * - username - The user whose application is being deleted.
+ * - accepted - True if the moderator application was accepted, false otherwise.
  */
 export interface UpdateModApplicationStatusRequest extends Request {
   body: {
@@ -261,7 +265,6 @@ export interface AddQuestionRequest extends Request {
 
 /**
  * Interface for the request body when upvoting or downvoting a question.
- * - body - The question ID and the username of the user voting.
  *  - qid - The unique identifier of the question.
  *  - username - The username of the user voting.
  */
@@ -278,7 +281,7 @@ export interface VoteRequest extends Request {
  * - text - The content of the report.
  * - reportBy - The username of the user who reported.
  * - reportDateTime - The date and time when the report was created.
- *
+ * - status - The current status of the user report.
  */
 export interface UserReport {
   _id?: ObjectId;
@@ -303,10 +306,8 @@ export interface AddUserReportRequest extends Request {
 }
 
 /**
- * Interface for the request body when reporting.
- * - targetId - The unique identifier of the question or answer being reported.
- * - targetType - The type of the report, either 'question' or 'answer'.
- * - report - The report being added.
+ * Interface for the request body when fetching reports.
+ * - type - The type of the reports being fetched, either question or answer.
  */
 export interface GetUserReportRequest extends Request {
   query: {
@@ -348,7 +349,6 @@ export type UserReportResponses = Question[] | { error: string };
  * - text - The content of the comment.
  * - commentBy - The username of the user who commented.
  * - commentDateTime - The date and time when the comment was posted.
- *
  */
 export interface Comment {
   _id?: ObjectId;

@@ -4,10 +4,10 @@ import { Answer, Question, UserReport } from '../types';
 const USERREPORT_API_URL = `${process.env.REACT_APP_SERVER_URL}/userReport`;
 
 /**
- * Interface extending the request body when adding a comment to a question or an answer, which contains:
+ * Interface extending the request body when adding a report to a question or an answer, which contains:
  * - id - The unique identifier of the question or answer being commented on.
- * - type - The type of the comment, either 'question' or 'answer'.
- * - comment - The comment being added.
+ * - type - The type of the report, either 'question' or 'answer'.
+ * - report - The report being added.
  */
 interface AddReportRequestBody {
   id?: string;
@@ -15,6 +15,13 @@ interface AddReportRequestBody {
   report: UserReport;
 }
 
+/**
+ * Interface extending the request body when adding a comment to a question or an answer, which contains:
+ * - qid - The unique identifier of the question being commented on.
+ * - postId - The unique identifier of the question or answer being commented on.
+ * - type - The type of the report, either 'question' or 'answer'.
+ * - isRemoved - If the question/answer was removed.
+ */
 interface ResolveReportedRequest {
   reportedPost: Question | Answer;
   qid: string;
@@ -29,7 +36,9 @@ interface ResolveReportedRequest {
  * @param id - The ID of the question/answer to which the report is being added.
  * @param type - The type of the report, either 'question' or 'answer'.
  * @param report - The report object containing the report details.
- * @throws Error Throws an error if the request fails or the response status is not 200.
+ *
+ * @throws Error -Throws an error if the request fails or the response status is not 200.
+ * @returns the UserReportResponse from adding the report to the database.
  */
 const addReport = async (
   id: string,
@@ -51,6 +60,7 @@ const addReport = async (
 /**
  * Gets unresolved reports in the database.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns A list of all the unresolved reported Question or Answer documents in the database.
  */
 const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Question[]> => {
@@ -71,6 +81,7 @@ const getUnresolvedReport = async (type: 'question' | 'answer'): Promise<Questio
  * @param type - The type of the report, either 'question' or 'answer'.
  * @param isRemoved - The id of the question or answer that will be deleted.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns A boolean which evaluates to true if an object was resolved, and false if there was an error.
  */
 const resolveReport = async (

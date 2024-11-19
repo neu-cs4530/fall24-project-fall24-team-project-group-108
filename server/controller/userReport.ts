@@ -21,7 +21,7 @@ const userReportController = (socket: FakeSOSocket) => {
   /**
    * Checks if the provided report request contains the required fields.
    *
-   * @param req - The request object containing the report data.
+   * @param req - The AddUserReportRequest object containing the report data.
    *
    * @returns `true` if the request is valid, otherwise `false`.
    */
@@ -50,12 +50,11 @@ const userReportController = (socket: FakeSOSocket) => {
     report.reportDateTime !== null;
 
   /**
-   * Handles adding aF new report to the specified question or answer. The report is first validated and then saved.
+   * Handles adding a new report to the specified question or answer. The report is first validated and then saved.
    * If the report is invalid or saving fails, the HTTP response status is updated.
    *
-   * @param req - The AddReportRequest object containing the report data.
+   * @param req - The AddUserReportRequest object containing the report data.
    * @param res - The HTTP response object used to send back the result of the operation.
-   * @param type - The type of the report, either 'question' or 'answer'.
    *
    * @returns A Promise that resolves to void.
    */
@@ -114,7 +113,7 @@ const userReportController = (socket: FakeSOSocket) => {
   /**
    * Retrieves all unresolved reported objects in the database. If fetching the reported objects fails, the HTTP response status is updated.
    *
-   * @param _ - Placeholder value.
+   * @param req - The GetUserReportRequest object containing the report data.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -134,7 +133,8 @@ const userReportController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Resolves a reported question or answer. If resolving fails, the HTTP response status is updated.
+   * Resolves all reports on a question or answer, if removed, removes question/answer and adds an infraction to the user who made the post.
+   * If dismissed, keeps question/answer not removed and does not add an infraction to a user. If resolving fails, the HTTP response status is updated.
    *
    * @param req - The ResolveReportedRequest object containing the reported object data.
    * @param res - The HTTP response object used to send back the result of the operation.

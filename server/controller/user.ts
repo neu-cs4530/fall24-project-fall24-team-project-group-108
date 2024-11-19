@@ -19,8 +19,8 @@ export const userController = () => {
   /**
    * Determines if a user is in the database and then finds their information.
    *
-   * @param req The FindUserRequest object containing the input user data.
-   * @param res The HTTP response object used to send back the result of the operation.
+   * @param req - The FindUserRequest object containing the input user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */

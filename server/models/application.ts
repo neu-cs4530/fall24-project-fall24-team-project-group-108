@@ -238,7 +238,7 @@ export const addUser = async (user: User): Promise<User | null> => {
  * @param username - The input username.
  * @param password - The input password.
  *
- * @returns {Promise<boolean>} - Return true if the username and password are in the database, otherwise false.
+ * @returns {Promise<User | null>} - The existing user, or `null` if an error occurred
  */
 export const findUser = async (username: string, password: string): Promise<User | null> => {
   try {
@@ -264,7 +264,7 @@ export const findUser = async (username: string, password: string): Promise<User
  * @param user - the user who created the application.
  * @param applicationText - the additional information given in the application.
  *
- * @returns {Promise<ModApplication | null>} - The added or existing mod application, or `null` if an error occurred
+ * @returns {Promise<ModApplicationReponse>} - The added or existing mod application, or error if an error occurred
  */
 export const addModApplication = async (
   username: string,
@@ -300,7 +300,7 @@ export const addModApplication = async (
 /**
  * Retrieves all of the moderator applications in the database.
  *
- * @returns {ModApplication[]} - A list of the current active ModApplications.
+ * @returns {ModApplicationResponses} - A list of the current active ModApplications.
  */
 export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
   try {
@@ -315,7 +315,7 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
  * Updates a user to make their isModerator value equal to true.
  *
  * @param username - The username of the user being updated in the db.
- * @returns {User} - The updated user object.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
  */
 export const updateUserModStatus = async (username: string): Promise<UserResponse> => {
   try {
@@ -338,7 +338,7 @@ export const updateUserModStatus = async (username: string): Promise<UserRespons
  *
  * @param username - the username of the user's application being deleted
  * @param accepted - true if application was accepted, false otherwise.
- * @returns {ModApplication} - the updated application object.
+ * @returns {ModApplicationResponse} - the updated application object or error if an error occurred.
  */
 export const updateAppStatus = async (
   id: string,
@@ -747,7 +747,7 @@ export const addVoteToQuestion = async (
  * @param {string} qid - The ID of the question to add an answer to
  * @param {Answer} ans - The answer to add
  *
- * @returns Promise<QuestionResponse> - The updated question or an error message
+ * @returns {Promise<QuestionResponse>} - The updated question or an error message
  */
 export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<QuestionResponse> => {
   try {
@@ -896,7 +896,7 @@ export const fetchUnresolvedReports = async (
  * @param reportedPost - The Question/Answer that was reported.
  * @param postId - The id of the post to query in the database.
  *
- * @returns {boolean} - True if the status was successfully changed, false otherwise.
+ * @returns {UserResponse} - Returns the updated user or an error if an error occurred.
  */
 export const addUserInfraction = async (
   reportedPost: Question | Answer,
@@ -970,7 +970,7 @@ export const updatePostRemovalStatus = async (
  * @param type - The type of the object, either question or answer.
  * @param isRemoved - True if the moderator removed the question or answer, true otherwise.
  *
- * @returns {boolean} - True if the status was successfully changed, false otherwise.
+ * @returns {QuestionResponse | AnswerResponse} - Returns the updated question/answer, or an error if an error occurred.
  */
 export const updateReportStatus = async (
   reportedPost: Question | Answer,

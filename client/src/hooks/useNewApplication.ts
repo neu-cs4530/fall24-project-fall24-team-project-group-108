@@ -4,7 +4,6 @@ import { AxiosError } from 'axios';
 import { validateHyperlink } from '../tool';
 import useUserContext from './useUserContext';
 import { submitModApplication } from '../services/modApplicationService';
-import useModStatus from './useModStatus';
 
 /**
  * Custom hook to handle submitting mod applications to the database.
@@ -19,7 +18,6 @@ const useModApplication = () => {
   const [text, setText] = useState<string>('');
   const [textErr, setTextErr] = useState<string>('');
   const navigate = useNavigate();
-  const { moderatorStatus } = useModStatus();
 
   /**
    * Determines if the input text in the text is valid or not.

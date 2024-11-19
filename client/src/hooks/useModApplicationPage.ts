@@ -37,6 +37,12 @@ const useModApplicationPage = () => {
     fetchData().catch(e => console.log(e));
   }, []);
 
+  /**
+   * Handles the application decision event.
+   *
+   * @param application - The application whose status was decided
+   * @param isAccepted - True if the applicationw is accepted, false otherwise
+   */
   const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
       const { username } = application;

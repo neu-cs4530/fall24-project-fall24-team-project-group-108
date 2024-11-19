@@ -9,6 +9,7 @@ const MODAPPLICATION_API_URL = `${process.env.REACT_APP_SERVER_URL}/modApplicati
  * @param user - The User who applied.
  * @param applicationText - The additional text provided by the user in the application.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns the new ModApplication object added to the database or already present one.
  */
 const submitModApplication = async (
@@ -26,6 +27,7 @@ const submitModApplication = async (
 /**
  * Gets all applications in the database.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns A list of all the ModApplication documents in the database.
  */
 const getModApplications = async (): Promise<ModApplication[]> => {
@@ -43,6 +45,7 @@ const getModApplications = async (): Promise<ModApplication[]> => {
  * @param username - The username of the user whose application will be deleted.
  * @param accepted - True if the mod application was accepted, false otherwise.
  *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
  * @returns A boolean which evaluates to true if an object was deleted, and false if there was an error.
  */
 const updateModApplicationStatus = async (
