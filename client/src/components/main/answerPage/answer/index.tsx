@@ -4,6 +4,7 @@ import './index.css';
 import ProfileHover from '../../accountPage/profileHover';
 import useAnswerView from '../../../../hooks/useAnswerView';
 import useModStatus from '../../../../hooks/useModStatus';
+import { Comment } from '../../../../types';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -53,14 +54,6 @@ const AnswerView = ({
   const { isHovered, iconDetails, handleAuthorClick, setIsHovered, handleHoverEnter, badges } =
     useAnswerView(ansBy);
   const { moderatorStatus } = useModStatus();
-  const navigate = useNavigate();
-
-  /**
-   * Function to navigate to the specified user profile based on the user ID.
-   */
-  const handleAuthorClick = () => {
-    navigate(`/account/${ansBy}`); // Assuming you have an ID for the author
-  };
 
   return (
     <div className='answer right_padding'>

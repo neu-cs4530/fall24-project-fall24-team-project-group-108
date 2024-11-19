@@ -3,18 +3,14 @@ import {
   AddUserRequest,
   FindUserRequest,
   MakeUserModeratorRequest,
-  ResetPasswordRequest,
   UpdateProfileIconRequest,
 } from '../types';
 import {
   addUser,
   findUser,
-  populateUser,
-  updatePassword,
   updateUserProfilePicture,
-  updateUserModStatus
+  updateUserModStatus,
 } from '../models/application';
-
 
 export const userController = () => {
   const router = express.Router();
