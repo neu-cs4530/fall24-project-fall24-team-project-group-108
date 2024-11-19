@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
-import { Comment } from '../../../../types';
+import { Badge, Comment } from '../../../../types';
+import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../../../../services/badgeService';
+import ProfileHover from '../../accountPage/profileHover';
+import { BadgeCategory, BadgeTier } from '../../../../hooks/useBadgePage';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -33,6 +37,55 @@ interface AnswerProps {
  */
 const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => {
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
+  const [iconDetails, setIconDetails] = useState<{
+    category: BadgeCategory;
+    tier: BadgeTier;
+  } | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
+
+  /**
+   * Function to fetch details about the user's profile icon.
+   */
+  const fetchProfileIconDetails = async (user: string) => {
+    try {
+      const details = await getBadgeDetailsByUsername(user);
+      return {
+        category: (details.category as BadgeCategory) || 'Unknown Category',
+        tier: (details.tier as BadgeTier) || 'Unknown Tier',
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to fetch details for user: ${user}`, error);
+      return null; // Return null in case of an error
+    }
+  };
+
+  /**
+   * Function to fetch all badges obtained by the user.
+   */
+  const fetchUserBadges = async (user: string) => {
+    try {
+      const res = await fetchBadgesByUser(user);
+      return res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      return [];
+    }
+  };
+
+  const handleHoverEnter = async () => {
+    setIsHovered(true);
+
+    const details = await fetchProfileIconDetails(ansBy);
+    setIconDetails(details);
+
+    const userBadges = await fetchUserBadges(ansBy);
+    if (userBadges) {
+      setBadges(userBadges);
+    }
+  };
 
   /**
    * Function to navigate to the specified user profile based on the user ID.
@@ -46,13 +99,18 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
       <div id='answerText' className='answerText'>
         {handleHyperlink(text)}
       </div>
+      <div className={`profile-hover-container ${isHovered ? 'show' : ''}`}>
+        <ProfileHover user={ansBy} iconData={iconDetails} badges={badges} />
+      </div>
       <div className='answerAuthor'>
         <div
           className='answer_author'
           onClick={e => {
             e.stopPropagation(); // prevent triggering the parent div's click event
             handleAuthorClick();
-          }}>
+          }}
+          onMouseEnter={handleHoverEnter} // Set hover state to true when the mouse enters
+          onMouseLeave={() => setIsHovered(false)}>
           {ansBy}
         </div>
         <div className='answer_question_meta'>{meta}</div>

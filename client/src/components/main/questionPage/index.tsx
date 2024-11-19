@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './index.css';
 import QuestionHeader from './header';
 import QuestionView from './question';
@@ -11,6 +11,7 @@ import useQuestionPage from '../../../hooks/useQuestionPage';
  */
 const QuestionPage = () => {
   const { titleText, qlist, setQuestionOrder } = useQuestionPage();
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <>

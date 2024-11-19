@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
-import { Question } from '../../../../types';
+import { Badge, Question } from '../../../../types';
+import ProfileHover from '../../accountPage/profileHover';
+import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../../../../services/badgeService';
+import { BadgeCategory, BadgeTier } from '../../../../hooks/useBadgePage';
 
 /**
  * Interface representing the props for the Question component.
@@ -22,6 +25,55 @@ interface QuestionProps {
  */
 const QuestionView = ({ q }: QuestionProps) => {
   const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
+  const [iconDetails, setIconDetails] = useState<{
+    category: BadgeCategory;
+    tier: BadgeTier;
+  } | null>(null);
+  const [badges, setBadges] = useState<Badge[]>([]);
+
+  /**
+   * Function to fetch details about the user's profile icon.
+   */
+  const fetchProfileIconDetails = async (user: string) => {
+    try {
+      const details = await getBadgeDetailsByUsername(user);
+      return {
+        category: (details.category as BadgeCategory) || 'Unknown Category',
+        tier: (details.tier as BadgeTier) || 'Unknown Tier',
+      };
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to fetch details for user: ${user}`, error);
+      return null; // Return null in case of an error
+    }
+  };
+
+  /**
+   * Function to fetch all badges obtained by the user.
+   */
+  const fetchUserBadges = async (user: string) => {
+    try {
+      const res = await fetchBadgesByUser(user);
+      return res;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+      return [];
+    }
+  };
+
+  const handleHoverEnter = async () => {
+    setIsHovered(true);
+
+    const details = await fetchProfileIconDetails(q.askedBy);
+    setIconDetails(details);
+
+    const userBadges = await fetchUserBadges(q.askedBy);
+    if (userBadges) {
+      setBadges(userBadges);
+    }
+  };
 
   /**
    * Function to navigate to the home page with the specified tag as a search parameter.
@@ -79,13 +131,19 @@ const QuestionView = ({ q }: QuestionProps) => {
           ))}
         </div>
       </div>
+      <div className={`profile-hover-container ${isHovered ? 'show' : ''}`}>
+        <ProfileHover user={q.askedBy} iconData={iconDetails} badges={badges} />
+      </div>
+
       <div className='lastActivity'>
         <div
           className='question_author'
           onClick={e => {
             e.stopPropagation(); // prevent triggering the parent div's click event
             handleAuthorClick();
-          }}>
+          }}
+          onMouseEnter={handleHoverEnter} // Set hover state to true when the mouse enters
+          onMouseLeave={() => setIsHovered(false)}>
           {q.askedBy}
         </div>
         <div>&nbsp;</div>
