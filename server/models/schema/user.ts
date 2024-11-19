@@ -9,6 +9,7 @@ import { Schema } from 'mongoose';
  * - `password`: The password of the user.
  * - `isModerator`: If the user has moderator privileges.
  * - `badges`: Badges obtained by the user.
+ * - 'profileIcon' : The badge for the user's profile picture.
  */
 const userSchema: Schema = new Schema(
   {
@@ -23,6 +24,7 @@ const userSchema: Schema = new Schema(
       type: Boolean,
     },
     badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
+    profileIcon: { type: Schema.Types.ObjectId, ref: 'Badge' , required: false },
   },
   { collection: 'User' },
 );

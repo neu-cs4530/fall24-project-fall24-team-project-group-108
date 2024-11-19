@@ -5,6 +5,7 @@ import QuestionsTab from './questionsTab';
 import AnswersTab from './answersTab';
 import BadgesTab from './badgesTab';
 import useAccountPage from '../../../hooks/useAccountPage';
+import EditAccountModal from './editModal';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
@@ -21,6 +22,8 @@ const AccountPage = () => {
     handleChange,
     badgeList,
     navigate,
+    setEditModalOpen,
+    editModalOpen,
   } = useAccountPage();
 
   return (
@@ -33,7 +36,11 @@ const AccountPage = () => {
           </div>
         </div>
         <div className='profileHeaderButtons'>
-          <Button variant='contained'>Message</Button>
+          {userLoggedIn && (
+            <Button variant='contained' onClick={() => setEditModalOpen(true)}>
+              Set Picture
+            </Button>
+          )}
         </div>
       </div>
       <div className='profileTabs'>
@@ -67,6 +74,13 @@ const AccountPage = () => {
             ))}
         </div>
       </div>
+      {editModalOpen && (
+        <EditAccountModal
+          onClose={() => setEditModalOpen(false)}
+          userBadges={badgeList}
+          user={sentUser as string}
+        />
+      )}
     </div>
   );
 };

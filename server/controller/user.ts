@@ -4,8 +4,9 @@ import {
   FindUserRequest,
   MakeUserModeratorRequest,
   ResetPasswordRequest,
+  UpdateProfileIconRequest,
 } from '../types';
-import { addUser, findUser, populateUser, updatePassword } from '../models/application';
+import { addUser, findUser, populateUser, updatePassword, updateUserProfilePicture } from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -122,18 +123,7 @@ export const userController = () => {
    */
   const makeUserModerator = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
     const { username } = req.body;
-    // if (!isUserBodyValid(username, password)) {
-    //   res.status(400).send('Invalid user body');
-    //   return;
-    // }
     try {
-      // const authenticatedUser = await findUser(id, username);
-      // if (!authenticatedUser) {
-      //   res.status(400).send('User cannot be found in the database');
-      //   return;
-      // }
-      // const authetnicatedUsername = authenticatedUser.username;
-      // New users are automatically not a moderator, need to be approved to become a moderator.
       const populatedUser = await populateUser(username);
       if (populatedUser && 'error' in populatedUser) {
         throw new Error(populatedUser.error);
@@ -149,10 +139,37 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Makes an existing user in the database a moderator. If updating the isModerator field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateProfilePicture = async (req: UpdateProfileIconRequest, res: Response): Promise<void> => {
+    const { username, badgeName } = req.body;
+    try {
+      const populatedUser = await updateUserProfilePicture(username, badgeName);
+      if (populatedUser && 'error' in populatedUser) {
+        throw new Error(populatedUser.error);
+      }
+
+      res.json(populatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user profile picture: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user profile picture`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
   router.post('/createUser', createUser);
   router.post('/resetPassword', resetPassword);
   router.post('/makeUserModerator', makeUserModerator);
+  router.post('/updatePicture', updateProfilePicture)
 
   return router;
 };

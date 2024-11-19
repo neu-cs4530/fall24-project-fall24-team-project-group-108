@@ -26,6 +26,7 @@ const useAccountPage = () => {
   const [qlist, setQlist] = useState<Question[]>([]);
   const [alist, setAlist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
 
   // determine if the profile being viewed is for the currently logged in user
   let userLoggedIn: boolean;
@@ -101,6 +102,8 @@ const useAccountPage = () => {
     handleChange,
     badgeList,
     navigate,
+    setEditModalOpen,
+    editModalOpen,
   };
 };
 

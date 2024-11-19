@@ -355,6 +355,37 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
 };
 
 /**
+ * Updates a user's profile picture.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @param badgeName - The badge icon for their profile picture.
+ * @returns {User} - The updated user object.
+ */
+export const updateUserProfilePicture = async (username: string, badgeName: string): Promise<UserResponse> => {
+  try {
+    // find the badge
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' }; 
+    }
+
+    // find the user 
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // update and save
+    user.profileIcon = badge._id; 
+    await user.save(); 
+    return user; 
+  } catch (err: unknown) {
+    console.error(err);
+    return { error: 'Failed to update user profile picture' };
+  }
+};
+
+/**
  * Removes a specificed moderator application from the db.
  *
  * @param username - the username of the user's application being deleted

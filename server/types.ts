@@ -77,6 +77,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: ObjectId;
 }
 
 /**
@@ -110,6 +111,18 @@ export interface ResetPasswordRequest extends Request {
 export interface MakeUserModeratorRequest extends Request {
   body: {
     username: string;
+  }
+}
+
+/**
+ * Interface extending the request body when updating a profile icon in the db:
+ * - username - The user being updated.
+ * - badgeName - The badge being used as a profile icon.
+ */
+export interface UpdateProfileIconRequest extends Request {
+  body: {
+    username: string;
+    badgeName: string;
   }
 }
 
