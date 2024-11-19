@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { FakeSOSocket, ModApplication } from '../types';
+import { ModApplication } from '../types';
 import { getModApplications, updateModApplicationStatus } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
+import useUserContext from './useUserContext';
 
 /**
  * Custom hook for managing the Review Application page's state, navigation, and real-time updates.
@@ -11,10 +12,11 @@ import { makeUserModerator } from '../services/userService';
  * @returns err - The current error message.
  * @returns handleApplicationDecision - Function to handle the acceptance or rejection of a mod application.
  */
-const useModApplicationPage = (socket: FakeSOSocket) => {
+const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
   const [numApps, setNumApps] = useState<number>(0);
   const [err, setErr] = useState<string>('');
+  const { socket } = useUserContext();
 
   // Fetches applications from the database.
   useEffect(() => {
