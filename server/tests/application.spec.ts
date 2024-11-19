@@ -171,15 +171,6 @@ const QUESTIONS: Question[] = [
   },
 ];
 
-const user1: User = {
-  _id: new ObjectId('65e9b786ff0e893116b2af69'),
-  username: 'user1',
-  password: 'Password1!',
-  isModerator: false,
-  badges: [],
-  infractions: [],
-};
-
 const badge1: Badge = {
   _id: new ObjectId(),
   name: 'Sage',
@@ -188,6 +179,24 @@ const badge1: Badge = {
   targetValue: 15,
   tier: 'silver',
   users: [],
+};
+
+const user1: User = {
+  _id: new ObjectId('65e9b786ff0e893116b2af69'),
+  username: 'user1',
+  password: 'Password1!',
+  isModerator: false,
+  badges: [badge1],
+  infractions: [],
+};
+
+const user2: User = {
+  _id: new ObjectId('65e9b786ff0e893116b2af70'),
+  username: 'user2',
+  password: 'Password1!',
+  isModerator: false,
+  badges: [],
+  infractions: [],
 };
 
 const mockApplication1 = {
@@ -331,6 +340,7 @@ describe('application module', () => {
           password: 'Password1!',
           isModerator: true,
           infractions: [],
+          badges: [],
         };
         const mockAcceptedApp = {
           username: mockModUser.username,
@@ -433,6 +443,7 @@ describe('application module', () => {
           password: 'Password1!',
           isModerator: true,
           infractions: [],
+          badges: [badge1],
         };
         mockingoose(UserModel).toReturn(updatedUser, 'findOneAndUpdate');
 

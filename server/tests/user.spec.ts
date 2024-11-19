@@ -26,6 +26,7 @@ describe('GET /authenticateUser', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockReqBody = {
@@ -109,6 +110,7 @@ describe('POST /createUser', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockReqBody = {
@@ -222,6 +224,7 @@ describe('POST /makeUserModerator', () => {
       password: 'Password1!',
       isModerator: true,
       infractions: [],
+      badges: [],
     };
 
     const mockReqBody = {

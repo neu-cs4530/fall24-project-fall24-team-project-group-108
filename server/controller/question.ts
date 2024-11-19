@@ -9,7 +9,6 @@ import {
   FakeSOSocket,
   FindQuestionByAswerer,
   UpdateTagsRequest,
-  Answer,
 } from '../types';
 import {
   addVoteToQuestion,

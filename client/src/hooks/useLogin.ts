@@ -71,6 +71,7 @@ const useLogin = () => {
           password,
           isModerator: user.isModerator,
           infractions: user.infractions,
+          badges: [],
         });
         setLoginAttempts(0);
         navigate('/home');

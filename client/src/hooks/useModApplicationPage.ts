@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ModApplication } from '../types';
-import useUserContext from './useUserContext';
+import { FakeSOSocket, ModApplication } from '../types';
 import { getModApplications, updateModApplicationStatus } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
 
@@ -12,7 +11,7 @@ import { makeUserModerator } from '../services/userService';
  * @returns err - The current error message.
  * @returns handleApplicationDecision - Function to handle the acceptance or rejection of a mod application.
  */
-const useModApplicationPage = () => {
+const useModApplicationPage = (socket: FakeSOSocket) => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
   const [numApps, setNumApps] = useState<number>(0);
   const [err, setErr] = useState<string>('');

@@ -8,8 +8,8 @@ import { Schema } from 'mongoose';
  * - `username`: The name of the user.
  * - `password`: The password of the user.
  * - `isModerator`: If the user has moderator privileges.
- * - `infractions`: List of removed Answers/Questions by the user.
  * - `badges`: Badges obtained by the user.
+ * - `infractions`: List of removed Answers/Questions by the user.
  */
 const userSchema: Schema = new Schema(
   {
