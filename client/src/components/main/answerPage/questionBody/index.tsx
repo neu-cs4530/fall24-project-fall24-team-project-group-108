@@ -1,6 +1,5 @@
 import React from 'react';
 import './index.css';
-import { useNavigate } from 'react-router-dom';
 import { handleHyperlink } from '../../../../tool';
 import useModStatus from '../../../../hooks/useModStatus';
 
