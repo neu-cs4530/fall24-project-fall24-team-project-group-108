@@ -10,6 +10,7 @@ import { Schema } from 'mongoose';
  * - `isModerator`: If the user has moderator privileges.
  * - `badges`: Badges obtained by the user.
  * - 'profileIcon' : The badge for the user's profile picture.
+ * - `infractions`: List of removed Answers/Questions by the user.
  */
 const userSchema: Schema = new Schema(
   {
@@ -25,6 +26,7 @@ const userSchema: Schema = new Schema(
     },
     badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
     profileIcon: { type: String, required: false },
+    infractions: [{ type: String }],
   },
   { collection: 'User' },
 );

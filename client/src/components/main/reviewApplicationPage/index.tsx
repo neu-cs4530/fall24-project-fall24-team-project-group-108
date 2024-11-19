@@ -2,17 +2,21 @@ import useModApplicationPage from '../../../hooks/useModApplicationPage';
 import { ModApplication } from '../../../types';
 import ReviewModApplicationHeader from './header';
 import './index.css';
+import useModNavigationPrivileges from '../../../hooks/useModNavigationPrivileges';
+import useBan from '../../../hooks/useBan';
 
 /**
  * ReviewApplicationPage component allows moderators to accept or reject moderator applications by users.
  */
 const ReviewApplicationPage = () => {
-  const { applications, err, handleApplicationDecision } = useModApplicationPage();
+  useModNavigationPrivileges();
+  useBan();
+  const { applications, numApps, err, handleApplicationDecision } = useModApplicationPage();
 
   if (!applications.length) {
     return (
       <>
-        <ReviewModApplicationHeader modAppCount={applications.length} />
+        <ReviewModApplicationHeader modAppCount={numApps} />
         <div className='container'>
           <h2>You are all caught up! No applications left.</h2>;
         </div>
@@ -22,7 +26,7 @@ const ReviewApplicationPage = () => {
 
   return (
     <>
-      <ReviewModApplicationHeader modAppCount={applications.length} />
+      <ReviewModApplicationHeader modAppCount={numApps} />
       {applications.map((application: ModApplication) => (
         <div className='application-container' key={application._id}>
           <h4 className='username'>{application.username}</h4>

@@ -1,18 +1,21 @@
 import express, { Response } from 'express';
-import { AddModApplicationRequest, DeleteModApplicationRequest } from '../types';
 import {
-  addModApplication,
-  fetchModApplications,
-  removeModApplication,
-} from '../models/application';
+  AddModApplicationRequest,
+  FakeSOSocket,
+  ModApplication,
+  UpdateModApplicationStatusRequest,
+} from '../types';
+import { addModApplication, fetchModApplications, updateAppStatus } from '../models/application';
 
-export const modApplicationController = () => {
+export const modApplicationController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
-   * Validates the mod application to ensure it contains all the necessary fields and that they are valid.
+   * Validates the ModApplication to ensure it contains all the necessary fields and that they are valid.
    *
    * @param user - The user who submitted the application.
+   * @param password - The password of the user who submitted the application.
+   * @param isModerator - The current moderator status of the user who submitted the application.
    * @param applicationText - The additional information the user provided in the application.
    *
    * @returns `true` if the user and applicationText are valid, otherwise `false`.
@@ -62,6 +65,7 @@ export const modApplicationController = () => {
         throw new Error(modAppFromDb.error);
       }
 
+      socket.emit('modApplicationUpdate', modAppFromDb as ModApplication);
       res.json(modAppFromDb);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -75,7 +79,7 @@ export const modApplicationController = () => {
   /**
    * Retrieves all ModApplications in the database. If fetching the applications fails, the HTTP response status is updated.
    *
-   * @param _ - Placeholder value.
+   * @param _ - Placeholder value since no request is needed.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -94,33 +98,33 @@ export const modApplicationController = () => {
   };
 
   /**
-   * Deletes a specified ModApplication in the database. If deleting the applications fails, the HTTP response status is updated.
+   * Updates a specified ModApplication' status in the database. If updating the application fails, the HTTP response status is updated.
    *
-   * @param req - The DeleteModApplicationRequest object containing the user data.
+   * @param req - The UpdateModApplicationStatusRequest object containing the application update data.
    * @param res - The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
-  const deleteModApplication = async (
-    req: DeleteModApplicationRequest,
+  const updateModApplicationStatus = async (
+    req: UpdateModApplicationStatusRequest,
     res: Response,
   ): Promise<void> => {
-    const { username } = req.body;
+    const { id, username, accepted } = req.body;
     try {
-      const deleted = await removeModApplication(username);
-      res.json(deleted);
+      const updated = await updateAppStatus(id, username, accepted);
+      res.json(updated);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        res.status(500).send(`Error when deleting application: ${err.message}`);
+        res.status(500).send(`Error when updating application: ${err.message}`);
       } else {
-        res.status(500).send(`Error when deleting application`);
+        res.status(500).send(`Error when updating application`);
       }
     }
   };
 
   router.post('/createModApplication', createModApplication);
   router.get('/getModApplications', getModApplications);
-  router.delete('/deleteModApplication', deleteModApplication);
+  router.post('/updateModApplicationStatus', updateModApplicationStatus);
 
   return router;
 };

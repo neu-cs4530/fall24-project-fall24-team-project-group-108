@@ -336,6 +336,8 @@ describe('GET /getQuestionById/:qid', () => {
       tags: [],
       answers: [],
       askDateTime: findq.askDateTime,
+      reports: [],
+      isRemoved: false,
     };
 
     // Provide mock question data
@@ -375,6 +377,8 @@ describe('GET /getQuestionById/:qid', () => {
       tags: [],
       answers: [],
       askDateTime: findq.askDateTime,
+      reports: [],
+      isRemoved: false,
     };
 
     // Provide mock question data

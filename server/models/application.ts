@@ -18,6 +18,9 @@ import {
   Tag,
   TagAnswerCountResponse,
   User,
+  UserReport,
+  UserReportResponse,
+  UserReportResponses,
   UserResponse,
   Message,
   Correspondence,
@@ -35,6 +38,7 @@ import UserModel from './users';
 import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
+import UserReportModel from './userReport';
 
 /**
  * Parses tags from a search string.
@@ -222,7 +226,7 @@ export const addTag = async (tag: Tag): Promise<Tag | null> => {
  */
 export const addUser = async (user: User): Promise<User | null> => {
   try {
-    // Check if a user with the given id already exists
+    // username must be unique
     const existingUser = await UserModel.findOne({ username: user.username });
 
     if (existingUser) {
@@ -246,7 +250,7 @@ export const addUser = async (user: User): Promise<User | null> => {
  * @param username - The input username.
  * @param password - The input password.
  *
- * @returns {Promise<boolean>} - Return true if the username and password are in the database, otherwise false.
+ * @returns {Promise<User | null>} - The existing user, or `null` if an error occurred
  */
 export const findUser = async (username: string, password: string): Promise<User | null> => {
   try {
@@ -272,23 +276,34 @@ export const findUser = async (username: string, password: string): Promise<User
  * @param user - the user who created the application.
  * @param applicationText - the additional information given in the application.
  *
- * @returns {Promise<ModApplication | null>} - The added or existing mod application, or `null` if an error occurred
+ * @returns {Promise<ModApplicationReponse>} - The added or existing mod application, or error if an error occurred
  */
 export const addModApplication = async (
   username: string,
   applicationText: string,
 ): Promise<ModApplicationResponse> => {
   try {
+    const acceptedApplication = await ModApplicationModel.findOne({
+      username,
+      status: 'accepted',
+    });
+    if (acceptedApplication && acceptedApplication.status === 'accepted') {
+      return { error: 'User is already a moderator' };
+    }
+
     const existingApplication = await ModApplicationModel.findOne({
       username,
-      status: { $ne: true },
+      status: 'unresolved',
     });
-    if (existingApplication) {
+    if (existingApplication && existingApplication.status === 'unresolved') {
       return { error: 'User already created an application request' };
     }
 
-    const savedApplication = await ModApplicationModel.create({ username, applicationText });
-    return savedApplication as ModApplication;
+    const newApplication = await ModApplicationModel.create({
+      username,
+      applicationText,
+    });
+    return newApplication as ModApplication;
   } catch (error) {
     return { error: 'Error when saving the mod application' };
   }
@@ -297,14 +312,14 @@ export const addModApplication = async (
 /**
  * Retrieves all of the moderator applications in the database.
  *
- * @returns {ModApplication[]} - A list of the current active ModApplications.
+ * @returns {ModApplicationResponses} - A list of the current active ModApplications.
  */
 export const fetchModApplications = async (): Promise<ModApplicationResponses> => {
   try {
-    const applications = await ModApplicationModel.find();
+    const applications = await ModApplicationModel.find({ status: 'unresolved' });
     return applications;
   } catch (error) {
-    return { error: 'Error when saving the mod application' };
+    return { error: 'Error when fetching the mod application' };
   }
 };
 
@@ -312,40 +327,16 @@ export const fetchModApplications = async (): Promise<ModApplicationResponses> =
  * Updates a user to make their isModerator value equal to true.
  *
  * @param username - The username of the user being updated in the db.
- * @returns {User} - The updated user object.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
  */
-export const updatePassword = async (username: string, password: string): Promise<UserResponse> => {
-  const hashedPassword = await bcrypt.hash(password, 5);
-
-  try {
-    const result = await UserModel.findOneAndUpdate(
-      { username },
-      { $set: { password: hashedPassword } },
-      { new: true },
-    );
-    if (result === null) {
-      throw new Error(`Failed to reset password`);
-    }
-    return result;
-  } catch (error) {
-    return { error: `Error when reseting password: ${(error as Error).message}` };
-  }
-};
-
-/**
- * Updates a user to make their isModerator value equal to true.
- *
- * @param username - The username of the user being updated in the db.
- * @returns {User} - The updated user object.
- */
-export const populateUser = async (username: string): Promise<UserResponse> => {
+export const updateUserModStatus = async (username: string): Promise<UserResponse> => {
   try {
     const result = await UserModel.findOneAndUpdate(
       { username },
       { $set: { isModerator: true } },
       { new: true },
     );
-    if (result === null) {
+    if (!result) {
       throw new Error(`Failed to fetch and populate a user`);
     }
     return result;
@@ -424,20 +415,30 @@ export const getBadgeCategoryAndTierByUsername = async (
 };
 
 /**
- * Removes a specificed moderator application from the db.
+ * Updates a specificed moderator application from the db's status.
  *
  * @param username - the username of the user's application being deleted
- * @returns {ModApplication} - the application object being deleted.
+ * @param accepted - true if application was accepted, false otherwise.
+ * @returns {ModApplicationResponse} - the updated application object or error if an error occurred.
  */
-export const removeModApplication = async (username: string): Promise<boolean> => {
+export const updateAppStatus = async (
+  id: string,
+  username: string,
+  accepted: boolean,
+): Promise<ModApplicationResponse> => {
   try {
-    const result = await ModApplicationModel.findOneAndDelete({ username });
+    const status = accepted ? 'accepted' : 'rejected';
+    const result = await ModApplicationModel.findOneAndUpdate(
+      { _id: id, username },
+      { $set: { status } },
+      { new: true },
+    );
     if (!result) {
       throw new Error(`No application found`);
     }
-    return true;
+    return result;
   } catch (error) {
-    throw new Error(`Error when deleting the application: ${(error as Error).message}`);
+    return { error: `Error when updating application status: ${(error as Error).message}` };
   }
 };
 
@@ -452,13 +453,16 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
   try {
     let qlist = [];
     if (order === 'active') {
-      qlist = await QuestionModel.find().populate([
+      qlist = await QuestionModel.find({ isRemoved: false }).populate([
         { path: 'tags', model: TagModel },
-        { path: 'answers', model: AnswerModel },
+        { path: 'answers', model: AnswerModel, match: { isRemoved: false } },
       ]);
       return sortQuestionsByActive(qlist);
     }
-    qlist = await QuestionModel.find().populate([{ path: 'tags', model: TagModel }]);
+    qlist = await QuestionModel.find({ isRemoved: false }).populate([
+      { path: 'tags', model: TagModel },
+      { path: 'answers', model: AnswerModel, match: { isRemoved: false } },
+    ]);
     if (order === 'unanswered') {
       return sortQuestionsByUnanswered(qlist);
     }
@@ -587,13 +591,18 @@ export const populateDocument = async (
         {
           path: 'answers',
           model: AnswerModel,
-          populate: { path: 'comments', model: CommentModel },
+          populate: [
+            { path: 'comments', model: CommentModel },
+            { path: 'reports', model: UserReportModel },
+          ],
         },
         { path: 'comments', model: CommentModel },
+        { path: 'reports', model: UserReportModel },
       ]);
     } else if (type === 'answer') {
       result = await AnswerModel.findOne({ _id: id }).populate([
         { path: 'comments', model: CommentModel },
+        { path: 'reports', model: UserReportModel },
       ]);
     }
     if (!result) {
@@ -631,9 +640,13 @@ export const fetchAndIncrementQuestionViewsById = async (
       {
         path: 'answers',
         model: AnswerModel,
-        populate: { path: 'comments', model: CommentModel },
+        populate: [
+          { path: 'comments', model: CommentModel },
+          { path: 'reports', model: UserReportModel },
+        ],
       },
       { path: 'comments', model: CommentModel },
+      { path: 'reports', model: UserReportModel },
     ]);
     return q;
   } catch (error) {
@@ -857,6 +870,25 @@ export const getBadgeUsers = async (badgeName: string): Promise<string[]> => {
 };
 
 /**
+ * Saves a new report to the database.
+ *
+ * @param {UserReport} report - The report to save
+ *
+ * @returns {Promise<UserReportResponse>} - The saved comment, or an error message if the save failed
+ */
+export const saveUserReport = async (report: UserReport): Promise<UserReportResponse> => {
+  try {
+    if (!report || !report.text || !report.reportBy || !report.reportDateTime) {
+      throw new Error('Invalid report');
+    }
+    const result = await UserReportModel.create(report);
+    return result;
+  } catch (error) {
+    return { error: `Error when saving a comment: ${(error as Error).message}` };
+  }
+};
+
+/**
  * Processes a list of tags by removing duplicates, checking for existing tags in the database,
  * and adding non-existing tags. Returns an array of the existing or newly added tags.
  * If an error occurs during the process, it is logged, and an empty array is returned.
@@ -1007,7 +1039,7 @@ export const addVoteToQuestion = async (
  * @param {string} qid - The ID of the question to add an answer to
  * @param {Answer} ans - The answer to add
  *
- * @returns Promise<QuestionResponse> - The updated question or an error message
+ * @returns {Promise<QuestionResponse>} - The updated question or an error message
  */
 export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<QuestionResponse> => {
   try {
@@ -1172,6 +1204,200 @@ export const addComment = async (
 };
 
 /**
+ * Adds a report to a question or answer.
+ *
+ * @param id - The ID of the question or answer to add a report to
+ * @param type - The type of the report, either 'question' or 'answer'
+ * @param report - The report to add
+ *
+ * @returns A Promise that resolves to the updated question or answer, or an error message if the operation fails
+ */
+export const addReport = async (
+  id: string,
+  type: 'question' | 'answer',
+  report: UserReport,
+): Promise<QuestionResponse | AnswerResponse> => {
+  try {
+    if (!report || !report.text || !report.reportBy || !report.reportDateTime) {
+      throw new Error('Invalid report');
+    }
+    let result: QuestionResponse | AnswerResponse | null;
+    if (type === 'question') {
+      result = await QuestionModel.findOneAndUpdate(
+        { _id: id },
+        { $push: { reports: { $each: [report._id] } } },
+        { new: true },
+      );
+    } else {
+      result = await AnswerModel.findOneAndUpdate(
+        { _id: id },
+        { $push: { reports: { $each: [report._id] } } },
+        { new: true },
+      );
+    }
+    if (result === null) {
+      throw new Error('Failed to add report');
+    }
+    return result;
+  } catch (error) {
+    return { error: `Error when adding report: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Retrieves all of the Questions and Answers in the database with unresolved reports that are not removed.
+ * @param type - The type of the object, either question or answer.
+ *
+ * @returns {UserReportResponses} - A list of Questions containing the reported Questions and Answers.
+ */
+export const fetchUnresolvedReports = async (
+  type: 'question' | 'answer',
+): Promise<UserReportResponses> => {
+  try {
+    if (type === 'question') {
+      const reportedQuestions = await QuestionModel.find({
+        reports: { $exists: true, $not: { $size: 0 } },
+      }).populate([{ path: 'reports', model: UserReportModel, match: { status: 'unresolved' } }]);
+      return reportedQuestions;
+    }
+    if (type === 'answer') {
+      const qWithReportedAns = await QuestionModel.find({
+        answers: { $exists: true, $not: { $size: 0 } },
+      }).populate([
+        {
+          path: 'answers',
+          model: AnswerModel,
+          populate: [{ path: 'reports', model: UserReportModel, match: { status: 'unresolved' } }],
+        },
+      ]);
+      const filteredQ = qWithReportedAns.map(question => {
+        question.answers = (question.answers as Answer[]).filter(
+          answer => answer.reports && answer.reports.length > 0,
+        );
+        return question;
+      });
+      return filteredQ;
+    }
+    return [];
+  } catch (error) {
+    return { error: 'Error when fetching the reported objects' };
+  }
+};
+
+/**
+ * Adds the id of the removed reportedPost to the User's infractions list.
+ *
+ * @param reportedPost - The Question/Answer that was reported.
+ * @param postId - The id of the post to query in the database.
+ *
+ * @returns {UserResponse} - Returns the updated user or an error if an error occurred.
+ */
+export const addUserInfraction = async (
+  reportedPost: Question | Answer,
+  postId: string,
+): Promise<UserResponse> => {
+  try {
+    const username = 'askedBy' in reportedPost ? reportedPost.askedBy : reportedPost.ansBy;
+    const result = await UserModel.findOneAndUpdate(
+      { username },
+      { $push: { infractions: postId } },
+      { new: true },
+    );
+    if (!result) {
+      throw new Error(`No answer found`);
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding user infraction' };
+  }
+};
+
+/**
+ * Updates the post's removal status.
+ *
+ * @param post - The Question/Answer to be updated.
+ * @param postId - The id of the post to query in the database.
+ * @param type - The type of the post, either question or answer.
+ * @param isRemoved - True if the moderator removed the question or answer, true otherwise.
+ *
+ * @returns {boolean} - True if the status was successfully changed, false otherwise.
+ */
+export const updatePostRemovalStatus = async (
+  post: Question | Answer,
+  postId: string,
+  type: 'question' | 'answer',
+  isRemoved: boolean,
+): Promise<QuestionResponse | AnswerResponse> => {
+  try {
+    let result: QuestionResponse | AnswerResponse | null;
+    if (type === 'question' && isRemoved === true) {
+      result = await QuestionModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
+    } else if (type === 'answer' && isRemoved === true) {
+      result = await AnswerModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { isRemoved: true } },
+        { new: true },
+      );
+    } else {
+      result = post;
+    }
+
+    if (result === null) {
+      throw new Error(`Failed to remove post`);
+    }
+
+    return result;
+  } catch (error) {
+    return { error: `Error when removing the post: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Updates the status of a report based on moderator decision.
+ *
+ * @param reportedPost - The Question/Answer that was reported.
+ * @param postId - The id of the post to query in the database.
+ * @param type - The type of the object, either question or answer.
+ * @param isRemoved - True if the moderator removed the question or answer, true otherwise.
+ *
+ * @returns {QuestionResponse | AnswerResponse} - Returns the updated question/answer, or an error if an error occurred.
+ */
+export const updateReportStatus = async (
+  reportedPost: Question | Answer,
+  postId: string,
+  type: 'question' | 'answer',
+  isRemoved: boolean,
+): Promise<QuestionResponse | AnswerResponse> => {
+  try {
+    const status = isRemoved ? 'removed' : 'dismissed';
+
+    if (reportedPost.reports.length > 0) {
+      const reportPromises = reportedPost.reports.map(async (report: UserReport) => {
+        const reportId = report._id;
+        return UserReportModel.findOneAndUpdate({ _id: reportId }, { status }, { new: true });
+      });
+
+      await Promise.all(reportPromises);
+    }
+
+    // if the report is accepted and the post is removed, add that post to the user who posted's infractions list
+    if (status === 'removed') {
+      await addUserInfraction(reportedPost, postId);
+    }
+
+    // Remove the associated reported post if removed, otherwise retain original post
+    const result = await updatePostRemovalStatus(reportedPost, postId, type, isRemoved);
+    return result;
+  } catch (error) {
+    return { error: `Error when resolving the reported object: ${(error as Error).message}` };
+  }
+};
+
+/**
  * Gets a map of tags and their corresponding question counts.
  *
  * @returns {Promise<Map<string, number> | null | { error: string }>} - A map of tags to their
@@ -1192,11 +1418,19 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     const tmap = new Map(tlist.map(t => [t.name, 0]));
 
     if (qlist != null && qlist !== undefined && qlist.length > 0) {
-      qlist.forEach(q => {
-        q.tags.forEach(t => {
-          tmap.set(t.name, (tmap.get(t.name) || 0) + 1);
+      qlist
+        .filter(q => !q.isRemoved)
+        .forEach(q => {
+          q.tags.forEach(t => {
+            tmap.set(t.name, (tmap.get(t.name) || 0) + 1);
+          });
         });
-      });
+    }
+
+    for (const [key, value] of tmap) {
+      if (value === 0) {
+        tmap.delete(key);
+      }
     }
 
     return tmap;
