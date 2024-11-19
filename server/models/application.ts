@@ -1,10 +1,12 @@
 import { ObjectId } from 'mongodb';
 import { QueryOptions } from 'mongoose';
-import { application } from 'express';
 import bcrypt from 'bcrypt';
 import {
   Answer,
   AnswerResponse,
+  Badge,
+  BadgeProgressResponse,
+  BadgeResponse,
   Comment,
   CommentResponse,
   ModApplication,
@@ -14,18 +16,28 @@ import {
   Question,
   QuestionResponse,
   Tag,
+  TagAnswerCountResponse,
   User,
   UserReport,
   UserReportResponse,
   UserReportResponses,
   UserResponse,
+  Message,
+  Correspondence,
+  MessageResponse,
+  CorrespondenceResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
+import MessageModel from './message';
+import CorrespondenceModel from './correspondence';
 import TagModel from './tags';
 import CommentModel from './comments';
+import BadgeModel from './badges';
 import UserModel from './users';
 import ModApplicationModel from './modApplication';
+import BadgeProgressModel from './badgeProgresses';
+import TagAnswerCountModel from './tagAnswerCounts';
 import UserReportModel from './userReport';
 
 /**
@@ -394,6 +406,50 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
   }
 };
 
+//  * Retrieves messages from the database, ordered by the specified criteria.
+//  *
+//  * @param {OrderType} order - The order type to filter the messages
+//  *
+//  * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
+//  */
+export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
+  const mlist = await MessageModel.find();
+  return mlist;
+};
+/**
+ * Retrieves correspondences from the database, ordered by the specified criteria.
+ *
+ *
+ * @returns {Promise<Correspondence[]>} - Promise that resolves to a list of ordered correspondences
+ */
+export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
+  const clist = await CorrespondenceModel.find().populate([
+    { path: 'messages', model: MessageModel },
+  ]);
+  return clist;
+};
+/**
+ * Retrieves questions from the database that were answered by the given user.
+ *
+ * @param string answerer - The answerer to filter the questions by
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of ordered questions
+ */
+export const filterQuestionsByAnswerer = async (answerer: string): Promise<Question[]> => {
+  try {
+    // find all answers from the given user
+    const alist = await AnswerModel.find({ ansBy: answerer });
+
+    // find all questions that are linked to the answers
+    const answerIds = alist.map(answer => answer._id);
+    const qlist = await QuestionModel.find({ answers: { $in: answerIds } });
+
+    return qlist;
+  } catch (error) {
+    return [];
+  }
+};
+
 /**
  * Filters a list of questions by the user who asked them.
  *
@@ -438,21 +494,21 @@ export const filterQuestionsBySearch = (qlist: Question[], search: string): Ques
 };
 
 /**
- * Fetches and populates a question or answer document based on the provided ID and type.
+ * Fetches and populates a question, answer, message, or correspondence document based on the provided ID and type.
  *
  * @param {string | undefined} id - The ID of the question or answer to fetch.
- * @param {'question' | 'answer'} type - Specifies whether to fetch a question or an answer.
+ * @param {'question' | 'answer'} type - Specifies whether to fetch a question, answer, message, or correspondence
  *
  * @returns {Promise<QuestionResponse | AnswerResponse>} - Promise that resolves to the
- *          populated question or answer, or an error message if the operation fails
+ *          populated resposne, or an error message if the operation fails
  */
 export const populateDocument = async (
   id: string | undefined,
-  type: 'question' | 'answer',
+  type: 'question' | 'answer', // | 'message' | 'correspondence',
 ): Promise<QuestionResponse | AnswerResponse> => {
   try {
     if (!id) {
-      throw new Error('Provided question ID is undefined.');
+      throw new Error('Provided ID is undefined.');
     }
 
     let result = null;
@@ -530,6 +586,56 @@ export const fetchAndIncrementQuestionViewsById = async (
 };
 
 /**
+ * Fetches a message by its ID and increments its view count.
+ *
+ * @param {string} mid - The ID of the message to fetch.
+ * @param {string} username - The username of the user requesting the message.
+ *
+ * @returns {Promise<MessageResponse | null>} - Promise that resolves to the fetched message
+ *          with incremented views, null if the message is not found, or an error message.
+ */
+export const fetchAndIncrementMessageViewsById = async (
+  mid: string,
+  username: string,
+): Promise<MessageResponse | null> => {
+  try {
+    const m = await MessageModel.findOneAndUpdate(
+      { _id: new ObjectId(mid) },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    return m;
+  } catch (error) {
+    return { error: 'Error when fetching and updating a message' };
+  }
+};
+
+/**
+ * Fetches a correspondence by its ID and increments its view count.
+ *
+ * @param {string} cid - The ID of the correspondence to fetch.
+ * @param {string} username - The username of the user requesting the correspondence.
+ *
+ * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence
+ *          with incremented views, null if the correspondence is not found, or an error message.
+ */
+export const fetchAndIncrementCorrespondenceViewsById = async (
+  cid: string,
+  username: string,
+): Promise<CorrespondenceResponse | null> => {
+  try {
+    const c = await CorrespondenceModel.findOneAndUpdate(
+      { _id: new ObjectId(cid) },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    return c;
+  } catch (error) {
+    return { error: 'Error when fetching and updating a message' };
+  }
+};
+
+/**
  * Saves a new question to the database.
  *
  * @param {Question} question - The question to save
@@ -542,6 +648,40 @@ export const saveQuestion = async (question: Question): Promise<QuestionResponse
     return result;
   } catch (error) {
     return { error: 'Error when saving a question' };
+  }
+};
+
+/**
+ * Saves a new message to the database.
+ *
+ * @param {Message} message - The message to save
+ *
+ * @returns {Promise<MessageResponse>} - The saved message, or error message
+ */
+export const saveMessage = async (message: Message): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.create(message);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a message' };
+  }
+};
+
+/**
+ * Saves a new correspondence to the database.
+ *
+ * @param {Correspondence} correspondence - The correspondence to save
+ *
+ * @returns {Promise<CorrespondenceResponse>} - The saved correspondence, or error message
+ */
+export const saveCorrespondence = async (
+  correspondence: Correspondence,
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.create(correspondence);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a correspondence' };
   }
 };
 
@@ -574,6 +714,89 @@ export const saveComment = async (comment: Comment): Promise<CommentResponse> =>
     return result;
   } catch (error) {
     return { error: 'Error when saving a comment' };
+  }
+};
+
+/**
+ * Saves a new badge to the database.
+ *
+ * @param {Badge} badge - The badge to save
+ *
+ * @returns {Promise<BadgeResponse>} - The saved badge, or error message
+ */
+export const saveBadge = async (badge: Badge): Promise<BadgeResponse> => {
+  try {
+    const result = await BadgeModel.create(badge);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a badge' };
+  }
+};
+
+/**
+ * Retrieves all badges from the database.
+ *
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const badges = await BadgeModel.find().exec();
+    return badges;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves all badges earned from a user from the database.
+ *
+ * @returns {Promise<Badge[]>} - Promise that resolves to a list of badges
+ */
+export const getBadgesByUser = async (username: string): Promise<Badge[]> => {
+  try {
+    // find all badgeProgresses where the user has hit the targetValue
+    const badgeProgresses = await BadgeProgressModel.aggregate([
+      {
+        $match: {
+          user: username,
+          $expr: { $gte: ['$currentValue', '$targetValue'] },
+        },
+      },
+    ]);
+
+    // find the badges that correspond to this badgeprogress
+    const badgeIds = badgeProgresses.map(progress => progress.badge);
+    const badges = await BadgeModel.find({
+      _id: { $in: badgeIds },
+    });
+
+    return badges;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves all users who have earned a given badge.
+ *
+ * @returns {Promise<String[]>} - Promise that resolves to a list of usernames
+ */
+export const getBadgeUsers = async (badgeName: string): Promise<string[]> => {
+  try {
+    const badge = await BadgeModel.findOne({ name: badgeName });
+
+    // return empty array if error
+    if (!badge || !badge.users || badge.users.length === 0) {
+      return [];
+    }
+
+    // map users to usernames
+    const userIds = badge.users;
+    const users = await UserModel.find({ _id: { $in: userIds } }).select('username');
+    const usernames = users.map(user => user.username);
+    return usernames;
+  } catch (error) {
+    return [];
   }
 };
 
@@ -765,6 +988,108 @@ export const addAnswerToQuestion = async (qid: string, ans: Answer): Promise<Que
     return result;
   } catch (error) {
     return { error: 'Error when adding answer to question' };
+  }
+};
+
+/**
+ * Adds a message to a correspondence.
+ *
+ * @param {string} cid - The ID of the correspondence to add a message to
+ * @param {Message} message - The message to add
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const addMessageToCorrespondence = async (
+  cid: string,
+  message: Message,
+): Promise<CorrespondenceResponse> => {
+  try {
+    if (
+      !message ||
+      !message.messageText ||
+      !message.messageBy ||
+      !message.messageTo ||
+      !message.messageDateTime
+    ) {
+      throw new Error('Invalid message');
+    }
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $push: { messages: { $each: [message._id] } } },
+      // { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when adding message to correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding message to correspondence' };
+  }
+};
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string[]} updatedMessageMembers - The updated list of members in the correspondence
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const updateCorrespondenceById = async (
+  cid: string,
+  updatedMessageMembers: string[],
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $set: { messageMembers: [...updatedMessageMembers] } },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a message for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} updatedMessageText - The updated message text for the message
+ *
+ * @returns Promise<CorrespondenceResponse> - The correspondence with the update message or an error message
+ */
+export const updateMessageById = async (
+  mid: string,
+  updatedMessageText: string,
+  isCodeStyle: boolean,
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { messageText: updatedMessageText, isCodeStyle } },
+      { returnDocument: 'after' },
+    );
+    if (result === null) {
+      throw new Error('Error when updating message');
+    }
+
+    const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+      messages: { _id: mid },
+    }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
+
+    if (!updatedCorrespondenceWithMessage) {
+      return { error: 'Error when retrieving updated correspondence' };
+    }
+
+    // console.log(updatedCorrespondenceWithMessage);
+
+    return updatedCorrespondenceWithMessage;
+  } catch (error) {
+    return { error: 'Error when updating message' };
   }
 };
 
@@ -1042,5 +1367,111 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
     return tmap;
   } catch (error) {
     return { error: 'Error when construction tag map' };
+  }
+};
+
+/**
+ * Updates the badgeProgress for a user and a given category.
+ *
+ * @param {string} username - The username to update
+ * @param {category} ans - The category of badge to update
+ *
+ * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
+ */
+export const updateBadgeProgress = async (
+  username: string,
+  category: string,
+): Promise<BadgeProgressResponse> => {
+  try {
+    const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
+
+    if (badgeProgresses.length === 0) {
+      // if no existing badgeProgresses, create new ones for all badges in the given category
+      const badges = await BadgeModel.find({ category });
+
+      // create a badgeprogress for all badges
+      await Promise.all(
+        badges.map(async badge => {
+          await BadgeProgressModel.create({
+            user: username,
+            badge: badge._id,
+            category,
+            targetValue: badge.targetValue,
+            currentValue: 1,
+          });
+        }),
+      );
+    } else {
+      // loop through all badgeProgresses and increment their values by one
+      await Promise.all(
+        badgeProgresses.map(async badgeProgress => {
+          badgeProgress.currentValue += 1;
+          await badgeProgress.save();
+
+          // if the user just acquired the badge,
+          // add them to the badge's list
+          if (badgeProgress.currentValue === badgeProgress.targetValue) {
+            const user = await UserModel.findOne({ username });
+            if (user) {
+              await BadgeModel.findOneAndUpdate(
+                { _id: badgeProgress.badge },
+                { $addToSet: { users: user._id } },
+                { new: true },
+              );
+            }
+          }
+          return badgeProgress;
+        }),
+      );
+    }
+
+    return badgeProgresses;
+  } catch (error) {
+    return { error: 'Error when updating badge progress' };
+  }
+};
+
+/**
+ * Updates the tagAnswerCounts for a user and a given question.
+ *
+ * @param {string} user - The username to update
+ * @param {string} qid - The id of question to update
+ *
+ * @returns Promise<void> - The updated badgeProgress or an error message
+ */
+export const updateTagAnswers = async (
+  username: string,
+  qid: string,
+): Promise<TagAnswerCountResponse> => {
+  try {
+    // all tags associated with the question
+    const question = await QuestionModel.findById(qid).exec();
+    if (!question) {
+      return { error: 'Question not found' };
+    }
+
+    const updatePromises = question.tags.map(async tagId => {
+      const tagAnswerCount = await TagAnswerCountModel.findOne({
+        user: username,
+        tag: tagId,
+      }).exec();
+
+      if (tagAnswerCount) {
+        // if it exists, update the count
+        tagAnswerCount.count += 1;
+        return tagAnswerCount.save();
+      }
+      // create a new TagAnswerCount
+      return TagAnswerCountModel.create({
+        tag: tagId,
+        user: username,
+        count: 1,
+      });
+    });
+
+    await Promise.all(updatePromises);
+    return question;
+  } catch (error) {
+    return { error: 'Error when updating tag progress' };
   }
 };

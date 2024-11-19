@@ -15,7 +15,11 @@ import tagController from './controller/tag';
 import commentController from './controller/comment';
 import { userController } from './controller/user';
 import { FakeSOSocket } from './types';
+import badgeController from './controller/badge';
 import modApplicationController from './controller/modApplication';
+import badgeProgressController from './controller/badgeProgress';
+import correspondenceController from './controller/correspondence';
+import messageController from './controller/message';
 import userReportController from './controller/userReport';
 
 dotenv.config();
@@ -73,9 +77,13 @@ app.use('/question', questionController(socket));
 app.use('/tag', tagController());
 app.use('/answer', answerController(socket));
 app.use('/comment', commentController(socket));
+app.use('/badge', badgeController(socket));
+app.use('/badgeProgress', badgeProgressController(socket));
 app.use('/user', userController());
 app.use('/modApplication', modApplicationController(socket));
 app.use('/userReport', userReportController(socket));
+app.use('/correspondence', correspondenceController(socket));
+app.use('/message', messageController(socket));
 
 // Export the app instance
 export { app, server, startServer };

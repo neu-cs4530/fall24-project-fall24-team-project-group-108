@@ -28,11 +28,15 @@ import {
   saveUserReport,
   fetchUnresolvedReports,
   addReport,
+  saveBadge,
+  getAllBadges,
+  getBadgeUsers,
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User, UserReport, ModApplication } from '../types';
+import { Answer, Question, Tag, Comment, User, Badge, UserReport, ModApplication } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC, R1_TEXT, R2_TEXT, R3_TEXT } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
+import BadgeModel from '../models/badges';
 import ModApplicationModel from '../models/modApplication';
 import UserReportModel from '../models/userReport';
 
@@ -172,15 +176,18 @@ const user1: User = {
   username: 'user1',
   password: 'Password1!',
   isModerator: false,
+  badges: [],
   infractions: [],
 };
 
-const user2: User = {
-  _id: new ObjectId('65e9b786ff0e893116b2af70'),
-  username: 'user2',
-  password: 'Password2!',
-  isModerator: false,
-  infractions: [],
+const badge1: Badge = {
+  _id: new ObjectId(),
+  name: 'Sage',
+  description: 'Answer 15 questions.',
+  category: 'answers',
+  targetValue: 15,
+  tier: 'silver',
+  users: [],
 };
 
 const mockApplication1 = {
@@ -1673,6 +1680,107 @@ describe('application module', () => {
           expect(err).toBeInstanceOf(Error);
           if (err instanceof Error) expect(err.message).toBe('Invalid comment');
         }
+      });
+    });
+  });
+
+  describe('Badge model', () => {
+    describe('saveBadge', () => {
+      test('saveBadge should return the saved badge', async () => {
+        const result = (await saveBadge(badge1)) as Badge;
+
+        expect(result._id).toBeDefined();
+        expect(result.name).toEqual(badge1.name);
+        expect(result.description).toEqual(badge1.description);
+        expect(result.category).toEqual(badge1.category);
+      });
+    });
+
+    describe('getAllBadges', () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+      });
+
+      test('should return an empty array if an error occurs', async () => {
+        jest.spyOn(BadgeModel, 'find').mockReturnValue({
+          exec: jest.fn().mockRejectedValue(new Error('Database error')),
+        } as unknown as ReturnType<typeof BadgeModel.find>);
+
+        const result = await getAllBadges();
+        expect(result).toEqual([]);
+      });
+    });
+
+    describe('getBadgeUsers', () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+      });
+
+      test('should return usernames when badge is found and users exist', async () => {
+        const badgeName = 'Badge 1';
+        const badge = {
+          name: badgeName,
+          users: ['userId1', 'userId2'],
+        };
+        const users = [
+          { _id: 'userId1', username: 'user1' },
+          { _id: 'userId2', username: 'user2' },
+        ];
+
+        // Mock BadgeModel.findOne
+        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge);
+
+        // Mock UserModel.find with chainable select
+        const mockFind = jest.fn().mockReturnValue({
+          select: jest.fn().mockResolvedValue(users),
+        });
+        jest.spyOn(UserModel, 'find').mockImplementation(mockFind);
+
+        const result = await getBadgeUsers(badgeName);
+
+        expect(result).toEqual(['user1', 'user2']);
+        expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
+        expect(UserModel.find).toHaveBeenCalledWith({ _id: { $in: badge.users } });
+      });
+
+      test('should return an empty array if badge is not found', async () => {
+        const badgeName = 'Nonexistent Badge';
+
+        // Mock BadgeModel.findOne to return null
+        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(null);
+
+        const result = await getBadgeUsers(badgeName);
+
+        expect(result).toEqual([]);
+        expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
+      });
+
+      test('should return an empty array if badge has no users', async () => {
+        const badgeName = 'Badge with No Users';
+        const badge = {
+          name: badgeName,
+          users: [],
+        };
+
+        // Mock BadgeModel.findOne
+        jest.spyOn(BadgeModel, 'findOne').mockResolvedValue(badge);
+
+        const result = await getBadgeUsers(badgeName);
+
+        expect(result).toEqual([]);
+        expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
+      });
+
+      test('should return an empty array if an error occurs', async () => {
+        const badgeName = 'Badge 1';
+
+        // Mock BadgeModel.findOne to throw an error
+        jest.spyOn(BadgeModel, 'findOne').mockRejectedValue(new Error('Database error'));
+
+        const result = await getBadgeUsers(badgeName);
+
+        expect(result).toEqual([]);
+        expect(BadgeModel.findOne).toHaveBeenCalledWith({ name: badgeName });
       });
     });
   });

@@ -9,8 +9,14 @@ import QuestionPage from './main/questionPage';
 import MessagePage from './main/messagePage';
 import TagPage from './main/tagPage';
 import NewQuestionPage from './main/newQuestion';
+import NewCorrespondencePage from './main/newCorrespondence';
+import UpdateCorrespondencePage from './main/updateCorrespondence';
 import NewAnswerPage from './main/newAnswer';
 import AnswerPage from './main/answerPage';
+import AccountPage from './main/accountPage';
+import BadgePage from './main/badgePage';
+import SingleBadgePage from './main/singleBadgePage';
+import LeaderboardPage from './main/leaderboardPage';
 import BanPage from './login/banPage';
 import SignUpPage from './login/signUpPage';
 import ModApplicationPage from './main/modApplicationPage';
@@ -59,6 +65,8 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             }>
             <Route path='home' element={<QuestionPage />} />
             <Route path='tags' element={<TagPage />} />
+            <Route path='tags/:tid' element={<LeaderboardPage />} />
+            <Route path='/account/:sentUser' element={<AccountPage />} />
             <Route path='/messagePage' element={<MessagePage />} />
             <Route path='/report' element={<ReportPage />} />
             <Route path='reviewReports' element={<ReviewReportsPage />} />
@@ -67,6 +75,10 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='/question/:qid' element={<AnswerPage />} />
             <Route path='/new/question' element={<NewQuestionPage />} />
             <Route path='/new/answer/:qid' element={<NewAnswerPage />} />
+            <Route path='/badges' element={<BadgePage />} />
+            <Route path='/badges/:badgeName' element={<SingleBadgePage />} />
+            <Route path='/new/correspondence' element={<NewCorrespondencePage />} />
+            <Route path='/update/correspondence/:cid' element={<UpdateCorrespondencePage />} />
           </Route>
         }
       </Routes>

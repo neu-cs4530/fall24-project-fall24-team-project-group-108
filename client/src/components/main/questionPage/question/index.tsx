@@ -44,6 +44,13 @@ const QuestionView = ({ q }: QuestionProps) => {
     navigate(`/question/${questionID}`);
   };
 
+  /**
+   * Function to navigate to the specified user profile based on the user ID.
+   */
+  const handleAuthorClick = () => {
+    navigate(`/account/${q.askedBy}`); // Assuming you have an ID for the author
+  };
+
   return (
     <div
       className='question right_padding'
@@ -73,7 +80,14 @@ const QuestionView = ({ q }: QuestionProps) => {
         </div>
       </div>
       <div className='lastActivity'>
-        <div className='question_author'>{q.askedBy}</div>
+        <div
+          className='question_author'
+          onClick={e => {
+            e.stopPropagation(); // prevent triggering the parent div's click event
+            handleAuthorClick();
+          }}>
+          {q.askedBy}
+        </div>
         <div>&nbsp;</div>
         <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
       </div>

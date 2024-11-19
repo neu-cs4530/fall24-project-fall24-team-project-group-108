@@ -1,0 +1,47 @@
+
+.profilePageContainer {
+background-color: #f2f2f2;
+height: 100%;
+width: 100%;
+display: flex;
+flex-direction: column;
+}
+
+.profileHeader {
+height: 15%;
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+padding-top: 3%;
+}
+
+.profileHeaderInfo {
+display: flex;
+flex-direction: row;
+margin-left: 5%;
+}
+
+.profileHeaderUsername {
+display: flex;
+flex-direction: column;
+padding-top: 2%;
+}
+
+.profileHeaderUsername div:first-child {
+font-size: 30px;
+font-weight: bold;
+}
+
+.profileHeaderUsername div:last-child {
+padding-top: 2%;
+color: #858585;
+}
+
+.profileHeaderButtons {
+margin-right: 5%;
+display: flex;
+flex-direction: row;
+gap: 3%;
+height: 25%;
+}
+

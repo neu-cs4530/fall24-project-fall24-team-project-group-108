@@ -1,4 +1,4 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
@@ -51,6 +51,15 @@ const AnswerView = ({
   isReported,
 }: AnswerProps) => {
   const { moderatorStatus } = useModStatus();
+  const navigate = useNavigate();
+
+  /**
+   * Function to navigate to the specified user profile based on the user ID.
+   */
+  const handleAuthorClick = () => {
+    navigate(`/account/${ansBy}`); // Assuming you have an ID for the author
+  };
+
   return (
     <div className='answer right_padding'>
       <div id='answerText' className='answerText'>
@@ -58,6 +67,14 @@ const AnswerView = ({
       </div>
       <div className='answerAuthor'>
         <div className='answer_author'>{ansBy}</div>
+        <div
+          className='answer_author'
+          onClick={e => {
+            e.stopPropagation(); // prevent triggering the parent div's click event
+            handleAuthorClick();
+          }}>
+          {ansBy}
+        </div>
         <div className='answer_question_meta'>{meta}</div>
       </div>
       <CommentSection comments={comments} handleAddComment={handleAddComment} />

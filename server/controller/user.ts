@@ -62,7 +62,13 @@ export const userController = () => {
       return;
     }
     try {
-      const user = await addUser({ username, password, isModerator: false, infractions: [] });
+      const user = await addUser({
+        username,
+        password,
+        isModerator: false,
+        badges: [],
+        infractions: [],
+      });
       if (!user) {
         res.status(400).send('Username cannot be used');
         return;

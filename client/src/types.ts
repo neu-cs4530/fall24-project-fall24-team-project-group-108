@@ -10,6 +10,7 @@ export interface User {
   username: string;
   password: string;
   isModerator: boolean;
+  badges: Badge[];
   infractions: string[];
 }
 
@@ -124,6 +125,23 @@ export interface Answer {
 }
 
 /**
+ * Interface represents a badge.
+ *
+ * name - The name of the badge.
+ * description - Description of the badge.
+ * category - The category of action required to get the badge.
+ * targetValue - The amount of times the action has to be done to obtain the badge.
+ * tier - The tier of branch in this category.
+ */
+export interface Badge {
+  name: string;
+  description: string;
+  category: string;
+  targetValue: number;
+  tier: string;
+}
+
+/**
  * Interface representing the structure of a Question object.
  *
  * - _id - The unique identifier for the question.
@@ -157,6 +175,18 @@ export interface Question {
 }
 
 /**
+ * Interface representing tag counts for the leaderboard.
+ *
+ * - user - The username.
+ * - count - The amount of times they've answered questions about a tag.
+ */
+export interface TagCounts {
+  user: string;
+  tagid: string;
+  count: number;
+}
+
+/**
  * Interface representing the structure of a Message object.
  *
  * - messageText - The content of the message
@@ -165,15 +195,26 @@ export interface Question {
  * - messageTo - A list of usernames of users who the message was sent to
  */
 export interface Message {
+  _id?: string;
   messageText: string;
   messageDateTime: Date;
   messageBy: string;
   messageTo: string[];
+  views?: string[];
+  isCodeStyle: boolean;
 }
 
+/**
+ * Interface representing the structure of a Correspondence object.
+ *
+ * - messages - A list of all Messages sent between the users in messsageMembers
+ * - messageMembers - A list of usernames of users involved in the messages
+ */
 export interface Correspondence {
+  _id?: string;
   messages: Message[];
   messageMembers: string[];
+  views?: string[];
 }
 
 /**
@@ -234,6 +275,8 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: Question) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
+  correspondenceUpdate: (update: Correspondence) => void;
+  messageUpdate: (update: Message) => void;
   modApplicationUpdate: (update: ModApplication) => void;
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;

@@ -16,7 +16,6 @@ const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
   const [numApps, setNumApps] = useState<number>(0);
   const [err, setErr] = useState<string>('');
-  const { socket } = useUserContext();
 
   // Fetches applications from the database.
   useEffect(() => {

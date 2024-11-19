@@ -7,6 +7,8 @@ import {
   AddQuestionRequest,
   VoteRequest,
   FakeSOSocket,
+  FindQuestionByAswerer,
+  UpdateTagsRequest,
   Answer,
 } from '../types';
 import {
@@ -18,6 +20,8 @@ import {
   processTags,
   populateDocument,
   saveQuestion,
+  filterQuestionsByAnswerer,
+  updateTagAnswers,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -50,6 +54,31 @@ const questionController = (socket: FakeSOSocket) => {
         res.status(500).send(`Error when fetching questions by filter: ${err.message}`);
       } else {
         res.status(500).send(`Error when fetching questions by filter`);
+      }
+    }
+  };
+
+  /**
+   * Retrieves a list of questions filtered by a user who answered the question.
+   *
+   * @param req The FindQuestionByAswerer object containing the query parameter 'answeredBy'.
+   * @param res The HTTP response object used to send back the filtered list of questions.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getQuestionsByAnswerer = async (
+    req: FindQuestionByAswerer,
+    res: Response,
+  ): Promise<void> => {
+    const { answeredBy } = req.params;
+    try {
+      const qlist: Question[] = await filterQuestionsByAnswerer(answeredBy);
+      res.json(qlist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching questions by answerer: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching questions by answerer`);
       }
     }
   };
@@ -228,12 +257,38 @@ const questionController = (socket: FakeSOSocket) => {
     voteQuestion(req, res, 'downvote');
   };
 
+  /**
+   * Handles updating tag leaderboard data when a quesetion is answered.
+   * If the request is invalid or an error occurs, the appropriate HTTP response status and message are returned.
+   *
+   * @param req The UpdateTagsRequest object containing the question ID and the username.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateTagProgress = async (req: UpdateTagsRequest, res: Response): Promise<void> => {
+    const { user } = req.query;
+    const { qid } = req.query;
+    try {
+      const updatedQuestion = await updateTagAnswers(user, qid);
+      res.json(updatedQuestion);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating question tags: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating question tags`);
+      }
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getQuestion', getQuestionsByFilter);
   router.get('/getQuestionById/:qid', getQuestionById);
+  router.get('/getQuestionByAnswerer/:answeredBy', getQuestionsByAnswerer);
   router.post('/addQuestion', addQuestion);
   router.post('/upvoteQuestion', upvoteQuestion);
   router.post('/downvoteQuestion', downvoteQuestion);
+  router.post('/updateTagProgress', updateTagProgress);
 
   return router;
 };

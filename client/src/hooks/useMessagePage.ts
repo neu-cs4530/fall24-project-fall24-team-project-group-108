@@ -1,130 +1,138 @@
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useUserContext from './useUserContext';
-import { Answer, Correspondence, OrderType, Question } from '../types';
-import { getQuestionsByFilter } from '../services/questionService';
+import { Correspondence, Message } from '../types';
+import { getCorrespondencesByOrder } from '../services/correspondenceService';
+import { addMessage } from '../services/messageService';
 
 /**
- * Custom hook for managing the question page state, filtering, and real-time updates.
+ * Custom hook for managing the message page state, filtering, and real-time updates.
  *
  * @returns titleText - The current title of the question page
  * @returns qlist - The list of questions to display
  * @returns setQuestionOrder - Function to set the sorting order of questions (e.g., newest, oldest).
  */
 const useMessagePage = () => {
-  const { socket } = useUserContext();
+  const { socket, user } = useUserContext();
+  const navigate = useNavigate();
 
-  const [searchParams] = useSearchParams();
-  const [titleText, setTitleText] = useState<string>('All Questions');
-  const [search, setSearch] = useState<string>('');
-  const [questionOrder, setQuestionOrder] = useState<OrderType>('newest');
+  const [titleText, setTitleText] = useState<string>('All Messages');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
+  const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
+  const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
+    [],
+  );
+  const [toAddText, setToAddText] = useState<string>('');
+  const [messageText, setMessageText] = useState<string>('');
+  const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
+
+  const handleUpdateCorrespondence = () => {
+    navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
+  };
 
   useEffect(() => {
-    let pageTitle = 'All Messages';
-    let searchString = '';
-
-    const searchQuery = searchParams.get('search');
-    const tagQuery = searchParams.get('tag');
-
-    if (searchQuery) {
-      pageTitle = 'Search Results';
-      searchString = searchQuery;
-    } else if (tagQuery) {
-      pageTitle = tagQuery;
-      searchString = `[${tagQuery}]`;
-    }
+    const pageTitle = 'All Messages';
 
     setTitleText(pageTitle);
-    setSearch(searchString);
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     /**
-     * Function to fetch questions based on the filter and update the question list.
+     * Function to fetch correspondences based on the order and update the correspondence list.
      */
     const fetchData = async () => {
       try {
-        // const res = await getQuestionsByFilter(questionOrder, search);
-        // setQlist(res || []);
-        setCorrespondenceList([
-          {
-            messageMembers: ['siqbal', 'rjackson', 'bgibson'],
-            messages: [
-              {
-                messageText: 'I just had a great era',
-                messageDateTime: new Date(),
-                messageBy: 'bgibson',
-                messageTo: ['rjackson', 'siqbal'],
-              },
-              {
-                messageText: 'I just hit 3hr in the WS!',
-                messageDateTime: new Date(),
-                messageBy: 'rjackson',
-                messageTo: ['bgibson', 'siqbal'],
-              },
-            ],
-          },
-        ]);
+        const res = await getCorrespondencesByOrder();
+
+        setCorrespondenceList(
+          res.filter(correspondence => correspondence.messageMembers.indexOf(user.username) > -1),
+        );
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+        // Handle error
       }
     };
 
     /**
-     * Function to handle question updates from the socket.
+     * Function to handle message/corresponcence updates from the socket.
      *
-     * @param question - the updated question object.
+     * @param correspondence - The updated correspondence object.
      */
-    // const handleQuestionUpdate = (question: Question) => {
-    //   setQlist(prevQlist => {
-    //     const questionExists = prevQlist.some(q => q._id === question._id);
-
-    //     if (questionExists) {
-    //       // Update the existing question
-    //       return prevQlist.map(q => (q._id === question._id ? question : q));
-    //     }
-
-    //     return [question, ...prevQlist];
-    //   });
-    // };
-
-    /**
-     * Function to handle answer updates from the socket.
-     *
-     * @param qid - The question ID.
-     * @param answer - The answer object.
-     */
-    // const handleAnswerUpdate = ({ qid, answer }: { qid: string; answer: Answer }) => {
-    //   setQlist(prevQlist =>
-    //     prevQlist.map(q => (q._id === qid ? { ...q, answers: [...q.answers, answer] } : q)),
-    //   );
-    // };
-
-    /**
-     * Function to handle views updates from the socket.
-     *
-     * @param question - The updated question object.
-     */
-    // const handleViewsUpdate = (question: Question) => {
-    //   setQlist(prevQlist => prevQlist.map(q => (q._id === question._id ? question : q)));
-    // };
+    const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
+      // setCorrespondenceList(
+      //   [...correspondenceList].map(c =>
+      //     c._id === correspondence._id ? { ...correspondence } : { ...c },
+      //   ),
+      // );
+      await fetchData();
+      if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
+        setSelectedCorrespondence({ ...correspondence });
+        setSelectedCorrespondenceMessages([...correspondence.messages]);
+      }
+    };
 
     fetchData();
 
     // socket.on('questionUpdate', handleQuestionUpdate);
     // socket.on('answerUpdate', handleAnswerUpdate);
     // socket.on('viewsUpdate', handleViewsUpdate);
+    socket.on('correspondenceUpdate', handleCorrespondenceUpdate);
 
     return () => {
       //   socket.off('questionUpdate', handleQuestionUpdate);
       //   socket.off('answerUpdate', handleAnswerUpdate);
-      //   socket.off('viewsUpdate', handleViewsUpdate);
+      // socket.off('viewsUpdate', handleViewsUpdate);
+      socket.off('correspondenceUpdate', handleCorrespondenceUpdate);
     };
-  }, [questionOrder, search, socket]);
+  }, [socket, selectedCorrespondence, user]);
 
-  return { correspondenceList };
+  const handleSelectCorrespondence = (correspondence: Correspondence): void => {
+    setSelectedCorrespondence(correspondence);
+    setSelectedCorrespondenceMessages([...correspondence.messages]);
+  };
+
+  const handleSendMessage = async (): Promise<void> => {
+    if (messageText !== '') {
+      const cid = selectedCorrespondence?._id;
+      const messageTo = selectedCorrespondence?.messageMembers.filter(
+        member => member !== user.username,
+      );
+      const message = {
+        messageText,
+        messageDateTime: new Date(),
+        messageTo: messageTo || [],
+        messageBy: user.username,
+        isCodeStyle,
+      };
+
+      const updatedCorrespondence = await addMessage(cid || '', message);
+      const updatedCorrespondenceList = correspondenceList.filter(
+        correspondence => correspondence._id !== cid,
+      );
+
+      setCorrespondenceList([...updatedCorrespondenceList, updatedCorrespondence]);
+      setSelectedCorrespondence({ ...updatedCorrespondence });
+      setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
+      setMessageText('');
+    }
+  };
+
+  return {
+    user,
+    correspondenceList,
+    titleText,
+    selectedCorrespondence,
+    setSelectedCorrespondence,
+    handleSelectCorrespondence,
+    messageText,
+    setMessageText,
+    handleSendMessage,
+    selectedCorrespondenceMessages,
+    toAddText,
+    setToAddText,
+    handleUpdateCorrespondence,
+    isCodeStyle,
+    setIsCodeStyle,
+  };
 };
 
 export default useMessagePage;
