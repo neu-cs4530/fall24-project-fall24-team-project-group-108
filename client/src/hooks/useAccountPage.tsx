@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useUserContext from './useUserContext';
 import { Badge, Question } from '../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
 import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../services/badgeService';
-import { BadgeCategory, BadgeTier } from './useBadgePage';
+import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
+import QuestionsTab from '../components/main/accountPage/questionsTab';
+import AnswersTab from '../components/main/accountPage/answersTab';
+import BadgesTab from '../components/main/accountPage/badgesTab';
 
 interface ProfileIconDetails {
   category: BadgeCategory | null;
@@ -23,8 +27,15 @@ interface ProfileIconDetails {
  * @returns handleChange - a function to handle tab switching.
  * @returns badgeList - the list of badges acquired by the user.
  * @returns navigate - a useNavigate to switch routes.
+ * @returns setEditModalOpen - setter to adjust modal display.
+ * @returns editModalOpen - state to track if the modal is displayed.
+ * @returns user - the user logged in.
+ * @returns profileIconDetails - details of the user's profile icon.
+ * @returns renderProfilePicture - function to render the profile icon.
+ * @returns renderTabContent - function to display profile tabs.
  */
 const useAccountPage = () => {
+  const { getBadgeIcon } = useBadgePage();
   const { sentUser } = useParams();
   const { user } = useUserContext();
   const [value, setValue] = useState(0);
@@ -100,7 +111,6 @@ const useAccountPage = () => {
     const fetchProfileIconDetails = async () => {
       try {
         const details = await getBadgeDetailsByUsername(user.username);
-        console.log(details);
         setProfileIconDetails({
           category: (details.category as BadgeCategory) || 'Unknown Category',
           tier: (details.tier as BadgeTier) || 'Unknown Tier',
@@ -118,6 +128,46 @@ const useAccountPage = () => {
     fetchProfileIconDetails();
   }, [user, sentUser]);
 
+  /**
+   * Renders the profile picture of a user.
+   * @returns Their profile icon or the default icon.
+   */
+  const renderProfilePicture = () => {
+    if (profileIconDetails?.category && profileIconDetails?.tier) {
+      return getBadgeIcon(
+        profileIconDetails.category as BadgeCategory,
+        profileIconDetails.tier as BadgeTier,
+      );
+    }
+
+    return <AccountCircleIcon sx={{ fontSize: 100 }} />;
+  };
+
+  /**
+   * Renders content for tabs in user account.
+   */
+  const renderTabContent = () => {
+    const userDisplay = userLoggedIn ? 'you' : (sentUser as string);
+
+    switch (value) {
+      case 0:
+        return QuestionsTab(userDisplay, qlist);
+      case 1:
+        return AnswersTab(userDisplay, alist);
+      case 2:
+        return (
+          <BadgesTab
+            user={userDisplay}
+            handleClick={handleAuthorClick}
+            userBadges={badgeList}
+            navigate={navigate}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return {
     sentUser,
     value,
@@ -132,6 +182,8 @@ const useAccountPage = () => {
     editModalOpen,
     user,
     profileIconDetails,
+    renderProfilePicture,
+    renderTabContent,
   };
 };
 
