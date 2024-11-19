@@ -169,7 +169,7 @@ export const userController = () => {
   router.post('/createUser', createUser);
   router.post('/resetPassword', resetPassword);
   router.post('/makeUserModerator', makeUserModerator);
-  router.post('/updatePicture', updateProfilePicture)
+  router.post('/updatePicture', updateProfilePicture);
 
   return router;
 };

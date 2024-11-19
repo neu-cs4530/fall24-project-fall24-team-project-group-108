@@ -3,7 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import useUserContext from './useUserContext';
 import { Badge, Question } from '../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
-import { fetchBadgesByUser } from '../services/badgeService';
+import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../services/badgeService';
+import { BadgeCategory, BadgeTier } from './useBadgePage';
+
+interface ProfileIconDetails {
+  category: BadgeCategory | null;
+  tier: BadgeTier | null;
+}
 
 /**
  * Custom hook for managing the state and logic of an account page.
@@ -27,6 +33,7 @@ const useAccountPage = () => {
   const [alist, setAlist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [profileIconDetails, setProfileIconDetails] = useState<ProfileIconDetails | null>(null);
 
   // determine if the profile being viewed is for the currently logged in user
   let userLoggedIn: boolean;
@@ -87,9 +94,28 @@ const useAccountPage = () => {
       }
     };
 
+    /**
+     * Function to fetch details about the user's profile icon.
+     */
+    const fetchProfileIconDetails = async () => {
+      try {
+        const details = await getBadgeDetailsByUsername(user.username);
+        console.log(details);
+        setProfileIconDetails({
+          category: (details.category as BadgeCategory) || 'Unknown Category',
+          tier: (details.tier as BadgeTier) || 'Unknown Tier',
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to fetch details for profile icon: ${user.profileIcon}`, error);
+        setProfileIconDetails(null);
+      }
+    };
+
     fetchQuestionData();
     fetchAnswerData();
     fetchUserBadges();
+    fetchProfileIconDetails();
   }, [user, sentUser]);
 
   return {
@@ -104,6 +130,8 @@ const useAccountPage = () => {
     navigate,
     setEditModalOpen,
     editModalOpen,
+    user,
+    profileIconDetails,
   };
 };
 

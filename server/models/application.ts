@@ -376,12 +376,46 @@ export const updateUserProfilePicture = async (username: string, badgeName: stri
     }
 
     // update and save
-    user.profileIcon = badge._id; 
+    user.profileIcon = badge.name; 
     await user.save(); 
     return user; 
+
   } catch (err: unknown) {
     console.error(err);
     return { error: 'Failed to update user profile picture' };
+  }
+};
+
+/**
+ * Gets a badge's category and tier based off of its name.
+ * @param badgeName - The badge name.
+ */
+export const getBadgeCategoryAndTierByUsername = async (
+  username: string,
+): Promise<{ category?: string; tier?: string; error?: string }> => {
+  try {
+    // find the user
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // extract the profile icon
+    const badgeName = user.profileIcon;
+    if (!badgeName) {
+      return { error: 'Profile icon not set for the user' };
+    }
+
+    // find the badge 
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' };
+    }
+
+    return { category: badge.category, tier: badge.tier };
+  } catch (err: unknown) {
+    console.error(err);
+    return { error: 'Failed to retrieve badge category and tier' };
   }
 };
 

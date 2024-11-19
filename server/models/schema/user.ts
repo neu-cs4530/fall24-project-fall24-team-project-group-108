@@ -24,7 +24,7 @@ const userSchema: Schema = new Schema(
       type: Boolean,
     },
     badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
-    profileIcon: { type: Schema.Types.ObjectId, ref: 'Badge' , required: false },
+    profileIcon: { type: String , required: false },
   },
   { collection: 'User' },
 );

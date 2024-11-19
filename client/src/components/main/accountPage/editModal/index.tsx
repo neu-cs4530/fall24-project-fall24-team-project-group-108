@@ -7,28 +7,38 @@ import {
   Button,
   SelectChangeEvent,
 } from '@mui/material';
+import { NavigateFunction } from 'react-router-dom';
 import { Badge } from '../../../../types';
 import './index.css';
 import useBadgePage, { BadgeCategory, BadgeTier } from '../../../../hooks/useBadgePage';
 import { changeProfilePicture } from '../../../../services/userService';
 
-// interface for the props of EditAccountModal component
+// Interface for the props of EditAccountModal component
 interface EditAccountModalProps {
   onClose: () => void;
   userBadges: Badge[];
   user: string;
+  nav: NavigateFunction;
 }
 
 /**
- * EditAccountModal component that displays the modal for editing account information
+ * EditAccountModal component
  */
-const EditAccountModal = ({ onClose, userBadges, user }: EditAccountModalProps) => {
+const EditAccountModal = ({ onClose, userBadges, user, nav }: EditAccountModalProps) => {
   const [selectedBadge, setSelectedBadge] = useState<string>('');
   const { getBadgeIcon } = useBadgePage();
 
-  // Handle change for the select component
+  // Handle badge selection
   const handleBadgeChange = (event: SelectChangeEvent<string>) => {
-    setSelectedBadge(event.target.value); // Update selected badge value
+    const badgeName = event.target.value;
+
+    setSelectedBadge(badgeName);
+  };
+
+  // Handle profile picture change
+  const handleProfileChange = () => {
+    changeProfilePicture(user, selectedBadge);
+    onClose();
   };
 
   return (
@@ -51,7 +61,7 @@ const EditAccountModal = ({ onClose, userBadges, user }: EditAccountModalProps) 
               <InputLabel id='badge-select-label'>Your Badges</InputLabel>
               <Select
                 labelId='badge-select-label'
-                value={selectedBadge}
+                value={selectedBadge || ''}
                 onChange={handleBadgeChange}
                 label='Select Badge'>
                 {userBadges.map(badge => (
@@ -71,7 +81,8 @@ const EditAccountModal = ({ onClose, userBadges, user }: EditAccountModalProps) 
           className='save-button'
           variant='contained'
           color='primary'
-          onClick={() => changeProfilePicture(user, selectedBadge)}>
+          onClick={handleProfileChange}
+          disabled={!selectedBadge}>
           Save
         </Button>
       </div>

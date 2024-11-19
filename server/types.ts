@@ -77,7 +77,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
-  profileIcon?: ObjectId;
+  profileIcon?: string;
 }
 
 /**
