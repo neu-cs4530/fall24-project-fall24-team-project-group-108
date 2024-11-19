@@ -21,8 +21,7 @@ const NewMessageButton = () => {
       className='bluebtn'
       onClick={() => {
         handleNewQuestion();
-      }}
-    >
+      }}>
       New Message
     </button>
   );
