@@ -33,6 +33,9 @@ export const userController = () => {
 
     try {
       const user = await findUser(username, password);
+      if (!user) {
+        throw new Error('User not found in database');
+      }
       res.json(user);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -61,7 +64,7 @@ export const userController = () => {
     try {
       const user = await addUser({ username, password, isModerator: false, infractions: [] });
       if (!user) {
-        res.status(400).send('Username already taken');
+        res.status(400).send('Username cannot be used');
         return;
       }
 
@@ -85,17 +88,7 @@ export const userController = () => {
    */
   const makeUserModerator = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
     const { username } = req.body;
-    // if (!isUserBodyValid(username, password)) {
-    //   res.status(400).send('Invalid user body');
-    //   return;
-    // }
     try {
-      // const authenticatedUser = await findUser(id, username);
-      // if (!authenticatedUser) {
-      //   res.status(400).send('User cannot be found in the database');
-      //   return;
-      // }
-      // const authetnicatedUsername = authenticatedUser.username;
       // New users are automatically not a moderator, need to be approved to become a moderator.
       const populatedUser = await updateUserModStatus(username);
       if (populatedUser && 'error' in populatedUser) {

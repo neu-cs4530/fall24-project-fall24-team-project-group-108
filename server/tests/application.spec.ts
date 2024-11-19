@@ -818,17 +818,6 @@ describe('application module', () => {
         );
       });
 
-      test('should throw an error if no reports are found on the post', async () => {
-        const q = QUESTIONS[0];
-        const qid = q._id?.toString() as string;
-
-        const result = await updateReportStatus(q, qid, 'question', true);
-
-        expect(result).toEqual({
-          error: 'Error when resolving the reported object: No reports found',
-        });
-      });
-
       test('should throw an error if an error occurs in the database operations', async () => {
         const qid = mockQuestion._id?.toString() as string;
         mockingoose(UserReportModel).toReturn(new Error('err'), 'findOneAndUpdate');

@@ -214,7 +214,7 @@ export const addTag = async (tag: Tag): Promise<Tag | null> => {
  */
 export const addUser = async (user: User): Promise<User | null> => {
   try {
-    // Check if a user with the given id already exists
+    // username must be unique
     const existingUser = await UserModel.findOne({ username: user.username });
 
     if (existingUser) {
