@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { User } from '../types';
+import { Badge, User } from '../types';
 
 const addUserSpy = jest.spyOn(util, 'addUser');
 const updateUserModStatusSpy = jest.spyOn(util, 'updateUserModStatus');
@@ -235,7 +235,10 @@ describe('POST /makeUserModerator', () => {
 
     const response = await supertest(app).post('/user/makeUserModerator').send(mockReqBody);
     expect(response.status).toBe(200);
-    const fixed = { ...mockUser, _id: validUId.toString() };
+    const fixed = {
+      ...mockUser,
+      _id: validUId.toString(),
+    };
     expect(response.body).toEqual(fixed);
   });
 

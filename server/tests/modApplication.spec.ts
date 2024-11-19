@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Answer, ModApplication, Question, Tag, User, UserReport } from '../types';
-import { R1_TEXT, R2_TEXT, R3_TEXT } from '../data/posts_strings';
+import { ModApplication, User } from '../types';
 
 const addModApplicationSpy = jest.spyOn(util, 'addModApplication');
 const fetchModApplicationsSpy = jest.spyOn(util, 'fetchModApplications');
@@ -36,6 +35,7 @@ describe('POST /addModApplication', () => {
           password: 'Password1!',
           isModerator: false,
           infractions: [],
+          badges: [],
         } as User,
         applicationText: 'hi',
         status: 'unresolved',
@@ -48,6 +48,7 @@ describe('POST /addModApplication', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplicaton: ModApplication = {
@@ -82,6 +83,7 @@ describe('POST /addModApplication', () => {
           password: 'Password1!',
           isModerator: false,
           infractions: [],
+          badges: [],
         } as User,
         applicationText: 'hi',
       },
@@ -107,6 +109,7 @@ describe('POST /addModApplication', () => {
           password: 'Password1!',
           isModerator: false,
           infractions: [],
+          badges: [],
         } as User,
         applicationText: 'hi',
       },
@@ -132,6 +135,7 @@ describe('POST /addModApplication', () => {
           password: 'Password1!',
           isModerator: false,
           infractions: [],
+          badges: [],
         } as User,
         applicationText: 'hi',
         status: 'unresolved',
@@ -278,6 +282,7 @@ describe('POST /updateAppStatus', () => {
       password: 'Password1!',
       isModerator: true,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplicaton: ModApplication = {
@@ -318,6 +323,7 @@ describe('POST /updateAppStatus', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplicaton: ModApplication = {
@@ -398,6 +404,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication1: ModApplication = {
@@ -416,6 +423,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication2: ModApplication = {
@@ -434,6 +442,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication3: ModApplication = {
@@ -471,6 +480,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication1: ModApplication = {
@@ -489,6 +499,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication2: ModApplication = {
@@ -507,6 +518,7 @@ describe('GET /fetchModApplications', () => {
       password: 'Password1!',
       isModerator: false,
       infractions: [],
+      badges: [],
     };
 
     const mockModApplication3: ModApplication = {

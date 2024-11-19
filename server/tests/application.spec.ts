@@ -448,8 +448,9 @@ describe('application module', () => {
         mockingoose(UserModel).toReturn(updatedUser, 'findOneAndUpdate');
 
         const result = await updateUserModStatus(user1.username);
+        const fixed = { ...updatedUser, badges: [badge1._id] };
         // used toMatchObject instead of toEqual because the order of the values in the object slightly changes
-        expect(result).toMatchObject(updatedUser);
+        expect(result).toMatchObject(fixed);
       });
 
       test('Should return an error if username is bad', async () => {
