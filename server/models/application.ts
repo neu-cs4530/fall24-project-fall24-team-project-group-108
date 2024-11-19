@@ -361,26 +361,29 @@ export const populateUser = async (username: string): Promise<UserResponse> => {
  * @param badgeName - The badge icon for their profile picture.
  * @returns {User} - The updated user object.
  */
-export const updateUserProfilePicture = async (username: string, badgeName: string): Promise<UserResponse> => {
+export const updateUserProfilePicture = async (
+  username: string,
+  badgeName: string,
+): Promise<UserResponse> => {
   try {
     // find the badge
     const badge = await BadgeModel.findOne({ name: badgeName });
     if (!badge) {
-      return { error: 'Badge not found' }; 
+      return { error: 'Badge not found' };
     }
 
-    // find the user 
+    // find the user
     const user = await UserModel.findOne({ username });
     if (!user) {
       return { error: 'User not found' };
     }
 
     // update and save
-    user.profileIcon = badge.name; 
-    await user.save(); 
-    return user; 
-
+    user.profileIcon = badge.name;
+    await user.save();
+    return user;
   } catch (err: unknown) {
+    // eslint-disable-next-line no-console
     console.error(err);
     return { error: 'Failed to update user profile picture' };
   }
@@ -406,7 +409,7 @@ export const getBadgeCategoryAndTierByUsername = async (
       return { error: 'Profile icon not set for the user' };
     }
 
-    // find the badge 
+    // find the badge
     const badge = await BadgeModel.findOne({ name: badgeName });
     if (!badge) {
       return { error: 'Badge not found' };
@@ -414,6 +417,7 @@ export const getBadgeCategoryAndTierByUsername = async (
 
     return { category: badge.category, tier: badge.tier };
   } catch (err: unknown) {
+    // eslint-disable-next-line no-console
     console.error(err);
     return { error: 'Failed to retrieve badge category and tier' };
   }

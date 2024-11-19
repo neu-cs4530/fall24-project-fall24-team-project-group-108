@@ -6,7 +6,13 @@ import {
   UserBadgeRequest,
   EarnedUserRequest,
 } from '../types';
-import { getAllBadges, getBadgeCategoryAndTierByUsername, getBadgesByUser, getBadgeUsers, saveBadge } from '../models/application';
+import {
+  getAllBadges,
+  getBadgeCategoryAndTierByUsername,
+  getBadgesByUser,
+  getBadgeUsers,
+  saveBadge,
+} from '../models/application';
 
 const badgeController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -125,7 +131,10 @@ const badgeController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const getBadgeDetails = async (req: { query: { username: string } }, res: Response): Promise<void> => {
+  const getBadgeDetails = async (
+    req: { query: { username: string } },
+    res: Response,
+  ): Promise<void> => {
     const { username } = req.query;
 
     if (!username) {

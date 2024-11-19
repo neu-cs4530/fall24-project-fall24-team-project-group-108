@@ -6,7 +6,13 @@ import {
   ResetPasswordRequest,
   UpdateProfileIconRequest,
 } from '../types';
-import { addUser, findUser, populateUser, updatePassword, updateUserProfilePicture } from '../models/application';
+import {
+  addUser,
+  findUser,
+  populateUser,
+  updatePassword,
+  updateUserProfilePicture,
+} from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -147,7 +153,10 @@ export const userController = () => {
    *
    * @returns A Promise that resolves to void.
    */
-  const updateProfilePicture = async (req: UpdateProfileIconRequest, res: Response): Promise<void> => {
+  const updateProfilePicture = async (
+    req: UpdateProfileIconRequest,
+    res: Response,
+  ): Promise<void> => {
     const { username, badgeName } = req.body;
     try {
       const populatedUser = await updateUserProfilePicture(username, badgeName);
