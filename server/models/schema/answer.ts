@@ -9,6 +9,8 @@ import { Schema } from 'mongoose';
  * - `ansDateTime`: The date and time when the answer was given.
  * - `comments`: Comments that have been added to the answer by users.
  * - 'endorsed' - Boolean for if an answer is endorsed or not
+ * - `reports`: List of reports made on the answer.
+ * - `isRemoved`: Determines the removal state of the answer, true if removed by mod, otherwise false.
  */
 const answerSchema: Schema = new Schema(
   {
@@ -22,8 +24,12 @@ const answerSchema: Schema = new Schema(
       type: Date,
     },
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
-
     endorsed: { type: Boolean, default: false },
+    reports: [{ type: Schema.Types.ObjectId, ref: 'UserReport' }],
+    isRemoved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { collection: 'Answer' },
 );

@@ -1,0 +1,44 @@
+.application-container {
+  padding-left: 20px;
+  padding-bottom: 15px;
+  padding-right: 8px;
+  border: 1px solid #ccc;
+  border-radius: 0.125rem;
+  background-color: #ffffff;
+  margin: 13px auto;
+  width: 95%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+.username {
+  font-weight: bold;
+  color: #333;
+  text-align: left;
+  font-size: 18px;
+}
+
+.application-button {
+  padding: 10px;
+  margin-right: 8px;
+  border: 1px solid #ccc;
+  border-radius: 0.125rem;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  outline: none;
+  font-size: 16px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.application-button-accept:hover {
+  background-color: #38a169;
+}
+
+.application-button-reject:hover {
+  background-color: #e53e3e;
+}

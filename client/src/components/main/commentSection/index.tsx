@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../tool';
 import { Comment } from '../../../types';
 import './index.css';
@@ -26,6 +27,14 @@ const CommentSection = ({ comments, handleAddComment }: CommentSectionProps) => 
   const [text, setText] = useState<string>('');
   const [textErr, setTextErr] = useState<string>('');
   const [showComments, setShowComments] = useState<boolean>(false);
+  const navigate = useNavigate();
+
+  /**
+   * Function to navigate to the specified user profile based on the user ID.
+   */
+  const handleAuthorClick = (username: string) => {
+    navigate(`/account/${username}`);
+  };
 
   /**
    * Function to handle the addition of a new comment.
@@ -61,7 +70,15 @@ const CommentSection = ({ comments, handleAddComment }: CommentSectionProps) => 
                 <li key={index} className='comment-item'>
                   <p className='comment-text'>{comment.text}</p>
                   <small className='comment-meta'>
-                    {comment.commentBy}, {getMetaData(new Date(comment.commentDateTime))}
+                    <div
+                      className='comment-author'
+                      onClick={e => {
+                        e.stopPropagation(); // prevent triggering the parent div's click event
+                        handleAuthorClick(comment.commentBy);
+                      }}>
+                      {comment.commentBy}
+                    </div>
+                    {getMetaData(new Date(comment.commentDateTime))}
                   </small>
                 </li>
               ))

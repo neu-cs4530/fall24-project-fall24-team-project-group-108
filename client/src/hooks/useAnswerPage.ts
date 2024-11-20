@@ -4,6 +4,8 @@ import { Comment, Answer, Question, VoteData } from '../types';
 import useUserContext from './useUserContext';
 import addComment from '../services/commentService';
 import { getQuestionById } from '../services/questionService';
+import updateBadgeProgress from '../services/badgeProgressService';
+import { resolveReport } from '../services/reportService';
 
 /**
  * Custom hook for managing the answer page's state, navigation, and real-time updates.
@@ -18,6 +20,7 @@ const useAnswerPage = () => {
   const navigate = useNavigate();
 
   const { user, socket } = useUserContext();
+  const [numAnswers, setNumAnswers] = useState<number>(0);
   const [questionID, setQuestionID] = useState<string>(qid || '');
   const [question, setQuestion] = useState<Question | null>(null);
 
@@ -55,10 +58,45 @@ const useAnswerPage = () => {
       }
 
       await addComment(targetId, targetType, comment);
+
+      // update the user's progress towards comment related badges
+      await updateBadgeProgress(user.username, 'comments');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Error adding comment:', error);
     }
+  };
+
+  const handleReportDecision = async (
+    reportedPost: Question | Answer,
+    reportType: 'question' | 'answer',
+  ) => {
+    try {
+      const { _id: postId } = reportedPost;
+      if (postId !== undefined) {
+        await resolveReport(reportedPost, questionID, postId, reportType, true);
+
+        if (reportType === 'question') {
+          navigate('/home');
+        }
+      } else {
+        throw new Error('Invalid post id');
+      }
+    } catch (error) {
+      throw new Error('Error deleting post');
+    }
+  };
+
+  const wasQReported = (q: Question) => {
+    const wasReport = q.reports.some(r => r.reportBy === user.username && r.status !== 'dismissed');
+    return wasReport;
+  };
+
+  const wasAnsReported = (ans: Answer) => {
+    const wasReport = ans.reports.some(
+      r => r.reportBy === user.username && r.status !== 'dismissed',
+    );
+    return wasReport;
   };
 
   useEffect(() => {
@@ -69,6 +107,9 @@ const useAnswerPage = () => {
       try {
         const res = await getQuestionById(questionID, user.username);
         setQuestion(res || null);
+        if (res && res.answers) {
+          setNumAnswers(res.answers.filter(ans => !ans.isRemoved).length);
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching question:', error);
@@ -160,24 +201,104 @@ const useAnswerPage = () => {
       }
     };
 
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      if (id === questionID && 'ansBy' in updatedPost) {
+        setQuestion(prevQuestion =>
+          prevQuestion
+            ? {
+                ...prevQuestion,
+                answers: prevQuestion.answers.filter(ans => ans._id !== updatedPost._id),
+              }
+            : prevQuestion,
+        );
+      } else if (id === questionID && 'askedBy' in updatedPost) {
+        navigate('/home');
+      }
+    };
+
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleReportDismissedUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      if (id === questionID && 'ansBy' in updatedPost) {
+        setQuestion(prev =>
+          prev
+            ? {
+                ...prev,
+                answers: prev.answers.map(ans =>
+                  ans._id === updatedPost._id
+                    ? {
+                        ...ans,
+                        reports: ans.reports.map(r =>
+                          r.status !== 'dismissed' ? { ...r, status: 'dismissed' } : r,
+                        ),
+                      }
+                    : ans,
+                ),
+              }
+            : prev,
+        );
+      } else if (id === questionID && 'askedBy' in updatedPost) {
+        setQuestion(prev =>
+          prev
+            ? {
+                ...prev,
+                reports: prev.reports.map(r =>
+                  r.status !== 'dismissed' ? { ...r, status: 'dismissed' } : r,
+                ),
+              }
+            : prev,
+        );
+      }
+    };
+
     socket.on('answerUpdate', handleAnswerUpdate);
     socket.on('viewsUpdate', handleViewsUpdate);
     socket.on('commentUpdate', handleCommentUpdate);
     socket.on('voteUpdate', handleVoteUpdate);
+    socket.on('removePostUpdate', handleRemovePostUpdate);
+    socket.on('reportDismissedUpdate', handleReportDismissedUpdate);
 
     return () => {
       socket.off('answerUpdate', handleAnswerUpdate);
       socket.off('viewsUpdate', handleViewsUpdate);
       socket.off('commentUpdate', handleCommentUpdate);
       socket.off('voteUpdate', handleVoteUpdate);
+      socket.off('removePostUpdate', handleRemovePostUpdate);
+      socket.off('reportDismissedUpdate', handleReportDismissedUpdate);
     };
-  }, [questionID, socket]);
+  }, [questionID, socket, navigate]);
 
   return {
     questionID,
     question,
+    numAnswers,
     handleNewComment,
     handleNewAnswer,
+    handleReportDecision,
+    wasQReported,
+    wasAnsReported,
   };
 };
 

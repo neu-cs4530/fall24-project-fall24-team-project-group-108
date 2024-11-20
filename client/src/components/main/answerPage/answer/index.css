@@ -16,3 +16,7 @@
 .answer_author {
   color: green;
 }
+
+.answer_author:hover {
+  text-decoration: underline;
+}

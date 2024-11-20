@@ -1,0 +1,66 @@
+.reports-container {
+  padding-top: 5px;
+  padding-left: 20px;
+  padding-bottom: 15px;
+  padding-right: 20px;
+  border: 1px solid #ccc;
+  border-radius: 0.125rem;
+  background-color: #ffffff;
+  margin: 13px auto;
+  width: 95%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+.accent-container {
+  padding-top: 5px;
+  padding-left: 20px;
+  padding-bottom: 15px;
+  padding-right: 20px;
+  border: 1px solid #ccc;
+  border-radius: 0.125rem;
+  background-color: #f1f1f1;
+  margin: 13px auto;
+  width: 95%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+.accent-container span {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.accent-container span:hover {
+  color: #0052ab;
+}
+
+.accent-container span:active {
+  color: #003874;
+}
+
+.reports-username {
+  font-weight: bold;
+  color: #ff0000;
+  text-align: left;
+  font-size: 20px;
+}
+
+.reports-separater {
+  margin: 5px 0;
+  padding: 1px;
+  border-bottom: dotted;
+  border-color: gray;
+}
+
+.question-report,
+.answer-report {
+  margin-bottom: 10px;
+}
+
+.reports-date {
+  color: gray;
+  font-size: 10px;
+}

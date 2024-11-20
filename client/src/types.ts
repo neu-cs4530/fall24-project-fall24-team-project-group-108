@@ -6,7 +6,22 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
  * Represents a user in the application.
  */
 export interface User {
+  _id?: string;
   username: string;
+  password: string;
+  isModerator: boolean;
+  badges: Badge[];
+  infractions: string[];
+}
+
+/**
+ * Represents a mod application.
+ */
+export interface ModApplication {
+  _id?: string;
+  username: string;
+  applicationText: string;
+  status: string;
 }
 
 /**
@@ -37,6 +52,21 @@ export interface Comment {
   text: string;
   commentBy: string;
   commentDateTime: Date;
+}
+
+/**
+ * Interface represents a report.
+ *
+ * text - The text of the comment.
+ * reportBy - Username of the author of the report.
+ * reportDateTime - Time at which the comment was created.
+ * status - Current status of the report.
+ */
+export interface UserReport {
+  text: string;
+  reportBy: string;
+  reportDateTime: Date;
+  status: 'unresolved' | 'dismissed' | 'removed';
 }
 
 /**
@@ -82,6 +112,8 @@ export interface VoteData {
  * - ansDateTime - The date and time when the answer was created
  * - comments - Comments associated with the answer.
  * - endorsed - Answer is endorsed by a user
+ * - reports - UserReports associated with the answer.
+ * - isRemoved - True if a mod has removed Answer from view.
  */
 export interface Answer {
   _id?: string;
@@ -90,6 +122,25 @@ export interface Answer {
   ansDateTime: Date;
   comments: Comment[];
   endorsed: boolean;
+  reports: UserReport[];
+  isRemoved: boolean;
+}
+
+/**
+ * Interface represents a badge.
+ *
+ * name - The name of the badge.
+ * description - Description of the badge.
+ * category - The category of action required to get the badge.
+ * targetValue - The amount of times the action has to be done to obtain the badge.
+ * tier - The tier of branch in this category.
+ */
+export interface Badge {
+  name: string;
+  description: string;
+  category: string;
+  targetValue: number;
+  tier: string;
 }
 
 /**
@@ -106,6 +157,8 @@ export interface Answer {
  * - upVotes - An array of usernames who upvoted the question.
  * - downVotes - An array of usernames who downvoted the question.
  * - comments - Comments associated with the question.
+ * - reports - UserReports associated with the question.
+ * - isRemoved - True if a mod has removed Question from view.
  */
 export interface Question {
   _id?: string;
@@ -119,6 +172,51 @@ export interface Question {
   upVotes: string[];
   downVotes: string[];
   comments: Comment[];
+  reports: UserReport[];
+  isRemoved: boolean;
+}
+
+/**
+ * Interface representing tag counts for the leaderboard.
+ *
+ * - user - The username.
+ * - count - The amount of times they've answered questions about a tag.
+ */
+export interface TagCounts {
+  user: string;
+  tagid: string;
+  count: number;
+}
+
+/**
+ * Interface representing the structure of a Message object.
+ *
+ * - messageText - The content of the message
+ * - messageDateTime - The date and time the message was sent
+ * - messageBy - The username of the user who sent the message
+ * - messageTo - A list of usernames of users who the message was sent to
+ */
+export interface Message {
+  _id?: string;
+  messageText: string;
+  messageDateTime: Date;
+  messageBy: string;
+  messageTo: string[];
+  views?: string[];
+  isCodeStyle: boolean;
+}
+
+/**
+ * Interface representing the structure of a Correspondence object.
+ *
+ * - messages - A list of all Messages sent between the users in messsageMembers
+ * - messageMembers - A list of usernames of users involved in the messages
+ */
+export interface Correspondence {
+  _id?: string;
+  messages: Message[];
+  messageMembers: string[];
+  views?: string[];
 }
 
 /**
@@ -130,14 +228,44 @@ export interface VoteUpdatePayload {
   downVotes: string[];
 }
 
+/**
+ * Interface representing the payload for an answer update socket event.
+ */
 export interface AnswerUpdatePayload {
   qid: string;
   answer: Answer;
 }
 
+/**
+ * Interface representing the payload for a comment update socket event.
+ */
 export interface CommentUpdatePayload {
   result: Question | Answer;
   type: 'question' | 'answer';
+}
+
+/**
+ * Interface representing the payload for a user report update socket event.
+ */
+export interface UserReportUpdatePayload {
+  result: Question | Answer;
+  type: 'question' | 'answer';
+}
+
+/**
+ * Interface representing the payload for a remove post update socket event.
+ */
+export interface RemovePostUpdatePayload {
+  qid: string;
+  updatedPost: Question | Answer;
+}
+
+/**
+ * Interface representing the payload for a dismiss report update socket event.
+ */
+export interface ReportDismissedUpdatePayload {
+  qid: string;
+  updatedPost: Question | Answer;
 }
 
 /**
@@ -149,4 +277,10 @@ export interface ServerToClientEvents {
   viewsUpdate: (question: Question) => void;
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
+  correspondenceUpdate: (update: Correspondence) => void;
+  messageUpdate: (update: Message) => void;
+  modApplicationUpdate: (update: ModApplication) => void;
+  userReportsUpdate: (update: UserReportUpdatePayload) => void;
+  removePostUpdate: (update: RemovePostUpdatePayload) => void;
+  reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
 }

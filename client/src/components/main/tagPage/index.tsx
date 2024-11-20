@@ -3,13 +3,15 @@ import './index.css';
 import TagView from './tag';
 import useTagPage from '../../../hooks/useTagPage';
 import AskQuestionButton from '../askQuestionButton';
+import useBan from '../../../hooks/useBan';
 
 /**
  * Represents the TagPage component which displays a list of tags
  * and provides functionality to handle tag clicks and ask a new question.
  */
 const TagPage = () => {
-  const { tlist, clickTag } = useTagPage();
+  useBan();
+  const { tlist, clickTag, clickLeaderboard } = useTagPage();
 
   return (
     <>
@@ -20,7 +22,7 @@ const TagPage = () => {
       </div>
       <div className='tag_list right_padding'>
         {tlist.map((t, idx) => (
-          <TagView key={idx} t={t} clickTag={clickTag} />
+          <TagView key={idx} t={t} clickTag={clickTag} clickLeaderboard={clickLeaderboard} />
         ))}
       </div>
     </>

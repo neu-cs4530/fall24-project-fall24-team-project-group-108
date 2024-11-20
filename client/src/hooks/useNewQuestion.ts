@@ -4,6 +4,7 @@ import { validateHyperlink } from '../tool';
 import { addQuestion } from '../services/questionService';
 import useUserContext from './useUserContext';
 import { Question } from '../types';
+import updateBadgeProgress from '../services/badgeProgressService';
 
 /**
  * Custom hook to handle question submission and form validation
@@ -102,9 +103,14 @@ const useNewQuestion = () => {
       downVotes: [],
       views: [],
       comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     const res = await addQuestion(question);
+
+    // update the user's progress towards question related badges
+    await updateBadgeProgress(user.username, 'questions');
 
     if (res && res._id) {
       navigate('/home');

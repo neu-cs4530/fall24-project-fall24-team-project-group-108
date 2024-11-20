@@ -3,6 +3,7 @@ import './index.css';
 import QuestionHeader from './header';
 import QuestionView from './question';
 import useQuestionPage from '../../../hooks/useQuestionPage';
+import useBan from '../../../hooks/useBan';
 
 /**
  * QuestionPage component renders a page displaying a list of questions
@@ -10,6 +11,7 @@ import useQuestionPage from '../../../hooks/useQuestionPage';
  * It includes a header with order buttons and a button to ask a new question.
  */
 const QuestionPage = () => {
+  useBan();
   const { titleText, qlist, setQuestionOrder } = useQuestionPage();
 
   return (
