@@ -1,4 +1,5 @@
 import './index.css';
+import EmojiPicker from 'emoji-picker-react';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
 import CorrespondenceView from './correspondence';
@@ -23,6 +24,8 @@ const MessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
+    uploadedFile,
+    setUploadedFile,
   } = useMessagePage();
 
   return (
@@ -76,13 +79,22 @@ const MessagePage = () => {
               </button>
             ) : null}
           </div>
-          {messageText !== '' ? (
+          {selectedCorrespondence && selectedCorrespondence.userTyping.length > 0 ? (
             <pre>
               <code id='user-typing' className='user-typing'>
-                {user.username} is typing...
+                {selectedCorrespondence.userTyping.join(',')} is typing...
               </code>
             </pre>
           ) : null}
+        </div>
+        {selectedCorrespondence ? (
+          <input
+            type='file'
+            onChange={event => setUploadedFile(event.target.files ? event.target.files[0] : null)}
+          />
+        ) : null}
+        <div style={{ width: '50px', height: '50px' }}>
+          <EmojiPicker open={false} reactionsDefaultOpen={true} allowExpandReactions={false} />
         </div>
       </div>
     </>

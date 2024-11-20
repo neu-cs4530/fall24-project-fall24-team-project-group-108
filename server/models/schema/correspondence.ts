@@ -15,6 +15,7 @@ const correspondenceSchema: Schema = new Schema(
     messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],
     messageMembers: [{ type: String }],
     views: [{ type: String }],
+    userTyping: [{ type: String }],
   },
   { collection: 'Correspondence' },
 );

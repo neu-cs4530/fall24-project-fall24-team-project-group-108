@@ -1,9 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
-import { Correspondence, Message } from '../types';
-import { getCorrespondencesByOrder } from '../services/correspondenceService';
-import { addMessage } from '../services/messageService';
+import { Correspondence, Message, UploadedFile } from '../types';
+import {
+  addCorrespondence,
+  getCorrespondencesByOrder,
+  updateCorrespondenceUserTypingById,
+  updateCorrespondenceViewsById,
+} from '../services/correspondenceService';
+import { addMessage, updateMessageViewsById } from '../services/messageService';
+import { addUploadedFile } from '../services/uploadedFileService';
 
 /**
  * Custom hook for managing the message page state, filtering, and real-time updates.
@@ -25,6 +32,7 @@ const useMessagePage = () => {
   const [toAddText, setToAddText] = useState<string>('');
   const [messageText, setMessageText] = useState<string>('');
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -35,6 +43,50 @@ const useMessagePage = () => {
 
     setTitleText(pageTitle);
   }, []);
+
+  useEffect(() => {
+    const x = true;
+  }, [selectedCorrespondence]);
+
+  useEffect(() => {
+    console.log('In messageText useeffect');
+    if (!selectedCorrespondence) {
+      return;
+    }
+
+    const getUpdatedCorrespondence = async () => {
+      if (selectedCorrespondence) {
+        console.log('In getUpdatedCorrespondence');
+        console.log(selectedCorrespondence);
+        if (messageText === '' && selectedCorrespondence.userTyping.includes(user.username)) {
+          console.log(selectedCorrespondence.userTyping);
+          const updatedUserTyping = selectedCorrespondence.userTyping.filter(
+            name => name !== user.username,
+          );
+          console.log('message Text is empty');
+          console.log(updatedUserTyping);
+          console.log(updatedUserTyping[0] === user.username);
+          const updatedCorrespondence = await updateCorrespondenceUserTypingById(
+            selectedCorrespondence._id || '',
+            [...updatedUserTyping],
+          );
+          setSelectedCorrespondence({ ...updatedCorrespondence });
+        } else if (
+          messageText !== '' &&
+          !selectedCorrespondence.userTyping.includes(user.username)
+        ) {
+          const updatedUserTyping = [...selectedCorrespondence.userTyping, user.username];
+          const updatedCorrespondence = await updateCorrespondenceUserTypingById(
+            selectedCorrespondence._id || '',
+            [...updatedUserTyping],
+          );
+          setSelectedCorrespondence({ ...updatedCorrespondence });
+        }
+      }
+    };
+
+    getUpdatedCorrespondence();
+  }, [messageText]);
 
   useEffect(() => {
     /**
@@ -85,10 +137,58 @@ const useMessagePage = () => {
     };
   }, [socket, selectedCorrespondence, user]);
 
-  const handleSelectCorrespondence = (correspondence: Correspondence): void => {
+  const handleMessageViewsUpdate = async (): Promise<void> => {
+    if (selectedCorrespondence) {
+      const unreadMessages = selectedCorrespondence.messages.filter(
+        message => !message.views?.includes(user.username),
+      );
+      const viewsUpdateHelper = async (m: Message): Promise<void> => {
+        await updateMessageViewsById(m._id || '', user.username);
+      };
+      unreadMessages.forEach(message => viewsUpdateHelper(message));
+    }
+  };
+
+  const handleSelectCorrespondence = async (correspondence: Correspondence): Promise<void> => {
+    if (selectedCorrespondence) {
+      // Update views for currently selected correspondence and all messages within
+      if (!selectedCorrespondence.views?.includes(user.username)) {
+        await updateCorrespondenceViewsById(selectedCorrespondence._id || '', user.username);
+      }
+
+      // for message, push user.username onto views
+      handleMessageViewsUpdate();
+    }
     setSelectedCorrespondence(correspondence);
     setSelectedCorrespondenceMessages([...correspondence.messages]);
   };
+
+  const convertUploadedFileToBuffer = async (file: File): Promise<Buffer> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      // Onload event to handle the reading of the file
+      reader.onload = event => {
+        // The result is an ArrayBuffer
+        const arrayBuffer = event.target?.result as ArrayBuffer;
+        if (arrayBuffer) {
+          // Convert ArrayBuffer to Buffer (in a Node.js environment, you can use Buffer.from)
+          const buffer = Buffer.from(arrayBuffer); // This will work in Node.js
+          resolve(buffer);
+        } else {
+          // reject('Failed to read file');
+          const x = true;
+        }
+      };
+
+      // On error event to handle read errors
+      // reader.onerror = error => {
+      //   reject('Error reading file');
+      // };
+
+      // Read file as ArrayBuffer
+      reader.readAsArrayBuffer(file);
+    });
 
   const handleSendMessage = async (): Promise<void> => {
     if (messageText !== '') {
@@ -96,15 +196,36 @@ const useMessagePage = () => {
       const messageTo = selectedCorrespondence?.messageMembers.filter(
         member => member !== user.username,
       );
-      const message = {
+      let message = {
         messageText,
         messageDateTime: new Date(),
         messageTo: messageTo || [],
         messageBy: user.username,
         isCodeStyle,
-      };
+        views: [user.username],
+      } as Message;
 
+      if (uploadedFile) {
+        const fileName = uploadedFile.name;
+        const fileData = await convertUploadedFileToBuffer(uploadedFile);
+        const fileDataArray = Array.from(fileData);
+        message = { ...message, fileName, fileData: fileDataArray };
+      }
+
+      console.log('In HandleSendMEssage');
+      console.log(message);
       const updatedCorrespondence = await addMessage(cid || '', message);
+
+      // if (uploadedFile) {
+      //   await addUploadedFile(
+      //     updatedCorrespondence.messages[updatedCorrespondence.messages.length - 1]._id || '',
+      //     {
+      //       fileName: uploadedFile.name || 'fake.csv',
+      //       size: uploadedFile?.size || -1,
+      //       data: await convertUploadedFileToBuffer(uploadedFile),
+      //     },
+      //   );
+      // }
       const updatedCorrespondenceList = correspondenceList.filter(
         correspondence => correspondence._id !== cid,
       );
@@ -113,6 +234,8 @@ const useMessagePage = () => {
       setSelectedCorrespondence({ ...updatedCorrespondence });
       setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
       setMessageText('');
+      handleMessageViewsUpdate();
+      setUploadedFile(null);
     }
   };
 
@@ -132,6 +255,8 @@ const useMessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
+    uploadedFile,
+    setUploadedFile,
   };
 };
 

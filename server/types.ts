@@ -211,6 +211,75 @@ export interface Question {
   comments: Comment[] | ObjectId[];
 }
 
+
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - userTyping - the username who is typing or null if no one is typing
+ */
+ export interface UpdateCorrespondenceUserTypingRequest extends Request {
+  body: {
+    cid: string;
+    userTyping: string[];
+  };
+}
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - username - the username who is typing or null if no one is typing
+ */
+ export interface UpdateCorrespondenceViewsRequest extends Request {
+  body: {
+    cid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - username - the username who has just viewed the message
+ */
+ export interface UpdateMessageViewsRequest extends Request {
+  body: {
+    mid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - emojis - a dictionary where each key is a username, and each value is their chosen emoji
+ */
+ export interface UpdateMessageEmojisRequest extends Request {
+  body: {
+    mid: string;
+    emojis: {[key: string]: string};
+  };
+}
+
+/**
+ * Interface representing the structure of an UploadedFile object.
+ *
+ * - _id - The id of the UploadedFile object
+ * - fileName - the name of the file
+ * - size - # of bytes of the file
+ * - data - The binary data of the file
+ */
+ export interface UploadedFile {
+   _id?: ObjectId,
+  fileName: string,
+  size: Number,
+  data: Buffer,
+}
+
 /**
  * Interface representing the structure of a Message object.
  *
@@ -227,9 +296,13 @@ export interface Question {
   messageDateTime: Date,
   messageBy: string,
   messageTo: string[],
-  views?: string[],
+  views: string[],
   isCodeStyle: boolean,
+  fileName?: string,
+  fileData?: number[],
+  emojiTracker?: { [key: string]: string },
 }
+
 
 /**
  * Interface representing the structure of a Correspondence object.
@@ -243,7 +316,8 @@ export interface Correspondence {
   _id?: string,
   messages: Message[],
   messageMembers: string[],
-  views?: string[]
+  views: string[],
+  userTyping: string[]
 }
 
 /**
@@ -260,6 +334,11 @@ export type MessageResponse = Message | { error: string };
  * Type representing the possible responses for a Correspondence-related operation.
  */
 export type CorrespondenceResponse = Correspondence | { error: string };
+
+/**
+ * Type representing the possible responses for an UploadedFile-related operation.
+ */
+export type UploadedFileResponse = UploadedFile | { error: string };
 
 /**
  * Interface for the request query to find questions using a search string, which contains:
@@ -325,6 +404,17 @@ export interface AddMessageRequest extends Request {
  */
 export interface AddCorrespondenceRequest extends Request {
   body: Correspondence;
+}
+
+/**
+ * Interface for the request body when adding a new uploaded file.
+ * - body - The uploaded file being added.
+ */
+export interface AddUploadedFileRequest extends Request {
+  body: {
+    mid: string;
+    uploadedFile: UploadedFile;
+  }
 }
 
 /**
@@ -590,11 +680,17 @@ export interface AnswerUpdatePayload {
 }
 
 /**
- * Interface for the request query to find correspondences using a search string, which contains:
- * - order - The order in which to sort the correspondences
- * - askedBy - The username of the user who asked the correspondences
+ * Interface for the request query to find correspondences, which contains no arguments
  */
  export interface FindCorrespondenceRequest extends Request {
+  query: {
+  };
+}
+
+/**
+ * Interface for the request query to find all users in the db, which contains no arguments
+ */
+ export interface GetUserRequest extends Request {
   query: {
   };
 }
@@ -622,6 +718,29 @@ export interface FindCorrespondenceByIdRequest extends Request {
   params: {
     cid: string;
   };
+}
+
+
+/**
+ * Interface for the request parameters when finding a uploaded file by its ID.
+ * - ufid - The unique identifier of the uploaded file.
+ */
+export interface FindUploadedFileByIdRequest extends Request {
+  params: {
+    ufid: string;
+  };
+}
+
+
+/**
+ * Interface for the request parameters when finding a correspondence by its ID.
+ * - cid - The unique identifier of the correspondence.
+ * - username - The name of th user to add to the views
+ */
+export interface FindCorrespondenceByIdWithViewsRequest extends Request {
+  params: {
+    cid: string;
+  };
   query: {
     username: string;
   };
@@ -638,5 +757,6 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageResponse) => void;
-  correspondenceUpdate: (message: CorrespondenceResponse) => void;
+  correspondenceUpdate: (correspondence: CorrespondenceResponse) => void;
+  uploadedFileUpdate: (uploadedFile: UploadedFileResponse) => void;
 }

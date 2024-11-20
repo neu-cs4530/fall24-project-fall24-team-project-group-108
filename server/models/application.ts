@@ -23,6 +23,8 @@ import {
   Correspondence,
   MessageResponse,
   CorrespondenceResponse,
+  UploadedFile,
+  UploadedFileResponse,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
@@ -32,6 +34,7 @@ import TagModel from './tags';
 import CommentModel from './comments';
 import BadgeModel from './badges';
 import UserModel from './users';
+import UploadedFileModel from './uploadedFile';
 import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
@@ -425,6 +428,20 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
   return clist;
 };
 /**
+ * Retrieves a list of all users in the db in alphabetical order
+ *
+ *
+ * @returns {Promise<User[]>} - Promise that resolves to a list of users
+ */
+export const getAllUsers = async (): Promise<User[]> => {
+  console.log('Start UserModel.find()');
+  const ulist = await UserModel.find();
+  console.log('End UserModel.find()');
+  console.log(ulist);
+  ulist.sort((user1, user2) => user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()))
+  return ulist;
+};
+/**
  * Retrieves questions from the database that were answered by the given user.
  *
  * @param string answerer - The answerer to filter the questions by
@@ -623,6 +640,66 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
 };
 
 /**
+ * Fetches a correspondence by its ID
+ *
+ * @param {string} cid - The ID of the correspondence to fetch.
+ *
+ * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence,
+ *                                           null if the correspondence is not found, or an error message.
+ */
+export const fetchCorrespondenceById = async (
+  cid: string,
+): Promise<CorrespondenceResponse | null> => {
+  try {
+    console.log('Start fetchCorerspondenceById');
+    console.log(cid);
+    console.log(new ObjectId(cid));
+    const c = await CorrespondenceModel.findOne(
+      { _id: new ObjectId(cid) },
+    );
+    console.log('End fetchCorerspondenceById');
+    console.log(c);
+    return c;
+  } catch (error) {
+    return { error: 'Error when fetching a correspondence' };
+  }
+};
+
+/**
+ * Fetches an uploaded file by its ID
+ *
+ * @param {string} ufid - The ID of the uploaded file to fetch.
+ *
+ * @returns {Promise<UploadedFileResponse | null>} - Promise that resolves to the fetched uploaded file,
+ *                                           null if the uploaded file is not found, or an error message.
+ */
+export const fetchUploadedFileById = async (
+  ufid: string,
+): Promise<UploadedFileResponse | null> => {
+  try {
+    const uf = await UploadedFileModel.findOne(
+      { _id: new ObjectId(ufid) },
+    );
+    return uf;
+  } catch (error) {
+    return { error: 'Error when fetching an uploaded file' };
+  }
+};
+
+/**
+ * Fetches a list of all the uploaded files
+ *
+ *
+ * @returns {Promise<UploadedFileResponse | null>} - Promise that resolves to the fetched uploaded files,
+ *                                           null if the uploaded files are not found, or an error message.
+ */
+export const fetchUploadedFiles = async (
+): Promise<UploadedFileResponse[]> => {
+  const uflist = await UploadedFileModel.find();
+  return uflist;
+};
+
+/**
  * Saves a new question to the database.
  *
  * @param {Question} question - The question to save
@@ -647,7 +724,14 @@ export const saveQuestion = async (question: Question): Promise<QuestionResponse
  */
 export const saveMessage = async (message: Message): Promise<MessageResponse> => {
   try {
+    // if (message.file) {
+    //   const uploadedFileResult = await saveUploadedFile(message.file);
+    // }
+    console.log('At saveMessage MessageModel');
+    console.log(message);
     const result = await MessageModel.create(message);
+    console.log('End saveMessage MessageModel');
+    console.log(result);
     return result;
   } catch (error) {
     return { error: 'Error when saving a message' };
@@ -666,6 +750,28 @@ export const saveCorrespondence = async (
 ): Promise<CorrespondenceResponse> => {
   try {
     const result = await CorrespondenceModel.create(correspondence);
+    return result;
+  } catch (error) {
+    return { error: 'Error when saving a correspondence' };
+  }
+};
+
+/**
+ * Saves a new uploaded file to the database.
+ *
+ * @param {UploadedFile} uploadedFile - The uploaded file to save
+ *
+ * @returns {Promise<UploadedFileResponse>} - The saved uploaded file, or error message
+ */
+export const saveUploadedFile = async (
+  uploadedFile: UploadedFile,
+): Promise<UploadedFileResponse> => {
+  try {
+    console.log('At saveUploadedFile UploadedFileModel');
+    console.log(uploadedFile);
+    const result = await UploadedFileModel.create(uploadedFile);
+    console.log('At saveUploadedFile UploadedFileModel');
+    console.log(result);
     return result;
   } catch (error) {
     return { error: 'Error when saving a correspondence' };
@@ -983,8 +1089,7 @@ export const addMessageToCorrespondence = async (
     }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $push: { messages: { $each: [message._id] } } },
-      // { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { $push: { messages: { $each: [message._id] } } , $set: {views: message.views}},
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
@@ -995,6 +1100,45 @@ export const addMessageToCorrespondence = async (
     return { error: 'Error when adding message to correspondence' };
   }
 };
+
+/**
+ * Adds an uploaded file to a message.
+ *
+ * @param {string} mid - The ID of the message to add a uploaded file to
+ * @param {UploadedFile} uploadedFile - The uploaded file to add
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const addUploadedFileToMessage = async (
+  mid: string,
+  uploadedFile: UploadedFile,
+): Promise<MessageResponse> => {
+  try {
+    if (
+      !uploadedFile ||
+      !uploadedFile.fileName ||
+      !uploadedFile.size ||
+      !uploadedFile.data
+    ) {
+      throw new Error('Invalid uploaded file');
+    }
+    console.log('Start MessageModel');
+    console.log(mid);
+    console.log(uploadedFile);
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { file: uploadedFile._id } },
+      { new: true },
+    ).populate([{ path: 'uploadedFiles', model: UploadedFileModel }]);
+    if (result === null) {
+      throw new Error('Error when adding uploaded file to message');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when adding uploaded file to message' };
+  }
+};
+
 
 /**
  * Updates a correspondence for the given id.
@@ -1021,6 +1165,118 @@ export const updateCorrespondenceById = async (
     return { error: 'Error when updating correspondence' };
   }
 };
+
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string[]} userTyping - A list of usernames who are typing
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+ export const updateCorrespondenceUserTypingById = async (cid: string, userTyping: string[]): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $set: { userTyping: userTyping } },
+      { new: true }
+    ).populate([
+      { path: 'messages', model: MessageModel },
+    ]);
+    console.log('End Correspondence Model');
+    console.log(result);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string} username - The username to add to the people who have viewed the competition
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+ export const updateCorrespondenceViewsById = async (cid: string, username: string): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $push: { views: username } },
+      { new: true }
+    ).populate([
+      { path: 'messages', model: MessageModel },
+    ]);
+    console.log('End Correspondence Model');
+    console.log(result);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a message for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} username - The username to add to the people who have viewed the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+ export const updateMessageViewsById = async (mid: string, username: string): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $addToSet: { views: username } },
+      { new: true }
+    );
+    if (result === null) {
+      throw new Error('Error when updating message');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating message' };
+  }
+};
+
+/**
+ * Updates a message with the updated emojis for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} emojis - The username to add to the people who have viewed the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+ export const updateMessageEmojisById = async (mid: string, emojis: { [key: string]: string }): Promise<MessageResponse> => {
+  try {
+    console.log('Start Message Emojis Model');
+    console.log(mid);
+    console.log(emojis);
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { emojiTracker: {...emojis} } },
+      { new: true }
+    );
+    console.log(result);
+    console.log('End Message Emojis Model');
+    if (result === null) {
+      throw new Error('Error when updating messages emojis');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating messages emojis' };
+  }
+};
+
+
 
 /**
  * Updates a message for the given id.

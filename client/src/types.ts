@@ -162,12 +162,26 @@ export interface TagCounts {
 }
 
 /**
+ * Interface representing the structure of an UploadedFile object.
+ *
+ * - fileName - the name of the file
+ * - data - The binary data of the file
+ */
+export interface UploadedFile {
+  _id?: string;
+  fileName: string;
+  size: number;
+  data: Buffer;
+}
+
+/**
  * Interface representing the structure of a Message object.
  *
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
+ * - file - A possible uploaded file the user has attached to the message
  */
 export interface Message {
   _id?: string;
@@ -175,8 +189,11 @@ export interface Message {
   messageDateTime: Date;
   messageBy: string;
   messageTo: string[];
-  views?: string[];
+  views: string[];
   isCodeStyle: boolean;
+  fileName?: string;
+  fileData?: number[];
+  emojiTracker?: { [key: string]: string };
 }
 
 /**
@@ -189,7 +206,8 @@ export interface Correspondence {
   _id?: string;
   messages: Message[];
   messageMembers: string[];
-  views?: string[];
+  views: string[];
+  userTyping: string[];
 }
 
 /**
@@ -222,4 +240,5 @@ export interface ServerToClientEvents {
   commentUpdate: (update: CommentUpdatePayload) => void;
   correspondenceUpdate: (update: Correspondence) => void;
   messageUpdate: (update: Message) => void;
+  uploadedFileUpdate: (update: UploadedFile) => void;
 }

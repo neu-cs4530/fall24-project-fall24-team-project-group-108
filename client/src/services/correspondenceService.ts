@@ -21,10 +21,29 @@ const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
  * Function to get a correspondence by its ID.
  *
  * @param cid - The ID of the correspondence to retrieve.
+ * @throws Error if there is an issue fetching the correspondence by ID.
+ */
+const getCorrespondenceById = async (cid: string): Promise<Correspondence> => {
+  console.log('start correspondenceService');
+  console.log(cid);
+  const res = await api.get(`${CORRESPONDENCE_API_URL}/getCorrespondenceById/${cid}`);
+  if (res.status !== 200) {
+    throw new Error('Error when fetching correspondence by id');
+  }
+  return res.data;
+};
+
+/**
+ * Function to get a correspondence by its ID.
+ *
+ * @param cid - The ID of the correspondence to retrieve.
  * @param username - The username of the user requesting the correspondence.
  * @throws Error if there is an issue fetching the correspondence by ID.
  */
-const getCorrespondenceById = async (cid: string, username: string): Promise<Correspondence> => {
+const getCorrespondenceByIdWithViews = async (
+  cid: string,
+  username: string,
+): Promise<Correspondence> => {
   const res = await api.get(
     `${CORRESPONDENCE_API_URL}/getCorrespondenceById/${cid}?username=${username}`,
   );
@@ -57,7 +76,7 @@ const addCorrespondence = async (c: Correspondence): Promise<Correspondence> => 
  * @param updatedMessageMembers - the updated members of the correspondence
  * @throws Error if there is an issue updating the new correspondence.
  */
-const updateCorrespondenceById = async (
+const updateCorrespondenceMembersById = async (
   cid: string,
   updatedMessageMembers: string[],
 ): Promise<Correspondence> => {
@@ -74,9 +93,57 @@ const updateCorrespondenceById = async (
   return res.data;
 };
 
+/**
+ * Function to add a new correspondence.
+ *
+ * @param cid - The ID of the correspondence to retrieve.
+ * @param updatedUserTyping - A list of usernames who are typing
+ * @throws Error if there is an issue updating the new correspondence.
+ */
+const updateCorrespondenceUserTypingById = async (
+  cid: string,
+  userTyping: string[],
+): Promise<Correspondence> => {
+  console.log(cid);
+  console.log(userTyping);
+  const updatedCId = cid.split('&')[0];
+  const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondenceUserTyping`, {
+    cid: updatedCId,
+    userTyping,
+  });
+
+  if (res.status !== 200) {
+    throw new Error('Error while updating correspondence');
+  }
+
+  return res.data;
+};
+
+/**
+ * Function to add a new correspondence.
+ *
+ * @param cid - The ID of the correspondence to retrieve.
+ * @param username - A new username who has viewed the correspondence
+ * @throws Error if there is an issue updating the new correspondence.
+ */
+const updateCorrespondenceViewsById = async (cid: string, username: string) => {
+  const data = { cid, username };
+  console.log('updateCorrespondenceViewsById');
+  console.log(cid);
+  console.log(username);
+  const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondenceViews`, data);
+  console.log('/updateCorrespondenceViews Done!');
+  if (res.status !== 200) {
+    throw new Error('Error while updating correspondence views');
+  }
+  return res.data;
+};
+
 export {
   getCorrespondencesByOrder,
   getCorrespondenceById,
   addCorrespondence,
-  updateCorrespondenceById,
+  updateCorrespondenceMembersById,
+  updateCorrespondenceUserTypingById,
+  updateCorrespondenceViewsById,
 };

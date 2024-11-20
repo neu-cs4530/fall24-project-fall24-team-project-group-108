@@ -4,8 +4,10 @@ import {
   FindUserRequest,
   MakeUserModeratorRequest,
   ResetPasswordRequest,
+  GetUserRequest,
+  User
 } from '../types';
-import { addUser, findUser, populateUser, updatePassword } from '../models/application';
+import { addUser, findUser, populateUser, updatePassword, getAllUsers } from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -149,7 +151,36 @@ export const userController = () => {
     }
   };
 
+
+  /**
+   * Retrieves a list of all users in the db
+   * Error if there is a problem retrieving any of the users
+   *
+   * @param res The HTTP response object used to send back list of users ordered alphabetically
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getUsers = async (
+    req: GetUserRequest,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      console.log('Start await getAllUsers()');
+      const ulist: User[] = await getAllUsers();
+      console.log('End await getAllUsers()');
+      console.log(ulist);
+      res.json(ulist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching list of users: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching list of users`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
+  router.get('/getUsers', getUsers);
   router.post('/createUser', createUser);
   router.post('/resetPassword', resetPassword);
   router.post('/makeUserModerator', makeUserModerator);
