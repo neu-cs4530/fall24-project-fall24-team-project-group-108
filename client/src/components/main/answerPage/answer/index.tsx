@@ -2,7 +2,7 @@ import React from 'react';
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
-import { Answer, Comment } from '../../../../types';
+import { Answer, Comment, Question } from '../../../../types';
 import AnswerEndorsement from '../../AnswerEndorsement';
 
 /**
@@ -22,6 +22,7 @@ interface AnswerProps {
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
   answer: Answer;
+  question: Question;
 }
 
 /**
@@ -35,7 +36,15 @@ interface AnswerProps {
  * @param handleAddComment Function to handle adding a new comment.
  * @param answer An answer to a question
  */
-const AnswerView = ({ text, ansBy, meta, comments, handleAddComment, answer }: AnswerProps) => (
+const AnswerView = ({
+  text,
+  ansBy,
+  meta,
+  comments,
+  handleAddComment,
+  answer,
+  question,
+}: AnswerProps) => (
   <div className='answer right_padding'>
     <div id='answerText' className='answerText'>
       {handleHyperlink(text)}
@@ -43,7 +52,7 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment, answer }: A
     <div className='answerAuthor'>
       <div className='answer_author'>{ansBy}</div>
       <div className='answer_question_meta'>{meta}</div>
-      <AnswerEndorsement answer={answer} />
+      <AnswerEndorsement answer={answer} questionID={question._id || ''} />
     </div>
     <CommentSection comments={comments} handleAddComment={handleAddComment} />
   </div>

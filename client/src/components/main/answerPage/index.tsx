@@ -43,6 +43,7 @@ const AnswerPage = () => {
           comments={a.comments}
           handleAddComment={(comment: Comment) => handleNewComment(comment, 'answer', a._id)}
           answer={a}
+          question={question}
         />
       ))}
       <button

@@ -41,13 +41,20 @@ export interface AnswerRequest extends Request {
 
 /**
  * Interface extending the request body when endorsing an answer, which contains
+ * - qid - The unique identifier of the question being endorsed
  * - aid - The unique identifier of the answer being endorsed
- * - endorsed - WHether the question is being endorsed or unendorsed
+ * - endorsed - Whether the question is being endorsed or unendorsed
+ * - user - The user making the endorsement request
  */
 export interface EndorseRequest extends Request {
   body: {
+    qid: string;
     aid: string;
     endorsed: boolean;
+    user: {
+      _id: string;
+      username: string;
+    };
   };
 }
 

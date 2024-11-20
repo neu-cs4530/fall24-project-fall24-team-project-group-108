@@ -668,3 +668,33 @@ export const endorseAnswer = async (aid: string, endorsed: boolean): Promise<Ans
     return { error: `Error when endorsing answer: ${(error as Error).message}` };
   }
 };
+
+/**
+ * Gets the question associated with a given answer ID.
+ *
+ * @param aid The ID of the answer
+ * @returns A Promise that resolves to the question or null if not found
+ */
+export const getQuestionById = async (aid: string): Promise<Question | null> => {
+  try {
+    const question = await QuestionModel.findOne({ 'answers._id': aid });
+    return question;
+  } catch (error) {
+    return null;
+  }
+};
+
+/**
+ * Gets the question associated with a given answer ID.
+ *
+ * @param aid The ID of the answer
+ * @returns A Promise that resolves to the question or null if not found
+ */
+export const getQuestionByAnswerId = async (aid: string): Promise<Question | null> => {
+  try {
+    const question = await QuestionModel.findOne({ answers: { $elemMatch: { _id: aid } } });
+    return question;
+  } catch (error) {
+    return null;
+  }
+};

@@ -1,5 +1,6 @@
-import { Answer } from '../types';
+import { Answer, User } from '../types';
 import api from './config';
+import useUserContext from '../hooks/useUserContext';
 
 const ANSWER_API_URL = `${process.env.REACT_APP_SERVER_URL}/answer`;
 
@@ -23,12 +24,14 @@ const addAnswer = async (qid: string, ans: Answer): Promise<Answer> => {
 /**
  * Function to endorse an answer.
  *
+ * @param qid - The ID of the question to which the answer belongs.
  * @param aid - The ID of the answer to endorse.
  * @param endorsed - Whether that question is endorsed or not.
+ * @param user - The user making the endorsement request.
  * @throws Error if there is an issue endorsing the answer.
  */
-const endorseAnswer = async (aid: string, endorsed: boolean) => {
-  const data = { aid, endorsed };
+const endorseAnswer = async (qid: string, aid: string, endorsed: boolean, user: User) => {
+  const data = { qid, aid, endorsed, user };
   const res = await api.patch(`${ANSWER_API_URL}/endorseAnswer`, data);
   if (res.status !== 200) {
     throw new Error('Error while endorsing the answer');
