@@ -18,6 +18,7 @@ import { FakeSOSocket } from './types';
 import badgeController from './controller/badge';
 import modApplicationController from './controller/modApplication';
 import badgeProgressController from './controller/badgeProgress';
+import notificationController from './controller/notification';
 
 dotenv.config();
 
@@ -80,6 +81,7 @@ app.use('/badge', badgeController(socket));
 app.use('/badgeProgress', badgeProgressController(socket));
 app.use('/user', userController());
 app.use('/modApplication', modApplicationController());
+app.use('/notifications', notificationController(socket));
 
 // Export the app instance
 export { app, server, startServer };

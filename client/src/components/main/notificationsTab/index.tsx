@@ -1,31 +1,100 @@
+import { useState } from 'react';
+import Switch from '@mui/material/Switch';
 import './index.css';
 import { Notification } from '../../../types';
+import { getMetaData } from '../../../tool';
 
 interface NotificationsTabProps {
-  notifications: Notification[];
+  unreadNotifications: Notification[];
+  readNotifications: Notification[];
   handleClick: (url: string) => void;
 }
 
 /**
  * Component to represent the notifications tab.
  */
-const NotificationsTab = ({ notifications, handleClick }: NotificationsTabProps) => (
-  <div className='notifications-dropdown'>
-    <h2>Notifications</h2>
-    {notifications.length === 0 ? (
-      <p>No new notifications.</p>
-    ) : (
-      <ul>
-        {notifications.map(notification => (
-          <li key={notification._id} className={notification.read ? 'read' : 'unread'}>
-            <a href='#' onClick={() => handleClick(notification.redirectUrl)}>
-              {notification.caption}
-            </a>
-          </li>
-        ))}
-      </ul>
-    )}
-  </div>
-);
+const NotificationsTab = ({
+  unreadNotifications,
+  readNotifications,
+  handleClick,
+}: NotificationsTabProps) => {
+  const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
+
+  const handleTabChange = (tab: 'unread' | 'read') => {
+    setActiveTab(tab);
+  };
+
+  return (
+    <div className='notifications-dropdown'>
+      <h2>Notifications</h2>
+
+      <div className='tabs'>
+        <button
+          className={activeTab === 'unread' ? 'active' : ''}
+          onClick={() => handleTabChange('unread')}>
+          Unread
+        </button>
+        <button
+          className={activeTab === 'read' ? 'active' : ''}
+          onClick={() => handleTabChange('read')}>
+          Read
+        </button>
+      </div>
+
+      {activeTab === 'unread' && unreadNotifications.length > 0 && (
+        <div className='notifications'>
+          {unreadNotifications.map(notification => (
+            <div className='notification-view' key={notification._id}>
+              <li className={notification.read ? 'read' : 'unread'}>
+                <a
+                  href='#'
+                  onClick={() => handleClick(notification.redirectUrl)}
+                  className='notification-link'>
+                  {notification.caption}
+                </a>
+              </li>
+              <p className='notification-metadata'>
+                {getMetaData(new Date(notification.createdAt))}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'unread' && unreadNotifications.length === 0 && (
+        <p>Congrats! You&apos;re all caught up.</p>
+      )}
+
+      {activeTab === 'read' && readNotifications.length > 0 && (
+        <div className='notifications'>
+          {readNotifications.map(notification => (
+            <div className='notification-view' key={notification._id}>
+              <li className={notification.read ? 'read' : 'unread'}>
+                <a
+                  href='#'
+                  onClick={() => handleClick(notification.redirectUrl)}
+                  className='notification-link'>
+                  {notification.caption}
+                </a>
+              </li>
+              <p className='notification-metadata'>
+                {getMetaData(new Date(notification.createdAt))}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'read' && readNotifications.length === 0 && (
+        <p>No notifications yet. Go interact with people!</p>
+      )}
+
+      <div className='dnd-switch'>
+        <p>Do Not Disturb</p>
+        <Switch />
+      </div>
+    </div>
+  );
+};
 
 export default NotificationsTab;
