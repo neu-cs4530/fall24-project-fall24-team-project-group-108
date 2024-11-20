@@ -643,18 +643,21 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
   }
 };
 
+/**
+ * Endorses the corresponding answer
+ *
+ * @param aid The ID of the answer
+ * @param endorsed Either true or false
+ *
+ * @returns A Promise that resolves to the updated endorsed status, or an error message if the operation fails
+ */
 export const endorseAnswer = async (aid: string, endorsed: boolean): Promise<AnswerResponse> => {
   try {
     if (!aid) {
       throw new Error('Invalid answer ID');
     }
 
-    // Find the answer by ID and update the endorsed field
-    const result = await AnswerModel.findByIdAndUpdate(
-      aid,
-      { endorsed }, // Set endorsed to the value passed in
-      { new: true }, // Return the updated document
-    );
+    const result = await AnswerModel.findByIdAndUpdate(aid, { endorsed }, { new: true });
 
     if (result === null) {
       throw new Error('Failed to endorse answer');

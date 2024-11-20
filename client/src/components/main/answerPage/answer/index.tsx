@@ -5,10 +5,6 @@ import './index.css';
 import { Answer, Comment } from '../../../../types';
 import AnswerEndorsement from '../../AnswerEndorsement';
 
-function handleEndorseAnswer(endorse: boolean): void {
-  endorse = !endorse;
-}
-
 /**
  * Interface representing the props for the AnswerView component.
  *
@@ -17,7 +13,7 @@ function handleEndorseAnswer(endorse: boolean): void {
  * - meta Additional metadata related to the answer.
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
- * - endorsed Indicates if the answer is endorsed.
+ * - answer An answer to a question
  */
 interface AnswerProps {
   text: string;
@@ -25,6 +21,7 @@ interface AnswerProps {
   meta: string;
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
+  answer: Answer;
 }
 
 /**
@@ -36,8 +33,9 @@ interface AnswerProps {
  * @param meta Additional metadata related to the answer.
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
+ * @param answer An answer to a question
  */
-const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => (
+const AnswerView = ({ text, ansBy, meta, comments, handleAddComment, answer }: AnswerProps) => (
   <div className='answer right_padding'>
     <div id='answerText' className='answerText'>
       {handleHyperlink(text)}
@@ -45,7 +43,7 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
     <div className='answerAuthor'>
       <div className='answer_author'>{ansBy}</div>
       <div className='answer_question_meta'>{meta}</div>
-      <AnswerEndorsement handleEndorseAnswer={AnswerEndorsement} />
+      <AnswerEndorsement answer={answer} />
     </div>
     <CommentSection comments={comments} handleAddComment={handleAddComment} />
   </div>

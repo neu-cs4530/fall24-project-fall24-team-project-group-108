@@ -22,13 +22,14 @@ interface AnswerEndorsementProps {
  */
 const AnswerEndorsement = ({ answer }: AnswerEndorsementProps) => {
   const { user } = useUserContext();
-  const { endorse } = useAnswerEndorsement({ answer });
+  const { endorse, setEndorsed } = useAnswerEndorsement({ answer });
 
   // Toggles endorsement and updates parent state
   const handleEndorsementClick = async () => {
     try {
       if (answer._id) {
-        await endorseAnswer(answer._id, !answer.endorsed);
+        await endorseAnswer(answer._id, !endorse);
+        setEndorsed(!endorse);
       }
     } catch (error) {
       // Handle error

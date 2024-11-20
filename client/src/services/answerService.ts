@@ -21,15 +21,15 @@ const addAnswer = async (qid: string, ans: Answer): Promise<Answer> => {
 };
 
 /**
- * Function to downvote a question.
+ * Function to endorse an answer.
  *
- * @param qid - The ID of the question to downvote.
- * @param username - The username of the person downvoting the question.
- * @throws Error if there is an issue downvoting the question.
+ * @param aid - The ID of the answer to endorse.
+ * @param endorsed - Whether that question is endorsed or not.
+ * @throws Error if there is an issue endorsing the answer.
  */
-const endorseAnswer = async (aid: string, endosred: boolean) => {
-  const data = { aid, endosred };
-  const res = await api.post(`${ANSWER_API_URL}/endorseAnswer`, data);
+const endorseAnswer = async (aid: string, endorsed: boolean) => {
+  const data = { aid, endorsed };
+  const res = await api.patch(`${ANSWER_API_URL}/endorseAnswer`, data);
   if (res.status !== 200) {
     throw new Error('Error while endorsing the answer');
   }

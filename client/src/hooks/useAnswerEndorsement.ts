@@ -16,9 +16,9 @@ const useAnswerEndorsement = ({ answer }: { answer: Answer }) => {
 
   useEffect(() => {
     /**
-     * Function to get
+     * Function to get the endorsed value
      *
-     * @returns
+     * @returns boolean
      */
     const getEndorsedValue = () => {
       if (answer.endorsed) {

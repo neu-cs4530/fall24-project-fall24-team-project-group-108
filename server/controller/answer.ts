@@ -86,12 +86,25 @@ const answerController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Updates the current endorsed status of an answer. If successful, the answer has it's endorsed status updated
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The EndorseRequest object containing the answer ID and the endorsed status.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
   const updateEndorsement = async (req: EndorseRequest, res: Response): Promise<void> => {
     try {
       const { aid, endorsed } = req.body;
 
       // Find and update the endorsement status of the answer in the database
-      const updatedAnswer = await AnswerModel.findByIdAndUpdate(aid, { endorsed }, { new: true });
+      const updatedAnswer = await endorseAnswer(aid, endorsed);
+
+      if ('error' in updatedAnswer) {
+        throw new Error(updatedAnswer.error as string);
+      }
 
       res.json(updatedAnswer);
     } catch (error) {
@@ -101,7 +114,7 @@ const answerController = (socket: FakeSOSocket) => {
 
   // add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
-  router.patch('/endorse', updateEndorsement);
+  router.patch('/endorseAnswer', updateEndorsement);
 
   return router;
 };

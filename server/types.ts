@@ -40,7 +40,9 @@ export interface AnswerRequest extends Request {
 }
 
 /**
- * Interface extending the request body when 
+ * Interface extending the request body when endorsing an answer, which contains
+ * - aid - The unique identifier of the answer being endorsed
+ * - endorsed - WHether the question is being endorsed or unendorsed
  */
 export interface EndorseRequest extends Request {
   body: {
