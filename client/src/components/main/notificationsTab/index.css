@@ -12,6 +12,24 @@
   padding-left: 2%;
   padding-right: 2%;
   padding-bottom: 2%;
+  display: flex;
+  flex-direction: column;
+}
+
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  font-size: 35px;
+  font-weight: normal;
+  cursor: pointer;
+  color: #6e6c6c;
+}
+
+.close-button:hover {
+  color: rgb(24, 106, 212);
 }
 
 .notifications-dropdown ul {
@@ -22,7 +40,7 @@
 .tabs {
   display: flex;
   margin-bottom: 20px;
-  margin-top: 30px;
+  margin-top: 10px;
   border-bottom: 2px solid rgb(24, 106, 212); 
 }
 
@@ -37,7 +55,7 @@
 }
 
 .tabs button.active {
-  background-color: #d9e9f9;
+  background-color: white;
   color: rgb(24, 106, 212);
 }
 
@@ -45,6 +63,7 @@
   max-height: 300px;  
   overflow-y: auto;  
   padding-right: 10px;
+  flex-grow: 1;
 }
 
 .notification-link {
@@ -74,4 +93,5 @@
 .dnd-switch {
   display: flex;
   flex-direction: row;
+  margin-top: auto;
 }

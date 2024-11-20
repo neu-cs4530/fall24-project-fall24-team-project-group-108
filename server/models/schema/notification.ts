@@ -15,21 +15,20 @@ const notificationSchema: Schema = new Schema(
   {
     user: { type: String },
     type: {
-        type: String,
+      type: String,
     },
     caption: {
-        type: String,
+      type: String,
     },
     read: {
-        type: Boolean,
+      type: Boolean,
     },
     createdAt: {
-        type: Date,
+      type: Date,
     },
     redirectUrl: {
-        type: String,
-    }
-     
+      type: String,
+    },
   },
   { collection: 'Notification' },
 );

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './index.css';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { SettingsBluetooth } from '@mui/icons-material';
 import SideBarNav from '../main/sideBarNav';
 import Header from '../header';
 import NotificationsTab from '../main/notificationsTab';
@@ -26,15 +25,14 @@ const Layout = () => {
   };
 
   useEffect(() => {
-    // Fetch initial notifications
     const fetchReadNotifications = async () => {
       const initialNotifications = await getNotifications(user.username, 'read');
-      setReadNotifications(initialNotifications);
+      setReadNotifications(initialNotifications); // Ensure new array reference
     };
 
     const fetchUnreadNotifications = async () => {
       const initialNotifications = await getNotifications(user.username, 'unread');
-      setUnreadNotifications(initialNotifications);
+      setUnreadNotifications(initialNotifications); // Ensure new array reference
     };
 
     fetchReadNotifications();
@@ -43,14 +41,27 @@ const Layout = () => {
     // Listen for 'notificationUpdate' from the server
     socket.on('notificationUpdate', (notification: Notification) => {
       if (notification.user.toString() === user.username) {
-        setUnreadNotifications(prevNotifications => [...prevNotifications, notification]);
+        // Add the new notification while ensuring a new reference
+        setUnreadNotifications(prevNotifications => {
+          const updatedNotifications = [...prevNotifications, notification];
+          return updatedNotifications;
+        });
       }
     });
 
     return () => {
       socket.off('notificationUpdate');
     };
-  }, [socket]);
+  }, [socket, user.username]);
+
+  const handleNotificationUpdate = (notification: Notification) => {
+    setUnreadNotifications(prevUnread => prevUnread.filter(n => n._id !== notification._id));
+
+    setReadNotifications(prevRead => {
+      const updatedReadNotifications = [notification, ...prevRead];
+      return updatedReadNotifications;
+    });
+  };
 
   // Toggle the notification dropdown and icon color
   const toggleNotifications = () => {
@@ -66,9 +77,12 @@ const Layout = () => {
       <Header toggleNotifications={toggleNotifications} />
       {isNotificationsOpen && (
         <NotificationsTab
-          unreadNotifications={unreadNotifications}
-          readNotifications={readNotifications}
+          key={unreadNotifications.length}
+          initialUnreadNotifications={unreadNotifications}
+          initialReadNotifications={readNotifications}
           handleClick={handleNotificationClick}
+          onClose={toggleNotifications}
+          handleUpdate={handleNotificationUpdate}
         />
       )}
       <div id='main' className='main'>

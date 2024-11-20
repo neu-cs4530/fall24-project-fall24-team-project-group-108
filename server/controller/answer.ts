@@ -2,7 +2,6 @@ import express, { Response } from 'express';
 import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket, Notification } from '../types';
 import { addAnswerToQuestion, populateDocument, saveAnswer } from '../models/application';
 import QuestionModel from '../models/questions';
-import UserModel from '../models/users';
 import NotificationModel from '../models/notifications';
 
 const answerController = (socket: FakeSOSocket) => {
@@ -85,10 +84,10 @@ const answerController = (socket: FakeSOSocket) => {
       const notification: Notification = {
         user: authorUsername,
         type: 'answer',
-        caption: `${ansInfo.ansBy} answered your question`, 
-        read: false, 
-        createdAt: new Date(), 
-        redirectUrl: `/question/${qid}`
+        caption: `${ansInfo.ansBy} answered your question`,
+        read: false,
+        createdAt: new Date(),
+        redirectUrl: `/question/${qid}`,
       };
 
       // save the notification to the db

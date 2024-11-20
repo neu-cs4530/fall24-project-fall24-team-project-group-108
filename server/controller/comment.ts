@@ -97,55 +97,54 @@ const commentController = (socket: FakeSOSocket) => {
         if (!question) {
           throw new Error('Question not found');
         }
-  
-        const authorUsername = question.askedBy; 
-  
-        // Create the notification 
+
+        const authorUsername = question.askedBy;
+
+        // Create the notification
         const notification: Notification = {
-          user: authorUsername, 
+          user: authorUsername,
           type: 'comment',
-          caption: `${comment.commentBy} commented on your question`, 
-          read: false, 
-          createdAt: new Date(), 
-          redirectUrl: `/question/${id}`  
+          caption: `${comment.commentBy} commented on your question`,
+          read: false,
+          createdAt: new Date(),
+          redirectUrl: `/question/${id}`,
         };
-  
+
         // Save the notification to the DB
         const savedNotification = await NotificationModel.create(notification);
-  
+
         if ('error' in savedNotification) {
           throw new Error(savedNotification.error as string);
         }
-  
+
         // Emit the notification to the socket
         socket.emit('notificationUpdate', notification);
-  
       } else {
         const answer = await AnswerModel.findById(id).exec();
         if (!answer) {
           throw new Error('Answer not found');
         }
 
-        // Find the question 
+        // Find the question
         const answerQuestion = await QuestionModel.findOne({
-          answers: new ObjectId(id)
-        }).exec();              
+          answers: new ObjectId(id),
+        }).exec();
 
         if (!answerQuestion) {
           throw new Error('Question not found for the answer');
         }
 
-        const authorUsername = answer.ansBy; 
-        const qid = answerQuestion._id.toString(); 
+        const authorUsername = answer.ansBy;
+        const qid = answerQuestion._id.toString();
 
         // Create the notification
         const notification: Notification = {
-          user: authorUsername,  
+          user: authorUsername,
           type: 'comment',
-          caption: `${comment.commentBy} commented on your answer`, 
-          read: false, 
-          createdAt: new Date(), 
-          redirectUrl: `/question/${qid}`  
+          caption: `${comment.commentBy} commented on your answer`,
+          read: false,
+          createdAt: new Date(),
+          redirectUrl: `/question/${qid}`,
         };
 
         // Save the notification to the DB
@@ -158,7 +157,7 @@ const commentController = (socket: FakeSOSocket) => {
         // Emit the notification to the socket
         socket.emit('notificationUpdate', notification);
       }
-  
+
       socket.emit('commentUpdate', {
         result: populatedDoc,
         type,

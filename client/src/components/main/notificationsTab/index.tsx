@@ -3,29 +3,57 @@ import Switch from '@mui/material/Switch';
 import './index.css';
 import { Notification } from '../../../types';
 import { getMetaData } from '../../../tool';
+import { markNotificationAsRead } from '../../../services/notificationService';
 
 interface NotificationsTabProps {
-  unreadNotifications: Notification[];
-  readNotifications: Notification[];
+  initialUnreadNotifications: Notification[];
+  initialReadNotifications: Notification[];
   handleClick: (url: string) => void;
+  onClose: () => void;
+  handleUpdate: (notification: Notification) => void;
 }
 
 /**
  * Component to represent the notifications tab.
  */
 const NotificationsTab = ({
-  unreadNotifications,
-  readNotifications,
+  initialUnreadNotifications,
+  initialReadNotifications,
   handleClick,
+  onClose,
+  handleUpdate,
 }: NotificationsTabProps) => {
   const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
+  const [unreadNotifications, setUnreadNotifications] = useState(initialUnreadNotifications);
+  const [readNotifications, setReadNotifications] = useState(initialReadNotifications);
 
   const handleTabChange = (tab: 'unread' | 'read') => {
     setActiveTab(tab);
   };
 
+  const handleNotificationClick = async (notification: Notification) => {
+    try {
+      // Mark the notification as read
+      await markNotificationAsRead(notification._id as string);
+
+      // Update local state to move the notification from unread to read
+      setUnreadNotifications(prevUnread => prevUnread.filter(n => n._id !== notification._id));
+      setReadNotifications(prevRead => [notification, ...prevRead]);
+      handleUpdate(notification);
+
+      // Navigate to the notification URL
+      handleClick(notification.redirectUrl);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to mark notification as read:', error);
+    }
+  };
+
   return (
     <div className='notifications-dropdown'>
+      <button className='close-button' onClick={onClose} aria-label='Close'>
+        &times;
+      </button>
       <h2>Notifications</h2>
 
       <div className='tabs'>
@@ -48,7 +76,10 @@ const NotificationsTab = ({
               <li className={notification.read ? 'read' : 'unread'}>
                 <a
                   href='#'
-                  onClick={() => handleClick(notification.redirectUrl)}
+                  onClick={e => {
+                    e.preventDefault();
+                    handleNotificationClick(notification);
+                  }}
                   className='notification-link'>
                   {notification.caption}
                 </a>
@@ -62,7 +93,7 @@ const NotificationsTab = ({
       )}
 
       {activeTab === 'unread' && unreadNotifications.length === 0 && (
-        <p>Congrats! You&apos;re all caught up.</p>
+        <p>You&apos;re all caught up!</p>
       )}
 
       {activeTab === 'read' && readNotifications.length > 0 && (
@@ -72,7 +103,10 @@ const NotificationsTab = ({
               <li className={notification.read ? 'read' : 'unread'}>
                 <a
                   href='#'
-                  onClick={() => handleClick(notification.redirectUrl)}
+                  onClick={e => {
+                    e.preventDefault();
+                    handleClick(notification.redirectUrl);
+                  }}
                   className='notification-link'>
                   {notification.caption}
                 </a>
@@ -86,7 +120,7 @@ const NotificationsTab = ({
       )}
 
       {activeTab === 'read' && readNotifications.length === 0 && (
-        <p>No notifications yet. Go interact with people!</p>
+        <p>No read notifications. Check your inbox!</p>
       )}
 
       <div className='dnd-switch'>

@@ -11,6 +11,9 @@ import notificationSchema from './schema/notification';
  *
  * @type {Model<Notification>}
  */
-const NotificationModel: Model<Notification> = mongoose.model<Notification>('Notification', notificationSchema);
+const NotificationModel: Model<Notification> = mongoose.model<Notification>(
+  'Notification',
+  notificationSchema,
+);
 
 export default NotificationModel;
