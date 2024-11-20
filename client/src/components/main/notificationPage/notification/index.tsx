@@ -21,14 +21,9 @@ interface NotificationProps {
  */
 const NotificationView = ({ notification }: NotificationProps) => {
   const navigate = useNavigate();
-  const {
-  } = useNotificationView(notification);
+  const {} = useNotificationView(notification);
 
-  return (
-      <div className='notificationContainer'>
-          Notification Item
-      </div>
-  );
+  return <div className='notificationContainer'>Notification Item</div>;
 };
 
 export default NotificationView;

@@ -13,11 +13,10 @@ import { Question, Answer, Comment, Message, Correspondence, Notification } from
 const useNotificationPage = () => {
   const { socket } = useUserContext();
 
-
   const [searchParams] = useSearchParams();
 
-  //For the below states, this would keep a tracking list of questions, answers, etc. the user has participated in
-  //When handling the socket, we will cross-check the socket update payload with these states to see if an update has been made to a post the user is involved in
+  // For the below states, this would keep a tracking list of questions, answers, etc. the user has participated in
+  // When handling the socket, we will cross-check the socket update payload with these states to see if an update has been made to a post the user is involved in
 
   const [questions, setQuestions] = useState<Question[]>();
   const [answers, setAnswers] = useState<Answer[]>();
@@ -26,10 +25,10 @@ const useNotificationPage = () => {
   const [notifications, setNotificaions] = useState<Notification[]>();
 
   useEffect(() => {
-      //Need to get a list of all questions, answers, etc. user is involved in
-  }, [])
+    // Need to get a list of all questions, answers, etc. user is involved in
+  }, []);
 
-  return { };
+  return {};
 };
 
 export default useNotificationPage;

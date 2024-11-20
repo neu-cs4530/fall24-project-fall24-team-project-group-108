@@ -7,13 +7,9 @@ import useNotificationPage from '../../../hooks/useNotificationPage';
  * NotificationPage component renders a page displaying a list of notifications
  */
 const NotificationPage = () => {
-  const { } = useNotificationPage();
+  const {} = useNotificationPage();
 
-  return (
-      <div className='notificationContainer'>
-          Notification Page
-      </div>
-  );
+  return <div className='notificationContainer'>Notification Page</div>;
 };
 
 export default NotificationPage;

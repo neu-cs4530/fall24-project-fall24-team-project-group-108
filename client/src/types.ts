@@ -152,17 +152,22 @@ export interface Question {
 /**
  * Interface representing the structure of a Notification object.
  *
- * - notificationDateTime - The date and time the notification was sent
- * - notificationText - The content of the notification
- * - referencedUsers - A list of users who are being referenced in the notification
- * - referencedPage - A link to the page that is being referenced
+ * - _id - The unique identifier for the notif.
+ * - user - The user receiving the notification.
+ * - type - The type of notification it is.
+ * - caption - The caption of the notification.
+ * - read - Whether or not the notification was read.
+ * - createdAt - When the notification was made.
+ * - redirectUrl - The url to go to when the notification is clicked.
  */
 export interface Notification {
-  notificationDateTime: Date,
-  notificationText: string,
-  referencedUsers: string[],
-  referencedPage: string
-
+  _id?: string;
+  user: string;
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard';
+  caption: string;
+  read: boolean;
+  createdAt: Date;
+  redirectUrl: string;
 }
 
 /**
@@ -226,4 +231,5 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (update: CommentUpdatePayload) => void;
   notificationUpdate: (notification: Notification) => void;
+  joinRoom: (roomId: string) => void;
 }

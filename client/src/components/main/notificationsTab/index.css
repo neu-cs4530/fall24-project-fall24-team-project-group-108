@@ -1,0 +1,12 @@
+.notifications-dropdown {
+    position: absolute;
+    top: 95px; /* Adjust for desired vertical offset from the top */
+    right: 50px; /* Adjust for desired horizontal offset from the right */
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    z-index: 1000;
+    width: 380px;
+    height: 400px;
+  }

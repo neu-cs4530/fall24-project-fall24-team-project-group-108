@@ -1,6 +1,9 @@
 import express, { Response } from 'express';
-import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket } from '../types';
+import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket, Notification } from '../types';
 import { addAnswerToQuestion, populateDocument, saveAnswer } from '../models/application';
+import QuestionModel from '../models/questions';
+import UserModel from '../models/users';
+import NotificationModel from '../models/notifications';
 
 const answerController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -51,6 +54,7 @@ const answerController = (socket: FakeSOSocket) => {
     const ansInfo: Answer = req.body.ans;
 
     try {
+      // save the answer
       const ansFromDb = await saveAnswer(ansInfo);
 
       if ('error' in ansFromDb) {
@@ -69,11 +73,37 @@ const answerController = (socket: FakeSOSocket) => {
         throw new Error(populatedAns.error as string);
       }
 
-      // Populates the fields of the answer that was added and emits the new object
+      // find the user to alert about their question being answered
+      const question = await QuestionModel.findById(qid).exec();
+      if (!question) {
+        throw new Error('Question not found');
+      }
+
+      const authorUsername = question.askedBy;
+
+      // create the notification for the question author
+      const notification: Notification = {
+        user: authorUsername,
+        type: 'answer',
+        caption: `${ansInfo.ansBy} answered your question`, 
+        read: false, 
+        createdAt: new Date(), 
+        redirectUrl: `/question/${qid}`
+      };
+
+      // save the notification to the db
+      const savedNotification = await NotificationModel.create(notification);
+
+      if ('error' in savedNotification) {
+        throw new Error(savedNotification.error as string);
+      }
+
+      // emit the answer and notificatoin
       socket.emit('answerUpdate', {
         qid,
         answer: populatedAns as AnswerResponse,
       });
+      socket.emit('notificationUpdate', notification);
       res.json(ansFromDb);
     } catch (err) {
       res.status(500).send(`Error when adding answer: ${(err as Error).message}`);

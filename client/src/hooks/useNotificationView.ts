@@ -8,8 +8,7 @@ import { Notification } from '../types';
 const useNotificationView = (notification: Notification) => {
   const { socket, user } = useUserContext();
 
-  return {
-  };
+  return {};
 };
 
 export default useNotificationView;
