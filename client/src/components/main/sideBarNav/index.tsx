@@ -1,6 +1,5 @@
 import './index.css';
 import { NavLink } from 'react-router-dom';
-import useUserContext from '../../../hooks/useUserContext';
 import useModStatus from '../../../hooks/useModStatus';
 
 /**
@@ -9,7 +8,6 @@ import useModStatus from '../../../hooks/useModStatus';
  * triggers corresponding functions when the menu items are clicked.
  */
 const SideBarNav = () => {
-  const { user } = useUserContext();
   const { moderatorStatus } = useModStatus();
 
   return (

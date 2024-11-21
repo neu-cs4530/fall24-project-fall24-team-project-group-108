@@ -1,7 +1,9 @@
 .question {
   display: flex;
   flex-direction: row;
-  border-top: #000000 1px dashed;
+  border-top: #8b8b8b 1px solid;
+  margin-left: 4%;
+  margin-right: 4%;
 }
 
 .postStats {
@@ -42,7 +44,7 @@
 }
 
 .question_author {
-  color: red;
+  color: #64ade1;
 }
 
 .question_author:hover {

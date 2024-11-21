@@ -89,7 +89,7 @@ const QuestionView = ({ q }: QuestionProps) => {
           {q.askedBy}
         </div>
         <div>&nbsp;</div>
-        <div className='question_meta'>asked {getMetaData(new Date(q.askDateTime))}</div>
+        <div className='question_meta'>{getMetaData(new Date(q.askDateTime))}</div>
       </div>
     </div>
   );

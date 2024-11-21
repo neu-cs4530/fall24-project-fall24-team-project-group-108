@@ -14,7 +14,7 @@ padding-right: 4%;
 .leftBubble {
 background-color: white;
 border-radius: 12px;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 height: 75%;
 width: 30%;
 }
@@ -22,7 +22,7 @@ width: 30%;
 .rightBubble {
 background-color: white;
 border-radius: 12px;
-box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 height: 75%;
 width: 68%;
 }
@@ -47,5 +47,10 @@ font-weight: bold;
 .profileHeaderUsername div:last-child {
 padding-top: 2%;
 color: #858585;
+}
+
+.profileTabs {
+max-height: 100%;  
+overflow-y: auto;  
 }
 

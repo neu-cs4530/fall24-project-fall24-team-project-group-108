@@ -44,7 +44,7 @@ const NotificationsTab = ({
       <button className='close-button' onClick={onClose} aria-label='Close'>
         &times;
       </button>
-      <h2>Notifications</h2>
+      <div className='notifications-title'>Notifications</div>
 
       <div className='tabs'>
         <button
