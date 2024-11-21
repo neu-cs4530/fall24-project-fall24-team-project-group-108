@@ -112,7 +112,7 @@ const useAccountPage = () => {
     return () => {
       socket.off('removePostUpdate', handleRemovePostUpdate);
     };
-  }, [user, sentUser]);
+  }, [user, sentUser, socket]);
 
   return {
     sentUser,
