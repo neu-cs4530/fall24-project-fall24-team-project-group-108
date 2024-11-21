@@ -10,6 +10,7 @@ import { Schema } from 'mongoose';
  * - `isModerator`: If the user has moderator privileges.
  * - `badges`: Badges obtained by the user.
  * - `infractions`: List of removed Answers/Questions by the user.
+ * - `doNotDisturb`: Whether or not the user is on do not disturb.
  */
 const userSchema: Schema = new Schema(
   {
@@ -25,6 +26,7 @@ const userSchema: Schema = new Schema(
     },
     badges: [{ type: Schema.Types.ObjectId, ref: 'Badge' }],
     infractions: [{ type: String }],
+    doNotDisturb: { type: Boolean, default: false },
   },
   { collection: 'User' },
 );

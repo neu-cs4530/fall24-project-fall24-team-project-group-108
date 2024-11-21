@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
-import { AddUserRequest, FindUserRequest, MakeUserModeratorRequest } from '../types';
-import { addUser, findUser, updateUserModStatus } from '../models/application';
+import { AddUserRequest, FindUserRequest, GetUserStatusRequest, MakeUserModeratorRequest } from '../types';
+import { addUser, findUser, getDoNotDisturbStatus, updateDoNotDisturb, updateUserModStatus } from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -111,9 +111,55 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Changes the dnd status of a given user If updating the doNotDisturb field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const toggleDoNotDisturb = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
+    const { username } = req.body;
+    try {
+      const updatedUser = await updateDoNotDisturb(username);
+      res.json(updatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user moderator status: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user moderator status`);
+      }
+    }
+  };
+
+  /**
+   * Gets the dnd status of a given user. If getting the doNotDisturb field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getDoNotDisturb = async (req: GetUserStatusRequest, res: Response): Promise<void> => {
+    const { username } = req.params;
+    try {
+      const updatedUser = await getDoNotDisturbStatus(username);
+      res.json(updatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user moderator status: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user moderator status`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
   router.post('/createUser', createUser);
+  router.get('/doNotDisturb/:username', getDoNotDisturb);
   router.post('/makeUserModerator', makeUserModerator);
+  router.post('/doNotDisturb', toggleDoNotDisturb);
 
   return router;
 };

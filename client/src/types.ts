@@ -12,6 +12,7 @@ export interface User {
   isModerator: boolean;
   badges: Badge[];
   infractions: string[];
+  doNotDisturb?: boolean;
 }
 
 /**

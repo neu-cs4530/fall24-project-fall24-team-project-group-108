@@ -99,8 +99,24 @@ li {
   margin-top: 1%;
 }
 
+.dnd-header {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 3%;
+}
+
+.dnd-title {
+  border-top: 1px solid #d3d3d3; 
+  padding-top: 4%;
+  font-weight: bold;
+  font-size: 16px;
+  color:rgb(24, 106, 212)
+}
+
 .dnd-switch {
   display: flex;
   flex-direction: row;
-  margin-top: auto;
+  margin-top: 0;
+  margin-left: 3%;
 }

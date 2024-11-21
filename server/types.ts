@@ -76,6 +76,7 @@ export interface Tag {
  * - isModerator - the current state of the user's moderator status.
  * - badges - The badges obtained by the user.
  * - infractions - A list of answer/question id's that were removed by moderators
+ * - doNotDisturb - Whether or not the user is on dnd.
  */
 export interface User {
   _id?: ObjectId;
@@ -84,6 +85,7 @@ export interface User {
   isModerator: boolean;
   badges: Badge[];
   infractions: string[];
+  doNotDisturb?: false;
 }
 
 /**
@@ -104,6 +106,16 @@ export interface AddUserRequest extends Request {
  */
 export interface MakeUserModeratorRequest extends Request {
   body: {
+    username: string;
+  };
+}
+
+/**
+ * Interface extending the request body when getting a user's dnd status:
+ * - username - The user.
+ */
+export interface GetUserStatusRequest extends Request {
+  params: {
     username: string;
   };
 }

@@ -3,6 +3,7 @@ import './index.css';
 import { Notification } from '../../../types';
 import { getMetaData } from '../../../tool';
 import useNotificationsTab from '../../../hooks/useNotificationsTab';
+import { toggleDoNotDisturb } from '../../../services/userService';
 
 interface NotificationsTabProps {
   initialUnreadNotifications: Notification[];
@@ -10,6 +11,8 @@ interface NotificationsTabProps {
   handleClick: (url: string) => void;
   onClose: () => void;
   handleUpdate: (notification: Notification) => void;
+  toggleDnd: () => void;
+  dnd: boolean;
 }
 
 /**
@@ -21,6 +24,8 @@ const NotificationsTab = ({
   handleClick,
   onClose,
   handleUpdate,
+  toggleDnd,
+  dnd,
 }: NotificationsTabProps) => {
   const {
     activeTab,
@@ -109,9 +114,14 @@ const NotificationsTab = ({
         <p>No read notifications. Check your inbox!</p>
       )}
 
-      <div className='dnd-switch'>
-        <p>Do Not Disturb</p>
-        <Switch />
+      <div className='dnd-header'>
+        <div className='dnd-title'>
+          <Switch checked={dnd} onChange={toggleDnd} />
+          Do Not Disturb
+        </div>
+        <div className='dnd-switch'>
+          {dnd ? <p>You are on do not disturb</p> : <p>You are receiving notifications</p>}
+        </div>
       </div>
     </div>
   );

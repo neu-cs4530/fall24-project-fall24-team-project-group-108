@@ -349,6 +349,62 @@ export const updateUserModStatus = async (username: string): Promise<UserRespons
 };
 
 /**
+ * Updates a user to switch their doNotDisturb field.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const updateDoNotDisturb = async (username: string): Promise<UserResponse> => {
+  try {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { username },
+      [
+        {
+          $set: {
+            doNotDisturb: {
+              $cond: {
+                if: { $eq: ["$doNotDisturb", null] }, 
+                then: true, // Set to true if null
+                else: { $not: "$doNotDisturb" }, // Otherwise, toggle 
+              },
+            },
+          },
+        },
+      ],
+      { new: true } 
+    );
+
+    if (!updatedUser) {
+      throw new Error(`Failed to fetch and populate a user`);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Gets a user's dnd field.
+ *
+ * @param username - The username of the user being fetched.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const getDoNotDisturbStatus = async (username: string): Promise<boolean> => {
+  try {
+    const user = await UserModel.findOne({ username }, { doNotDisturb: 1 });
+    
+    if (!user) {
+      throw new Error(`User with username "${username}" not found.`);
+    }
+
+    return user.doNotDisturb ?? false;
+  } catch (error) {
+    throw new Error(`Error when fetching user document: ${(error as Error).message}`);
+  }
+};
+
+/**
  * Updates a specificed moderator application from the db's status.
  *
  * @param username - the username of the user's application being deleted

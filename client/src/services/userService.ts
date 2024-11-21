@@ -56,4 +56,38 @@ const makeUserModerator = async (username: string): Promise<User> => {
   }
   return res.data;
 };
-export { authenticateUser, createUser, makeUserModerator };
+
+/**
+ * Switches a user's do not disturb setting.
+ *
+ * @param username - The username of the user.
+ *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
+ * @returns the User object with an updated doNotDisturb field.
+ */
+const toggleDoNotDisturb = async (username: string): Promise<User> => {
+  const data = { username };
+  const res = await api.post(`${USER_API_URL}/doNotDisturb`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while changing do not disturb status');
+  }
+  return res.data;
+};
+
+/**
+ * Gets a user's do not disturb setting.
+ *
+ * @param username - The username of the user.
+ *
+ * @throws Error - Throws an error if the request fails or the response status is not 200.
+ * @returns the User object with the doNotDisturb field.
+ */
+const getDoNotDisturb = async (username: string): Promise<boolean> => {
+  const res = await api.get(`${USER_API_URL}/doNotDisturb/${username}`);
+  if (res.status !== 200) {
+    throw new Error('Error while getting do not disturb status');
+  }
+  return res.data;
+};
+
+export { authenticateUser, createUser, makeUserModerator, toggleDoNotDisturb, getDoNotDisturb };

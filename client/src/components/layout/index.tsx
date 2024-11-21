@@ -17,6 +17,8 @@ const Layout = () => {
     handleNotificationClick,
     handleNotificationUpdate,
     isBanPage,
+    doNotDisturb,
+    toggleDndStatus,
   } = useLayout();
 
   return (
@@ -24,6 +26,7 @@ const Layout = () => {
       <Header
         toggleNotifications={toggleNotifications}
         newNotification={unreadNotifications.length !== 0}
+        dndStatus={doNotDisturb || false}
       />
       {isNotificationsOpen && (
         <NotificationsTab
@@ -33,6 +36,8 @@ const Layout = () => {
           handleClick={handleNotificationClick}
           onClose={toggleNotifications}
           handleUpdate={handleNotificationUpdate}
+          toggleDnd={toggleDndStatus}
+          dnd={doNotDisturb || false}
         />
       )}
       <div id='main' className='main'>

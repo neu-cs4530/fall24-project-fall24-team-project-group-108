@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Notification } from '../types';
 import getNotifications from '../services/notificationService';
 import useUserContext from './useUserContext';
+import { getDoNotDisturb, toggleDoNotDisturb } from '../services/userService';
 
 /**
  * Custom hook to handle logic for layout component
@@ -23,6 +24,15 @@ const useLayout = () => {
   const [readNotifications, setReadNotifications] = useState<Notification[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState<Notification[]>([]);
   const { user, socket } = useUserContext();
+  const [doNotDisturb, setDoNotDisturb] = useState<boolean>();
+
+  /**
+   * Toggle the dnd status by updating local state and db state
+   */
+  const toggleDndStatus = async () => {
+    setDoNotDisturb(prevState => !prevState);
+    await toggleDoNotDisturb(user.username);
+  };
 
   /**
    * Handles redirecting to view a notification
@@ -39,7 +49,7 @@ const useLayout = () => {
      */
     const fetchReadNotifications = async () => {
       const initialNotifications = await getNotifications(user.username, 'read');
-      setReadNotifications(initialNotifications); // Ensure new array reference
+      setReadNotifications(initialNotifications);
     };
 
     /**
@@ -47,11 +57,21 @@ const useLayout = () => {
      */
     const fetchUnreadNotifications = async () => {
       const initialNotifications = await getNotifications(user.username, 'unread');
-      setUnreadNotifications(initialNotifications); // Ensure new array reference
+      setUnreadNotifications(initialNotifications);
+    };
+
+    /**
+     * Fetches the user's current dnd status
+     */
+    const fetchDndStatus = async () => {
+      const status = await getDoNotDisturb(user.username);
+      setDoNotDisturb(status);
+      console.log(status);
     };
 
     fetchReadNotifications();
     fetchUnreadNotifications();
+    fetchDndStatus();
 
     // Listen for 'notificationUpdate' emit from the server and add to the list
     socket.on('notificationUpdate', (notification: Notification) => {
@@ -101,6 +121,8 @@ const useLayout = () => {
     handleNotificationClick,
     handleNotificationUpdate,
     isBanPage,
+    doNotDisturb,
+    toggleDndStatus,
   };
 };
 
