@@ -10,7 +10,7 @@ const MESSAGE_API_URL = `${process.env.REACT_APP_SERVER_URL}/message`;
  * @throws Error if there is an issue fetching or filtering messages.
  */
 const getMessagesByOrder = async (order: string = 'newest'): Promise<Message[]> => {
-  const res = await api.get(`${MESSAGE_API_URL}/getMessage?order=${order}`);
+  const res = await api.get(`${MESSAGE_API_URL}/getMessage`);
   if (res.status !== 200) {
     throw new Error('Error when fetching or filtering messages');
   }

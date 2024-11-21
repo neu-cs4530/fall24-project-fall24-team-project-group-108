@@ -20,12 +20,17 @@ import {
   saveBadge,
   getAllBadges,
   getBadgeUsers,
+  getMessagesByOrder,
+  getCorrespondencesByOrder,
+  getAllUsers
 } from '../models/application';
-import { Answer, Question, Tag, Comment, User, Badge } from '../types';
+import { Answer, Question, Tag, Comment, User, Badge, Message, Correspondence } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
 import UserModel from '../models/users';
 import BadgeModel from '../models/badges';
+import MessageModel from '../models/message';
+import CorrespondenceModel from '../models/correspondence';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -143,12 +148,30 @@ const QUESTIONS: Question[] = [
 ];
 
 const user1: User = {
-  _id: new ObjectId(),
+  _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
   username: 'testuser1',
   password: 'password123',
   isModerator: false,
   badges: [],
 };
+
+const user2: User = {
+  _id: new ObjectId('65e9b5a995b6c7045a30d823'),
+  username: 'testuser2',
+  password: 'password123',
+  isModerator: false,
+  badges: [],
+};
+
+const user3: User = {
+  _id: new ObjectId('65e9b716ff0e892116b2de09'),
+  username: 'startuser',
+  password: 'password123',
+  isModerator: false,
+  badges: [],
+};
+
+const USERS = [user1, user2, user3];
 
 const badge1: Badge = {
   _id: new ObjectId(),
@@ -159,6 +182,61 @@ const badge1: Badge = {
   tier: 'silver',
   users: [],
 };
+
+
+
+const message1: Message = {
+  _id: '65e9b58910afe6e94fc6e6aa',
+  messageText: 'What is your favorite smartphone?',
+  messageDateTime: new Date('2023-11-19T09:24:00'),
+  messageBy: 'isuzuki',
+  messageTo: ['tgwynn'],
+  views: [],
+  isCodeStyle: false,
+}
+
+const message2: Message = {
+  _id: '65e9b58910afe6e94fc6e6ab',
+  messageText: 'Python is my favorite programming language',
+  messageDateTime: new Date('2023-11-19T09:24:00'),
+  messageBy: 'isuzuki',
+  messageTo: ['tgwynn', 'tcobb'],
+  views: [],
+  isCodeStyle: false,
+}
+
+const message3: Message = {
+  _id: '65e9b58910afe6e94fc6e6ac',
+  messageText: 'What language is easiest to learn?',
+  messageDateTime: new Date('2023-11-19T09:24:00'),
+  messageBy: 'isuzuki',
+  messageTo: ['tgwynn', 'tcobb'],
+  views: [],
+  isCodeStyle: true,
+}
+
+const MESSAGES: Message[] = [
+  message1,
+  message2,
+  message3
+]
+
+const CORRESPONDENCES: Correspondence[] = [
+  {
+    _id: '65e9b58910afe6e94fc6e6ba',
+    messages: [message2, message3],
+    messageMembers: ['isuzuki', 'tgwynn', 'tcobb'],
+    views: [],
+    userTyping: []
+  },
+  {
+    _id: '65e9b58910afe6e94fc6e6bb',
+    messages: [message1],
+    messageMembers: ['isuzuki', 'tgwynn'],
+    views: [],
+    userTyping: []
+  }
+]
 
 describe('User model', () => {
   beforeEach(() => {
@@ -300,6 +378,88 @@ describe('application module', () => {
         expect(result[1]._id?.toString()).toEqual('65e9b5a995b6c7045a30d823');
       });
     });
+
+    describe('getMessagesByOrder', () => {
+      test('get a list of all the messages in MessageModel', async () => {
+        mockingoose(MessageModel).toReturn(MESSAGES, 'find');
+
+        const result = await getMessagesByOrder();
+
+        expect(result.length).toEqual(3);
+        expect(result[0]._id?.toString()).toEqual(MESSAGES[0]._id);
+        expect(result[1]._id?.toString()).toEqual(MESSAGES[1]._id);
+        expect(result[2]._id?.toString()).toEqual(MESSAGES[2]._id);
+      });
+      test('returns an empty list if there are no messages in the model', async () => {
+        mockingoose(MessageModel).toReturn([] as Message[], 'find');
+
+        const result = await getMessagesByOrder();
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
+    describe('getCorrespondencesByOrder', () => {
+      test('get a list of all the correspondences in CorrespondenceModel', async () => {
+        mockingoose(CorrespondenceModel).toReturn(CORRESPONDENCES, 'find');
+
+        const result = await getCorrespondencesByOrder();
+
+        expect(result.length).toEqual(2);
+        expect(result[0]._id?.toString()).toEqual(CORRESPONDENCES[0]._id);
+        expect(result[1]._id?.toString()).toEqual(CORRESPONDENCES[1]._id);
+      });
+      test('returns an empty list if there are no corerspondences in the model', async () => {
+        mockingoose(CorrespondenceModel).toReturn([] as Correspondence[], 'find');
+
+        const result = await getCorrespondencesByOrder();
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
+    describe('getAllUsers', () => {
+      test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
+        mockingoose(UserModel).toReturn(USERS, 'find');
+
+        const result = await getAllUsers();
+
+        expect(result.length).toEqual(3);
+        expect(result[0]._id?.toString()).toEqual(USERS[2]._id);
+        expect(result[1]._id?.toString()).toEqual(USERS[0]._id);
+        expect(result[2]._id?.toString()).toEqual(USERS[1]._id);
+      });
+
+      test('returns an empty list if there are no users in the model', async () => {
+        mockingoose(UserModel).toReturn([] as User[], 'find');
+
+        const result = await getAllUsers();
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
+    describe('fetchCorrespondenceById', () => {
+      test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
+        mockingoose(UserModel).toReturn(USERS, 'find');
+
+        const result = await getAllUsers();
+
+        expect(result.length).toEqual(3);
+        expect(result[0]._id?.toString()).toEqual(USERS[2]._id);
+        expect(result[1]._id?.toString()).toEqual(USERS[0]._id);
+        expect(result[2]._id?.toString()).toEqual(USERS[1]._id);
+      });
+
+      test('returns an empty list if there are no users in the model', async () => {
+        mockingoose(UserModel).toReturn([] as User[], 'find');
+
+        const result = await getAllUsers();
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
 
     describe('getQuestionsByOrder', () => {
       test('get active questions, newest questions sorted by most recently answered 1', async () => {
