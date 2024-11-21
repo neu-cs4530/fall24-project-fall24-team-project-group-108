@@ -1,6 +1,7 @@
-import NotificationsActiveTwoToneIcon from '@mui/icons-material/NotificationsActiveTwoTone';
-import NotificationsNoneTwoToneIcon from '@mui/icons-material/NotificationsNoneTwoTone';
-import NotificationsOffTwoToneIcon from '@mui/icons-material/NotificationsOffTwoTone';
+import NotificationsOffIcon from '@mui/icons-material/NotificationsOffTwoTone';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
 
@@ -16,18 +17,17 @@ interface HeaderProps {
  * when they press Enter.
  */
 const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps) => {
-  const { val, handleInputChange, handleKeyDown } = useHeader();
+  const { val, handleInputChange, handleKeyDown, user, goToProfile } = useHeader();
 
   let notificationIcon;
 
   if (dndStatus) {
     // If dnd, show dnd icon
     notificationIcon = (
-      <NotificationsOffTwoToneIcon
+      <NotificationsOffIcon
         onClick={toggleNotifications}
         sx={{
-          height: '12%',
-          width: '12%',
+          fontSize: 40,
           color: 'red',
         }}
       />
@@ -35,29 +35,24 @@ const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps
   } else if (newNotification) {
     // If there are new notifications, show active icon
     notificationIcon = (
-      <NotificationsActiveTwoToneIcon
+      <NotificationsActiveIcon
         onClick={toggleNotifications}
         sx={{
-          'height': '12%',
-          'width': '12%',
-          'color': 'blue',
-          '& .MuiSvgIcon-secondary': {
-            fill: 'gray',
-          },
+          fontSize: 40,
+          color: '#64ade1',
         }}
       />
     );
   } else {
     // Show regular icon
     notificationIcon = (
-      <NotificationsNoneTwoToneIcon
+      <NotificationsIcon
         onClick={toggleNotifications}
         sx={{
-          'height': '12%',
-          'width': '12%',
-          'color': 'black',
-          '& .MuiSvgIcon-secondary': {
-            fill: 'gray',
+          'fontSize': 40,
+          'color': '#363845',
+          '&:hover': {
+            color: '#64ade1',
           },
         }}
       />
@@ -66,17 +61,29 @@ const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps
 
   return (
     <div id='header' className='header'>
-      <div></div>
-      <div className='title'>Fake Stack Overflow</div>
-      <input
-        id='searchBar'
-        placeholder='Search ...'
-        type='text'
-        value={val}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-      />
-      <div className='notifications-wrapper'>{notificationIcon}</div>
+      <div className='user-greeting'>Hi, {user.username}!</div>
+      <div className='left-header'>
+        <input
+          id='searchBar'
+          placeholder='Search ...'
+          type='text'
+          value={val}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          style={{ height: '40%', width: '80%' }}
+        />
+        <div className='notifications-wrapper'>{notificationIcon}</div>
+        <AccountBoxIcon
+          onClick={goToProfile}
+          sx={{
+            'fontSize': 40,
+            'color': '#363845',
+            '&:hover': {
+              color: '#64ade1', // Color change on hover
+            },
+          }}
+        />
+      </div>
     </div>
   );
 };

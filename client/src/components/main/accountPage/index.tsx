@@ -24,47 +24,46 @@ const AccountPage = () => {
   } = useAccountPage();
 
   return (
-    <div className='profilePageContainer'>
-      <div className='profileHeader'>
+    <div className='backgroundContainer'>
+      <div className='leftBubble'>
         <div className='profileHeaderInfo'>
           <AccountCircleIcon sx={{ fontSize: 100 }} />
           <div className='profileHeaderUsername'>
             <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
           </div>
         </div>
-        <div className='profileHeaderButtons'>
-          <Button variant='contained'>Message</Button>
-        </div>
       </div>
-      <div className='profileTabs'>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={value} onChange={handleChange} aria-label='basic tabs example' centered>
-            <Tab label='Badges' />
-            <Tab label='Questions' />
-            <Tab label='Answers' />
-          </Tabs>
-        </Box>
-        <div>
-          {value === 0 &&
-            (userLoggedIn ? (
-              <BadgesTab
-                user={'you'}
-                handleClick={handleAuthorClick}
-                userBadges={badgeList}
-                navigate={navigate}
-              />
-            ) : (
-              <BadgesTab
-                user={sentUser}
-                handleClick={handleAuthorClick}
-                userBadges={badgeList}
-                navigate={navigate}
-              />
-            ))}
-          {value === 1 &&
-            (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
-          {value === 2 &&
-            (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
+      <div className='rightBubble'>
+        <div className='profileTabs'>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={value} onChange={handleChange} aria-label='basic tabs example' centered>
+              <Tab label='Badges' />
+              <Tab label='Questions' />
+              <Tab label='Answers' />
+            </Tabs>
+          </Box>
+          <div>
+            {value === 0 &&
+              (userLoggedIn ? (
+                <BadgesTab
+                  user={'you'}
+                  handleClick={handleAuthorClick}
+                  userBadges={badgeList}
+                  navigate={navigate}
+                />
+              ) : (
+                <BadgesTab
+                  user={sentUser}
+                  handleClick={handleAuthorClick}
+                  userBadges={badgeList}
+                  navigate={navigate}
+                />
+              ))}
+            {value === 1 &&
+              (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
+            {value === 2 &&
+              (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { ChangeEvent, useState, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useUserContext from './useUserContext';
 
 /**
  * Custom hook to manage the state and logic for a header search input.
@@ -12,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
  */
 const useHeader = () => {
   const navigate = useNavigate();
+  const { user } = useUserContext();
 
   const [val, setVal] = useState<string>('');
 
@@ -22,6 +24,15 @@ const useHeader = () => {
    */
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setVal(e.target.value);
+  };
+
+  /**
+   * Function to navigate to the user profile.
+   *
+   * @param e - the event object.
+   */
+  const goToProfile = () => {
+    navigate(`/account/${user.username}`);
   };
 
   /**
@@ -45,6 +56,8 @@ const useHeader = () => {
     setVal,
     handleInputChange,
     handleKeyDown,
+    user,
+    goToProfile,
   };
 };
 

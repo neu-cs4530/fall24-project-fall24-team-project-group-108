@@ -1,11 +1,27 @@
 .sideBarNav {
   display: flex;
   flex-direction: column;
-  width: 15%;
+  width: 100%;
+  height: 100%;
   border-right: dashed;
-  padding: 4% 0 4% 0;
   align-items: center;
+  background-color:#363845;
+  z-index: 1000;
 }
+
+.site-title {
+  font-family: 'Arial', sans-serif;
+  font-weight: 300;
+  font-size: 40px;
+  padding-left: 4%;
+  padding-top: 20px;
+  color: white;
+  background-color: #64ade1;
+  width: 100%;
+  height: 9.5%;
+  box-sizing: border-box;
+}
+
 
 .menu_button:first-child {
   margin-top: 0;
@@ -13,14 +29,25 @@
 
 .menu_button {
   height: 40px;
-  width: 80%;
-  margin-top: 20px;
-  border-radius: 5px;
-  text-align: center;
+  width: 85%;
+  margin-top: 10px;
+  padding: 4%;
+  text-align: flex-start;
   line-height: 40px;
-  color: cornflowerblue;
+  border-radius: 2px;
+  color: #a3aec1;
+  font-weight: bold;
+  text-decoration: none;
+  padding-left: 6%;
+}
+
+.menu_button:hover {
+  background-color: #262832; 
+  color: white;
 }
 
 .menu_selected {
-  background: #cccccc;
+  background: #262832;
+  color: white;
+  border-left: 4px solid #64ade1;
 }

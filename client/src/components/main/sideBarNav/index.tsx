@@ -14,14 +14,8 @@ const SideBarNav = () => {
 
   return (
     <>
-      {' '}
       <div id='sideBarNav' className='sideBarNav'>
-        <NavLink
-          to={`/account/${user.username}`}
-          id='menu_profile'
-          className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
-          My Profile
-        </NavLink>
+        <div className='site-title'>codescout</div>
         <NavLink
           to='/home'
           id='menu_questions'
