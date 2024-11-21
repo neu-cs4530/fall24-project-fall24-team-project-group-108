@@ -56,4 +56,22 @@ const makeUserModerator = async (username: string): Promise<User> => {
   }
   return res.data;
 };
-export { authenticateUser, createUser, makeUserModerator };
+
+/**
+ * Updates a user's profile picture.
+ *
+ * @param username - The username of the user being edited.
+ * @param badgeName - The badge they are updating their profile picture to.
+ *
+ * @returns the User object with an updated isModerator field.
+ */
+const changeProfilePicture = async (username: string, badgeName: string): Promise<User> => {
+  const data = { username, badgeName };
+  const res = await api.post(`${USER_API_URL}/updatePicture`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while updating user profile picture');
+  }
+  return res.data;
+};
+
+export { authenticateUser, createUser, makeUserModerator, changeProfilePicture };
