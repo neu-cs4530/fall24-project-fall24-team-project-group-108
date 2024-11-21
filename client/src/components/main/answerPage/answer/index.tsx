@@ -64,7 +64,6 @@ const AnswerView = ({
         <ProfileHover user={ansBy} iconData={iconDetails} badges={badges} />
       </div>
       <div className='answerAuthor'>
-        <div className='answer_author'>{ansBy}</div>
         <div
           className='answer_author'
           onClick={e => {
