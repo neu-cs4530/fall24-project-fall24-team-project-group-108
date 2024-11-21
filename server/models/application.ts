@@ -26,6 +26,7 @@ import {
   Correspondence,
   MessageResponse,
   CorrespondenceResponse,
+  Notification,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
@@ -39,6 +40,7 @@ import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
 import UserReportModel from './userReport';
+import NotificationModel from './notifications';
 
 /**
  * Parses tags from a search string.
@@ -1474,4 +1476,126 @@ export const updateTagAnswers = async (
   } catch (error) {
     return { error: 'Error when updating tag progress' };
   }
+};
+
+/**
+ * Saves a new answer notification to the database.
+ *
+ * @param {string} qid - The id of the question related to the answer
+ * @param {Answer} answer - The answer info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved answer, or an error message if the save failed
+ */
+export const saveAnswerNotification = async (
+  qid: string,
+  ansInfo: Answer,
+): Promise<Notification> => {
+  // find the user to alert about their question being answered
+  const question = await QuestionModel.findById(qid).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // create the notification for the question author
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'answer',
+    caption: `${ansInfo.ansBy} answered your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // save the notification to the db
+  const savedNotification = await NotificationModel.create(notification);
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment question notification to the database.
+ *
+ * @param {string} id - The id of the question related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveQuestionCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  // if its a question, notify the question author
+  const question = await QuestionModel.findById(id).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${id}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment answer notification to the database.
+ *
+ * @param {string} id - The id of the answer related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveAnswerCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  const answer = await AnswerModel.findById(id).exec();
+  if (!answer) {
+    throw new Error('Answer not found');
+  }
+
+  // Find the question
+  const answerQuestion = await QuestionModel.findOne({
+    answers: new ObjectId(id),
+  }).exec();
+
+  if (!answerQuestion) {
+    throw new Error('Question not found for the answer');
+  }
+
+  const authorUsername = answer.ansBy;
+  const qid = answerQuestion._id.toString();
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your answer`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
 };

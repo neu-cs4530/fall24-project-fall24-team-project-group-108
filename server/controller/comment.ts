@@ -1,7 +1,13 @@
 import express, { Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { Comment, AddCommentRequest, FakeSOSocket } from '../types';
-import { addComment, populateDocument, saveComment } from '../models/application';
+import { Comment, AddCommentRequest, FakeSOSocket, Notification } from '../types';
+import {
+  addComment,
+  populateDocument,
+  saveAnswerCommentNotification,
+  saveComment,
+  saveQuestionCommentNotification,
+} from '../models/application';
 
 const commentController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -88,6 +94,15 @@ const commentController = (socket: FakeSOSocket) => {
         throw new Error(populatedDoc.error);
       }
 
+      let savedNotification: Notification;
+      if (type === 'question') {
+        savedNotification = await saveQuestionCommentNotification(id, comment);
+      } else {
+        savedNotification = await saveAnswerCommentNotification(id, comment);
+      }
+
+      // emit the notification and comment
+      socket.emit('notificationUpdate', savedNotification);
       socket.emit('commentUpdate', {
         result: populatedDoc,
         type,
@@ -99,7 +114,6 @@ const commentController = (socket: FakeSOSocket) => {
   };
 
   router.post('/addComment', addCommentRoute);
-
   return router;
 };
 

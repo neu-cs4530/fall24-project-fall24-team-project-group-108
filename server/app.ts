@@ -21,6 +21,7 @@ import badgeProgressController from './controller/badgeProgress';
 import correspondenceController from './controller/correspondence';
 import messageController from './controller/message';
 import userReportController from './controller/userReport';
+import notificationController from './controller/notification';
 
 dotenv.config();
 
@@ -84,6 +85,8 @@ app.use('/modApplication', modApplicationController(socket));
 app.use('/userReport', userReportController(socket));
 app.use('/correspondence', correspondenceController(socket));
 app.use('/message', messageController(socket));
+app.use('/modApplication', modApplicationController());
+app.use('/notifications', notificationController(socket));
 
 // Export the app instance
 export { app, server, startServer };
