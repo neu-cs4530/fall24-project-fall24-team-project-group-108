@@ -102,7 +102,7 @@ const answerController = (socket: FakeSOSocket) => {
         qid,
         answer: populatedAns as AnswerResponse,
       });
-      socket.emit('notificationUpdate', notification);
+      socket.emit('notificationUpdate', savedNotification);
       res.json(ansFromDb);
     } catch (err) {
       res.status(500).send(`Error when adding answer: ${(err as Error).message}`);

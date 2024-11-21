@@ -46,6 +46,7 @@ const Layout = () => {
           const updatedNotifications = [...prevNotifications, notification];
           return updatedNotifications;
         });
+        console.log(notification);
       }
     });
 
@@ -56,6 +57,7 @@ const Layout = () => {
 
   const handleNotificationUpdate = (notification: Notification) => {
     setUnreadNotifications(prevUnread => prevUnread.filter(n => n._id !== notification._id));
+    console.log(notification);
 
     setReadNotifications(prevRead => {
       const updatedReadNotifications = [notification, ...prevRead];
@@ -74,7 +76,10 @@ const Layout = () => {
 
   return (
     <>
-      <Header toggleNotifications={toggleNotifications} />
+      <Header
+        toggleNotifications={toggleNotifications}
+        newNotification={unreadNotifications.length !== 0}
+      />
       {isNotificationsOpen && (
         <NotificationsTab
           key={unreadNotifications.length}

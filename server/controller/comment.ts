@@ -118,7 +118,7 @@ const commentController = (socket: FakeSOSocket) => {
         }
 
         // Emit the notification to the socket
-        socket.emit('notificationUpdate', notification);
+        socket.emit('notificationUpdate', savedNotification);
       } else {
         const answer = await AnswerModel.findById(id).exec();
         if (!answer) {
@@ -155,7 +155,7 @@ const commentController = (socket: FakeSOSocket) => {
         }
 
         // Emit the notification to the socket
-        socket.emit('notificationUpdate', notification);
+        socket.emit('notificationUpdate', savedNotification);
       }
 
       socket.emit('commentUpdate', {

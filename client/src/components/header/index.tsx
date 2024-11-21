@@ -1,9 +1,11 @@
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsActiveTwoToneIcon from '@mui/icons-material/NotificationsActiveTwoTone';
+import NotificationsNoneTwoToneIcon from '@mui/icons-material/NotificationsNoneTwoTone';
 import useHeader from '../../hooks/useHeader';
 import './index.css';
 
 interface HeaderProps {
   toggleNotifications: () => void;
+  newNotification: boolean;
 }
 
 /**
@@ -11,7 +13,7 @@ interface HeaderProps {
  * The search bar allows the user to input a query and navigate to the search results page
  * when they press Enter.
  */
-const Header = ({ toggleNotifications }: HeaderProps) => {
+const Header = ({ toggleNotifications, newNotification }: HeaderProps) => {
   const { val, handleInputChange, handleKeyDown } = useHeader();
 
   return (
@@ -27,7 +29,31 @@ const Header = ({ toggleNotifications }: HeaderProps) => {
         onKeyDown={handleKeyDown}
       />
       <div className='notifications-wrapper'>
-        <NotificationsIcon onClick={toggleNotifications} style={{ color: 'gray' }} />
+        {newNotification ? (
+          <NotificationsActiveTwoToneIcon
+            onClick={toggleNotifications}
+            sx={{
+              'height': '12%',
+              'width': '12%',
+              'color': 'blue',
+              '& .MuiSvgIcon-secondary': {
+                fill: 'gray',
+              },
+            }}
+          />
+        ) : (
+          <NotificationsNoneTwoToneIcon
+            onClick={toggleNotifications}
+            sx={{
+              'height': '12%',
+              'width': '12%',
+              'color': 'black',
+              '& .MuiSvgIcon-secondary': {
+                fill: 'gray',
+              },
+            }}
+          />
+        )}
       </div>
     </div>
   );
