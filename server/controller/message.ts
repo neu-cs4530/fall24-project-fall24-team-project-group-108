@@ -180,7 +180,6 @@ const messageController = (socket: FakeSOSocket) => {
    */
   const updateMessageViews = async (req: UpdateMessageViewsRequest, res: Response): Promise<void> => {
     const { mid, username } = req.body;
-    console.log('In updateMessageViews');
     try {
       const result = await updateMessageViewsById(mid, username);
       if ('error' in result) {
@@ -215,7 +214,6 @@ const messageController = (socket: FakeSOSocket) => {
    */
   const updateMessageEmojis = async (req: UpdateMessageEmojisRequest, res: Response): Promise<void> => {
     const { mid, emojis } = req.body;
-    console.log('In updateMessageEmojis');
     try {
       const result = await updateMessageEmojisById(mid, emojis);
       if ('error' in result) {

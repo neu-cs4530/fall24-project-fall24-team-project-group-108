@@ -24,9 +24,7 @@ const useMessageView = (message: Message) => {
   const [currentMessage, setCurrentMessage] = useState<Message>({ ...message });
   const [currentEmojis, setCurrentEmojis] = useState<{ [key: string]: string }>({});
   const [viewEmojiPicker, setViewEmojiPicker] = useState<boolean>(false);
-  const [hasFile, setHasFile] = useState<boolean>(
-    !!currentMessage.fileData && !!currentMessage.fileName,
-  );
+  const [hasFile] = useState<boolean>(!!currentMessage.fileData && !!currentMessage.fileName);
 
   useEffect(() => {
     if (message.emojiTracker) {
@@ -99,14 +97,8 @@ const useMessageView = (message: Message) => {
 
   const handleDownloadFile = () => {
     if (currentMessage.fileData) {
-      const x = true;
       const bufferData = new Uint8Array(currentMessage.fileData);
       const dataType = new TextDecoder().decode(bufferData.slice(1, 4)).toLowerCase();
-      console.log('handleDownloadFile');
-      console.log(new TextDecoder().decode(bufferData.slice(1, 4)));
-      console.log(bufferData);
-      console.log(new TextDecoder().decode(bufferData));
-      console.log(currentMessage.fileData);
       const mimePath = dataType === 'pdf' ? 'application/pdf' : 'image/jpg';
       const blobObject = new Blob([bufferData], { type: mimePath });
       const url = window.URL.createObjectURL(blobObject);

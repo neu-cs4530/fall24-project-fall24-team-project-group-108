@@ -54,10 +54,6 @@ const useNewCorrespondence = () => {
   };
 
   const handleUserSelection = (username: string) => {
-    console.log('In handleUserSelection');
-    console.log(selectedUsers);
-    console.log(unselectedUsers);
-    console.log(username);
     setSelectedUsers([...selectedUsers, username]);
     const newUnselectedUsers = [
       ...unselectedUsers.filter(unselectedUsername => unselectedUsername !== username),

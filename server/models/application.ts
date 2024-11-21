@@ -431,10 +431,7 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
  * @returns {Promise<User[]>} - Promise that resolves to a list of users
  */
 export const getAllUsers = async (): Promise<User[]> => {
-  console.log('Start UserModel.find()');
   const ulist = await UserModel.find();
-  console.log('End UserModel.find()');
-  console.log(ulist);
   ulist.sort((user1, user2) => user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()))
   return ulist;
 };
@@ -648,14 +645,9 @@ export const fetchCorrespondenceById = async (
   cid: string,
 ): Promise<CorrespondenceResponse | null> => {
   try {
-    console.log('Start fetchCorerspondenceById');
-    console.log(cid);
-    console.log(new ObjectId(cid));
     const c = await CorrespondenceModel.findOne(
       { _id: new ObjectId(cid) },
     );
-    console.log('End fetchCorerspondenceById');
-    console.log(c);
     return c;
   } catch (error) {
     return { error: 'Error when fetching a correspondence' };
@@ -687,11 +679,7 @@ export const saveQuestion = async (question: Question): Promise<QuestionResponse
  */
 export const saveMessage = async (message: Message): Promise<MessageResponse> => {
   try {
-    console.log('At saveMessage MessageModel');
-    console.log(message);
     const result = await MessageModel.create(message);
-    console.log('End saveMessage MessageModel');
-    console.log(result);
     return result;
   } catch (error) {
     return { error: 'Error when saving a message' };
@@ -1083,8 +1071,6 @@ export const updateCorrespondenceById = async (
     ).populate([
       { path: 'messages', model: MessageModel },
     ]);
-    console.log('End Correspondence Model');
-    console.log(result);
     if (result === null) {
       throw new Error('Error when updating correspondence');
     }
@@ -1111,8 +1097,6 @@ export const updateCorrespondenceById = async (
     ).populate([
       { path: 'messages', model: MessageModel },
     ]);
-    console.log('End Correspondence Model');
-    console.log(result);
     if (result === null) {
       throw new Error('Error when updating correspondence');
     }
@@ -1156,16 +1140,11 @@ export const updateCorrespondenceById = async (
  */
  export const updateMessageEmojisById = async (mid: string, emojis: { [key: string]: string }): Promise<MessageResponse> => {
   try {
-    console.log('Start Message Emojis Model');
-    console.log(mid);
-    console.log(emojis);
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
       { $set: { emojiTracker: {...emojis} } },
       { new: true }
     );
-    console.log(result);
-    console.log('End Message Emojis Model');
     if (result === null) {
       throw new Error('Error when updating messages emojis');
     }
@@ -1207,8 +1186,6 @@ export const updateMessageById = async (
     if (!updatedCorrespondenceWithMessage) {
       return { error: 'Error when retrieving updated correspondence' };
     }
-
-    // console.log(updatedCorrespondenceWithMessage);
 
     return updatedCorrespondenceWithMessage;
   } catch (error) {

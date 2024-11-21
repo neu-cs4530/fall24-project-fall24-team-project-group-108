@@ -5,7 +5,6 @@ import {
   getCorrespondenceById,
   updateCorrespondenceMembersById,
 } from '../services/correspondenceService';
-import { Correspondence, User } from '../types';
 import { getUsers } from '../services/userService';
 
 /**
@@ -23,12 +22,10 @@ const useUpdateCorrespondence = () => {
   const { cid } = useParams();
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const [currentCorrespndence, setCurrentCorrespondence] = useState<Correspondence | null>(null);
   const [toNames, setToNames] = useState<string>('');
   const [toNamesErr, setToNamesErr] = useState<string>('');
   const [originalSelectedUsers, setOriginalSelectedUsers] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [unselectedUsers, setUnselectedUsers] = useState<string[]>([]);
   const [filteredUnselectedUsers, setFilteredUnselectedUsers] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
@@ -45,12 +42,7 @@ const useUpdateCorrespondence = () => {
   useEffect(() => {
     const getCurrentCorrespondence = async () => {
       const correspondence = await getCorrespondenceById(cid || '');
-      console.log('In useUpdateCorrespondence useEffect');
-      console.log(cid);
-      console.log(correspondence);
-      setCurrentCorrespondence({ ...correspondence });
       const dbUsers = await getUsers();
-      setAllUsers([...dbUsers]);
       const initSelectedUsers = correspondence.messageMembers.filter(
         member => member !== user.username,
       );
@@ -110,10 +102,6 @@ const useUpdateCorrespondence = () => {
   };
 
   const handleUserSelection = (username: string) => {
-    console.log('In handleUserSelection');
-    console.log(selectedUsers);
-    console.log(unselectedUsers);
-    console.log(username);
     setSelectedUsers([...selectedUsers, username]);
     const newUnselectedUsers = [
       ...unselectedUsers.filter(unselectedUsername => unselectedUsername !== username),

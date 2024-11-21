@@ -1,6 +1,5 @@
 import useNewCorrespondence from '../../../hooks/useNewCorrespondence';
 import Form from '../baseComponents/form';
-import Input from '../baseComponents/input';
 import './index.css';
 import SelectedUserView from './selectedUser';
 
@@ -9,16 +8,12 @@ import SelectedUserView from './selectedUser';
  */
 const NewCorrespondencePage = () => {
   const {
-    toNames,
-    setToNames,
-    toNamesErr,
     createCorrespondence,
     handleUserSelection,
     selectedUsers,
     unselectedUsers,
     handleUnselectUser,
     searchInput,
-    setSearchInput,
     handleSearchInputChange,
     filteredUnselectedUsers,
     errorMessage,

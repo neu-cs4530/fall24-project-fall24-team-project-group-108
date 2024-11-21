@@ -2,7 +2,6 @@ import './index.css';
 import { NavLink } from 'react-router-dom';
 import useUserContext from '../../../hooks/useUserContext';
 import useModStatus from '../../../hooks/useModStatus';
-import useSidebarNav from '../../../hooks/useSidebarNav';
 
 /**
  * The SideBarNav component has three menu items: "Questions", "Tags", and "Messages"
@@ -10,7 +9,7 @@ import useSidebarNav from '../../../hooks/useSidebarNav';
  * triggers corresponding functions when the menu items are clicked.
  */
 const SideBarNav = () => {
-  const { user, unreadCorrespondenceCount } = useSidebarNav();
+  const { user } = useUserContext();
   const { moderatorStatus } = useModStatus();
 
   return (
@@ -50,7 +49,7 @@ const SideBarNav = () => {
         {moderatorStatus ? (
           <>
             <NavLink
-              to='/reports'
+              to='/reviewReports'
               id='menu_reports'
               className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
               Reports

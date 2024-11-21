@@ -4,7 +4,6 @@ import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
 import { Correspondence, Message } from '../types';
 import {
-  addCorrespondence,
   getCorrespondencesByOrder,
   updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
@@ -44,27 +43,16 @@ const useMessagePage = () => {
   }, []);
 
   useEffect(() => {
-    const x = true;
-  }, [selectedCorrespondence]);
-
-  useEffect(() => {
-    console.log('In messageText useeffect');
     if (!selectedCorrespondence) {
       return;
     }
 
     const getUpdatedCorrespondence = async () => {
       if (selectedCorrespondence) {
-        console.log('In getUpdatedCorrespondence');
-        console.log(selectedCorrespondence);
         if (messageText === '' && selectedCorrespondence.userTyping.includes(user.username)) {
-          console.log(selectedCorrespondence.userTyping);
           const updatedUserTyping = selectedCorrespondence.userTyping.filter(
             name => name !== user.username,
           );
-          console.log('message Text is empty');
-          console.log(updatedUserTyping);
-          console.log(updatedUserTyping[0] === user.username);
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
             selectedCorrespondence._id || '',
             [...updatedUserTyping],
@@ -174,9 +162,6 @@ const useMessagePage = () => {
           // Convert ArrayBuffer to Buffer (in a Node.js environment, you can use Buffer.from)
           const buffer = Buffer.from(arrayBuffer); // This will work in Node.js
           resolve(buffer);
-        } else {
-          // reject('Failed to read file');
-          const x = true;
         }
       };
 
@@ -210,21 +195,8 @@ const useMessagePage = () => {
         const fileDataArray = Array.from(fileData);
         message = { ...message, fileName, fileData: fileDataArray };
       }
-
-      console.log('In HandleSendMEssage');
-      console.log(message);
       const updatedCorrespondence = await addMessage(cid || '', message);
 
-      // if (uploadedFile) {
-      //   await addUploadedFile(
-      //     updatedCorrespondence.messages[updatedCorrespondence.messages.length - 1]._id || '',
-      //     {
-      //       fileName: uploadedFile.name || 'fake.csv',
-      //       size: uploadedFile?.size || -1,
-      //       data: await convertUploadedFileToBuffer(uploadedFile),
-      //     },
-      //   );
-      // }
       const updatedCorrespondenceList = correspondenceList.filter(
         correspondence => correspondence._id !== cid,
       );

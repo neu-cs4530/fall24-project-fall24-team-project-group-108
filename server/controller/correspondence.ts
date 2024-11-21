@@ -63,10 +63,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     const { cid } = req.params;
-    console.log(req);
-
-    console.log('in getCorrespondenceByID');
-    console.log(cid);
 
     if (!ObjectId.isValid(new ObjectId(cid))) {
       res.status(400).send('Invalid ID format');
@@ -74,10 +70,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
     }
 
     try {
-      console.log('start getCorrespondenceByID');
-      console.log(cid);
       const c = await fetchCorrespondenceById(cid);
-      console.log('end getCorrespondenceByID');
 
       res.json(c);
       return;
@@ -222,9 +215,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
      const updateCorrespondenceUserTyping = async (req: UpdateCorrespondenceUserTypingRequest, res: Response): Promise<void> => {
       const { cid, userTyping } = req.body;
       try {
-        console.log('Start updateCorrespondenceUserTyping');
-        console.log(cid);
-        console.log(userTyping);
         const result = await updateCorrespondenceUserTypingById(cid, userTyping);
         if ('error' in result) {
           throw new Error(result.error);
@@ -252,9 +242,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
      const updateCorrespondenceViews = async (req: UpdateCorrespondenceViewsRequest, res: Response): Promise<void> => {
       const { cid, username } = req.body;
       try {
-        console.log('Start updateCorrespondenceViews');
-        console.log(cid);
-        console.log(username);
         const result = await updateCorrespondenceViewsById(cid, username);
         if ('error' in result) {
           throw new Error(result.error);

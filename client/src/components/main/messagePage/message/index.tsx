@@ -34,7 +34,6 @@ const MessageView = ({ message }: MessageProps) => {
     showReadReceipts,
     setShowReadReceipts,
     currentMessage,
-    setCurrentMessage,
     currentEmojis,
     handleEmojiSelection,
     viewEmojiPicker,

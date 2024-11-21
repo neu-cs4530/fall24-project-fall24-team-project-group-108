@@ -12,7 +12,6 @@ import MessageView from './message';
  */
 const MessagePage = () => {
   const {
-    user,
     correspondenceList,
     titleText,
     selectedCorrespondence,
@@ -24,7 +23,6 @@ const MessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
-    uploadedFile,
     setUploadedFile,
   } = useMessagePage();
 

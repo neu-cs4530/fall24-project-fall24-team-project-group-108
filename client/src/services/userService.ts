@@ -68,9 +68,7 @@ const makeUserModerator = async (username: string): Promise<User> => {
  * @throws Error if there is an issue fetching or filtering messages.
  */
 const getUsers = async (): Promise<User[]> => {
-  console.log('Start getUsers() in UserService');
   const res = await api.get(`${USER_API_URL}/getUsers`);
-  console.log('End getUsers() in UserService');
   if (res.status !== 200) {
     throw new Error('Error when fetching or filtering correspondences');
   }

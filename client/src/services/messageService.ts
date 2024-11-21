@@ -40,12 +40,7 @@ const getMessageById = async (mid: string, username: string): Promise<Message> =
  * @throws Error if there is an issue creating the new message.
  */
 const addMessage = async (cid: string, message: Message): Promise<Correspondence> => {
-  console.log('Start addMessage');
-  console.log(cid);
-  console.log(message);
   const res = await api.post(`${MESSAGE_API_URL}/addMessage`, { cid, message });
-  console.log('End addMessage');
-  console.log(res);
 
   if (res.status !== 200) {
     throw new Error('Error while creating a new message');
@@ -89,11 +84,7 @@ const updateMessageById = async (
  */
 const updateMessageViewsById = async (mid: string, username: string) => {
   const data = { mid, username };
-  console.log('In updateMessageViewsByID');
-  console.log(mid);
-  console.log(username);
   const res = await api.post(`${MESSAGE_API_URL}/updateMessageViews`, data);
-  console.log('updateMessageViews done!');
   if (res.status !== 200) {
     throw new Error('Error while updating message views');
   }
@@ -109,11 +100,7 @@ const updateMessageViewsById = async (mid: string, username: string) => {
  */
 const updateMessageEmojisById = async (mid: string, emojis: { [key: string]: string }) => {
   const data = { mid, emojis };
-  console.log('In updateMessageEmojisByID');
-  console.log(mid);
-  console.log(emojis);
   const res = await api.post(`${MESSAGE_API_URL}/updateMessageEmojis`, data);
-  console.log('updateMessageEmojis done!');
   if (res.status !== 200) {
     throw new Error('Error while updating message emojis');
   }

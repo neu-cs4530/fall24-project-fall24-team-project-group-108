@@ -1,27 +1,13 @@
 import useUpdateCorrespondence from '../../../hooks/useUpdateCorrespondence';
 import Form from '../baseComponents/form';
-import Input from '../baseComponents/input';
 import './index.css';
-import { Correspondence } from '../../../types';
 import SelectedUserView from '../newCorrespondence/selectedUser';
-
-/**
- * Interface representing the props for the UpdateCorrespondencePage component.
- *
- * correspondence - The correspondence we are updating
- */
-interface UpdateCorrespondencePageProps {
-  correspondence: Correspondence;
-}
 
 /**
  * UpdateCorrespondencePage component allows users to change which users have access to the correspondence
  */
 const UpdateCorrespondencePage = () => {
   const {
-    toNames,
-    setToNames,
-    toNamesErr,
     updateCorrespondence,
     handleUserSelection,
     selectedUsers,

@@ -165,10 +165,7 @@ export const userController = () => {
     res: Response,
   ): Promise<void> => {
     try {
-      console.log('Start await getAllUsers()');
       const ulist: User[] = await getAllUsers();
-      console.log('End await getAllUsers()');
-      console.log(ulist);
       res.json(ulist);
     } catch (err: unknown) {
       if (err instanceof Error) {
