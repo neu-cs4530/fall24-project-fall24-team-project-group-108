@@ -6,7 +6,7 @@ import {
   AddMessageRequest,
   FakeSOSocket,
   UpdateMessageRequest,
-  Notification
+  Notification,
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
@@ -121,6 +121,8 @@ const messageController = (socket: FakeSOSocket) => {
         throw new Error(status.error as string);
       }
 
+      const notificationPromises = [];
+
       for (const member of status.messageMembers) {
         if (member !== messageFromDb.messageBy) {
           // create the notification for the question author
@@ -133,14 +135,19 @@ const messageController = (socket: FakeSOSocket) => {
             redirectUrl: `/messagePage`,
           };
 
-          // save the notification to the db
-          const savedNotification = await NotificationModel.create(notification);
-          if ('error' in savedNotification) {
-            throw new Error(savedNotification.error as string);
-          }
-          socket.emit('notificationUpdate', savedNotification);
+          // save the notification to the db and push the promise into the array
+          const promise = NotificationModel.create(notification).then(savedNotification => {
+            if ('error' in savedNotification) {
+              throw new Error(savedNotification.error as string);
+            }
+            socket.emit('notificationUpdate', savedNotification);
+          });
+
+          notificationPromises.push(promise);
         }
       }
+
+      await Promise.all(notificationPromises);
 
       socket.emit('correspondenceUpdate', status);
       res.json(status);

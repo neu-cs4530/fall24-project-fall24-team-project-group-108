@@ -363,15 +363,15 @@ export const updateDoNotDisturb = async (username: string): Promise<UserResponse
           $set: {
             doNotDisturb: {
               $cond: {
-                if: { $eq: ["$doNotDisturb", null] }, 
+                if: { $eq: ['$doNotDisturb', null] },
                 then: true, // Set to true if null
-                else: { $not: "$doNotDisturb" }, // Otherwise, toggle 
+                else: { $not: '$doNotDisturb' }, // Otherwise, toggle
               },
             },
           },
         },
       ],
-      { new: true } 
+      { new: true },
     );
 
     if (!updatedUser) {
@@ -393,7 +393,7 @@ export const updateDoNotDisturb = async (username: string): Promise<UserResponse
 export const getDoNotDisturbStatus = async (username: string): Promise<boolean> => {
   try {
     const user = await UserModel.findOne({ username }, { doNotDisturb: 1 });
-    
+
     if (!user) {
       throw new Error(`User with username "${username}" not found.`);
     }
@@ -1430,6 +1430,37 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
 };
 
 /**
+ * Saves a new badge notification to the database.
+ *
+ * @param {string} username - The username of the user who earned the badge
+ * @param {Comment} comment - The name of the badge that was earned
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+const saveBadgeNotification = async (
+  username: string,
+  badgeName: string,
+): Promise<Notification> => {
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'badge',
+    caption: `Congrats! You earned the ${badgeName} badge `,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/account/${username}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
  * Updates the badgeProgress for a user and a given category.
  *
  * @param {string} username - The username to update
@@ -1441,7 +1472,7 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
 export const updateBadgeProgress = async (
   username: string,
   category: string,
-  socket: FakeSOSocket
+  socket: FakeSOSocket,
 ): Promise<BadgeProgressResponse> => {
   try {
     const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
@@ -1498,34 +1529,6 @@ export const updateBadgeProgress = async (
     return { error: 'Error when updating badge progress' };
   }
 };
-
-/**
- * Saves a new badge notification to the database.
- *
- * @param {string} username - The username of the user who earned the badge
- * @param {Comment} comment - The name of the badge that was earned
- *
- * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
- */
-const saveBadgeNotification = async (username: string, badgeName: string): Promise<Notification> => {
-  // Create the notification
-  const notification: Notification = {
-    user: username,
-    type: 'badge',
-    caption: `Congrats! You earned the ${badgeName} badge `,
-    read: false,
-    createdAt: new Date(),
-    redirectUrl: `/account/${username}`,
-  };
-
-  // Save the notification to the DB
-  const savedNotification = await NotificationModel.create(notification);
-
-  if ('error' in savedNotification) {
-    throw new Error(savedNotification.error as string);
-  }
-  return savedNotification;
-}
 
 /**
  * Updates the tagAnswerCounts for a user and a given question.

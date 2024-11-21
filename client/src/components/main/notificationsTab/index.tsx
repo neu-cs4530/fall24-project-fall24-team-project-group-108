@@ -3,7 +3,6 @@ import './index.css';
 import { Notification } from '../../../types';
 import { getMetaData } from '../../../tool';
 import useNotificationsTab from '../../../hooks/useNotificationsTab';
-import { toggleDoNotDisturb } from '../../../services/userService';
 
 interface NotificationsTabProps {
   initialUnreadNotifications: Notification[];

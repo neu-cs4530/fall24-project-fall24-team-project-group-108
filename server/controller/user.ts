@@ -1,6 +1,17 @@
 import express, { Response } from 'express';
-import { AddUserRequest, FindUserRequest, GetUserStatusRequest, MakeUserModeratorRequest } from '../types';
-import { addUser, findUser, getDoNotDisturbStatus, updateDoNotDisturb, updateUserModStatus } from '../models/application';
+import {
+  AddUserRequest,
+  FindUserRequest,
+  GetUserStatusRequest,
+  MakeUserModeratorRequest,
+} from '../types';
+import {
+  addUser,
+  findUser,
+  getDoNotDisturbStatus,
+  updateDoNotDisturb,
+  updateUserModStatus,
+} from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -119,7 +130,10 @@ export const userController = () => {
    *
    * @returns A Promise that resolves to void.
    */
-  const toggleDoNotDisturb = async (req: MakeUserModeratorRequest, res: Response): Promise<void> => {
+  const toggleDoNotDisturb = async (
+    req: MakeUserModeratorRequest,
+    res: Response,
+  ): Promise<void> => {
     const { username } = req.body;
     try {
       const updatedUser = await updateDoNotDisturb(username);

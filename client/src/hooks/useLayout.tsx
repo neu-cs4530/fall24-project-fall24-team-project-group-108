@@ -66,7 +66,6 @@ const useLayout = () => {
     const fetchDndStatus = async () => {
       const status = await getDoNotDisturb(user.username);
       setDoNotDisturb(status);
-      console.log(status);
     };
 
     fetchReadNotifications();
