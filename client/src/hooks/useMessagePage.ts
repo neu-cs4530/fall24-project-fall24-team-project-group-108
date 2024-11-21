@@ -58,11 +58,6 @@ const useMessagePage = () => {
      * @param correspondence - The updated correspondence object.
      */
     const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
-      // setCorrespondenceList(
-      //   [...correspondenceList].map(c =>
-      //     c._id === correspondence._id ? { ...correspondence } : { ...c },
-      //   ),
-      // );
       await fetchData();
       if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
@@ -72,15 +67,9 @@ const useMessagePage = () => {
 
     fetchData();
 
-    // socket.on('questionUpdate', handleQuestionUpdate);
-    // socket.on('answerUpdate', handleAnswerUpdate);
-    // socket.on('viewsUpdate', handleViewsUpdate);
     socket.on('correspondenceUpdate', handleCorrespondenceUpdate);
 
     return () => {
-      //   socket.off('questionUpdate', handleQuestionUpdate);
-      //   socket.off('answerUpdate', handleAnswerUpdate);
-      // socket.off('viewsUpdate', handleViewsUpdate);
       socket.off('correspondenceUpdate', handleCorrespondenceUpdate);
     };
   }, [socket, selectedCorrespondence, user]);

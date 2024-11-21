@@ -188,7 +188,7 @@ export interface Question {
 export interface Notification {
   _id?: string;
   user: string;
-  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard';
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message';
   caption: string;
   read: boolean;
   createdAt: Date;

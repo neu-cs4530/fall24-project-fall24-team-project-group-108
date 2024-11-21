@@ -6,6 +6,7 @@ import {
   AddMessageRequest,
   FakeSOSocket,
   UpdateMessageRequest,
+  Notification
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
@@ -14,6 +15,7 @@ import {
   addMessageToCorrespondence,
   updateMessageById,
 } from '../models/application';
+import NotificationModel from '../models/notifications';
 
 const messageController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -117,6 +119,27 @@ const messageController = (socket: FakeSOSocket) => {
 
       if (status && 'error' in status) {
         throw new Error(status.error as string);
+      }
+
+      for (const member of status.messageMembers) {
+        if (member !== messageFromDb.messageBy) {
+          // create the notification for the question author
+          const notification: Notification = {
+            user: member,
+            type: 'message',
+            caption: `${messageFromDb.messageBy} sent you a message`,
+            read: false,
+            createdAt: new Date(),
+            redirectUrl: `/messagePage`,
+          };
+
+          // save the notification to the db
+          const savedNotification = await NotificationModel.create(notification);
+          if ('error' in savedNotification) {
+            throw new Error(savedNotification.error as string);
+          }
+          socket.emit('notificationUpdate', savedNotification);
+        }
       }
 
       socket.emit('correspondenceUpdate', status);

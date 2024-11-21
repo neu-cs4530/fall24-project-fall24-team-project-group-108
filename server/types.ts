@@ -263,7 +263,7 @@ export interface Correspondence {
  */
 export interface Notification {
   user: string,
-  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard',
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message',
   caption: string,
   read: boolean,
   createdAt: Date,
