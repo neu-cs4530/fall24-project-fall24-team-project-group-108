@@ -133,7 +133,13 @@ const useSignUp = () => {
 
     try {
       const user = await createUser(username, password);
-      setUser({ username, password, isModerator: user.isModerator, badges: [] });
+      setUser({
+        username,
+        password,
+        isModerator: user.isModerator,
+        infractions: user.infractions,
+        badges: [],
+      });
       navigate('/home');
     } catch {
       setSignUpErr('Username already in use');

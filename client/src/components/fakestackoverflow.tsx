@@ -19,9 +19,10 @@ import SingleBadgePage from './main/singleBadgePage';
 import LeaderboardPage from './main/leaderboardPage';
 import BanPage from './login/banPage';
 import SignUpPage from './login/signUpPage';
-import ReportPage from './main/reportPage';
 import ModApplicationPage from './main/modApplicationPage';
 import ReviewApplicationPage from './main/reviewApplicationPage';
+import ReviewReportsPage from './main/reviewReportPage';
+import ReportPage from './main/reportPage';
 
 const ProtectedRoute = ({
   user,
@@ -67,7 +68,8 @@ const FakeStackOverflow = ({ socket }: { socket: FakeSOSocket | null }) => {
             <Route path='tags/:tid' element={<LeaderboardPage />} />
             <Route path='/account/:sentUser' element={<AccountPage />} />
             <Route path='/messagePage' element={<MessagePage />} />
-            <Route path='reports' element={<ReportPage />} />
+            <Route path='/report' element={<ReportPage />} />
+            <Route path='reviewReports' element={<ReviewReportsPage />} />
             <Route path='modApplication' element={<ModApplicationPage />} />
             <Route path='reviewApplication' element={<ReviewApplicationPage />} />
             <Route path='/question/:qid' element={<AnswerPage />} />

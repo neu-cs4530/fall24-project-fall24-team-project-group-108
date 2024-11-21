@@ -2,6 +2,7 @@ import './index.css';
 import EmojiPicker from 'emoji-picker-react';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
+import useBan from '../../../hooks/useBan';
 import CorrespondenceView from './correspondence';
 import MessageView from './message';
 
@@ -11,6 +12,7 @@ import MessageView from './message';
  * It includes a header with order buttons and a button to ask a new question.
  */
 const MessagePage = () => {
+  useBan();
   const {
     correspondenceList,
     titleText,

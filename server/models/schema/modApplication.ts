@@ -7,20 +7,20 @@ import { Schema } from 'mongoose';
  * Each application includes the following fields:
  * - `user`: The user who applied.
  * - `applicationText`: the information the user provided in their application.
+ * - `status`: The curretn status of the mod application.
  */
 const modApplicationSchema: Schema = new Schema(
   {
     username: {
       type: String,
-      required: true,
     },
     applicationText: {
       type: String,
-      required: true,
     },
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ['unresolved', 'accepted', 'rejected'],
+      default: 'unresolved',
     },
   },
   { collection: 'ModApplication' },
