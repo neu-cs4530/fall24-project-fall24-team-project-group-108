@@ -11,7 +11,6 @@ const UpdateCorrespondencePage = () => {
     updateCorrespondence,
     handleUserSelection,
     selectedUsers,
-    unselectedUsers,
     searchInput,
     filteredUnselectedUsers,
     handleSearchInputChange,
@@ -30,16 +29,6 @@ const UpdateCorrespondencePage = () => {
         err={toNamesErr}
       /> */}
 
-      <div>
-        <select id='dropdown' onChange={event => handleUserSelection(event.target.value)}>
-          <option value=''>Select A User</option>
-          {unselectedUsers.map(username => (
-            <option key={username} value={username}>
-              {username}
-            </option>
-          ))}
-        </select>
-      </div>
       <div>
         <input
           type='text'

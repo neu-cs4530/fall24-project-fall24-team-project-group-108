@@ -22,15 +22,11 @@ const useMessageView = (message: Message) => {
   const [messageId] = useState<string>(message._id || '');
   const [showReadReceipts, setShowReadReceipts] = useState<boolean>(false);
   const [currentMessage, setCurrentMessage] = useState<Message>({ ...message });
-  const [currentEmojis, setCurrentEmojis] = useState<{ [key: string]: string }>({});
+  const [currentEmojis, setCurrentEmojis] = useState<{ [key: string]: string }>(
+    message.emojiTracker ? { ...message.emojiTracker } : {},
+  );
   const [viewEmojiPicker, setViewEmojiPicker] = useState<boolean>(false);
   const [hasFile] = useState<boolean>(!!currentMessage.fileData && !!currentMessage.fileName);
-
-  useEffect(() => {
-    if (message.emojiTracker) {
-      setCurrentEmojis({ ...message.emojiTracker });
-    }
-  }, []);
 
   useEffect(() => {
     const updateMessage = async () => {
@@ -73,7 +69,7 @@ const useMessageView = (message: Message) => {
     return () => {
       socket.off('messageUpdate', handleMessageUpdate);
     };
-  }, [socket, messageId]);
+  }, [socket, messageId, currentEmojis]);
 
   const handleEmojiSelection = (selectedEmoji: EmojiClickData) => {
     setViewEmojiPicker(false);

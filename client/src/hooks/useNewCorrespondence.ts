@@ -42,7 +42,7 @@ const useNewCorrespondence = () => {
       setFilteredUnselectedUsers(dbUnselectedUsers);
     };
     getAllUsers();
-  }, []);
+  }, [user.username]);
 
   const handleUnselectUser = (username: string): void => {
     setSelectedUsers([...selectedUsers.filter(selectedUsername => selectedUsername !== username)]);

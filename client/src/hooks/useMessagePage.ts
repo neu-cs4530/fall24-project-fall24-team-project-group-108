@@ -73,7 +73,7 @@ const useMessagePage = () => {
     };
 
     getUpdatedCorrespondence();
-  }, [messageText]);
+  }, [messageText, selectedCorrespondence, user.username]);
 
   useEffect(() => {
     /**

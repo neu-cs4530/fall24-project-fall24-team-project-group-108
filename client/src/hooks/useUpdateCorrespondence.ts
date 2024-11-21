@@ -55,7 +55,7 @@ const useUpdateCorrespondence = () => {
       setFilteredUnselectedUsers(initUnselectedUsers);
     };
     getCurrentCorrespondence();
-  }, []);
+  }, [cid, user.username]);
 
   /**
    * Function to validate the form before submitting the question.
