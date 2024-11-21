@@ -4,12 +4,14 @@ import Form from '../baseComponents/form';
 import Input from '../baseComponents/input';
 import TextArea from '../baseComponents/textarea';
 import './index.css';
+import useBan from '../../../hooks/useBan';
 
 /**
  * NewQuestionPage component allows users to submit a new question with a title,
  * description, tags, and username.
  */
 const NewQuestionPage = () => {
+  useBan();
   const {
     title,
     setTitle,

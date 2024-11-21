@@ -92,16 +92,36 @@ const useQuestionPage = () => {
       setQlist(prevQlist => prevQlist.map(q => (q._id === question._id ? question : q)));
     };
 
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      if ('askedBy' in updatedPost) {
+        setQlist(prev => prev.filter(q => q._id !== id));
+      }
+    };
+
     fetchData();
 
     socket.on('questionUpdate', handleQuestionUpdate);
     socket.on('answerUpdate', handleAnswerUpdate);
     socket.on('viewsUpdate', handleViewsUpdate);
+    socket.on('removePostUpdate', handleRemovePostUpdate);
 
     return () => {
       socket.off('questionUpdate', handleQuestionUpdate);
       socket.off('answerUpdate', handleAnswerUpdate);
       socket.off('viewsUpdate', handleViewsUpdate);
+      socket.off('removePostUpdate', handleRemovePostUpdate);
     };
   }, [questionOrder, search, socket]);
 

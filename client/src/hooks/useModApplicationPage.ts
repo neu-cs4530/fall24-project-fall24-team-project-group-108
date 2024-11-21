@@ -1,18 +1,22 @@
 import { useEffect, useState } from 'react';
 import { ModApplication } from '../types';
-import { deleteModApplication, getModApplications } from '../services/modApplicationService';
+import { getModApplications, updateModApplicationStatus } from '../services/modApplicationService';
 import { makeUserModerator } from '../services/userService';
+import useUserContext from './useUserContext';
 
 /**
- * Custom hook for managing the modApplicationPage, navigation, and real-time updates.
+ * Custom hook for managing the Review Application page's state, navigation, and real-time updates.
  *
- * @returns applications - The current list of applications in the database.
- * @returns err - The current error statement value.
- * @returns handleApplicationDecision - Function to handle the acceptance or rejection of an application.
+ * @returns applications - The current list of mod applications.
+ * @returns numApps - The current number of unresolved applications.
+ * @returns err - The current error message.
+ * @returns handleApplicationDecision - Function to handle the acceptance or rejection of a mod application.
  */
 const useModApplicationPage = () => {
   const [applications, setApplications] = useState<ModApplication[]>([]);
+  const [numApps, setNumApps] = useState<number>(0);
   const [err, setErr] = useState<string>('');
+  const { socket } = useUserContext();
 
   // Fetches applications from the database.
   useEffect(() => {
@@ -20,6 +24,8 @@ const useModApplicationPage = () => {
       try {
         const res = await getModApplications();
         setApplications(res || []);
+        const apps = res.length;
+        setNumApps(apps);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching applications:', error);
@@ -31,44 +37,53 @@ const useModApplicationPage = () => {
     fetchData().catch(e => console.log(e));
   }, []);
 
+  /**
+   * Handles the application decision event.
+   *
+   * @param application - The application whose status was decided
+   * @param isAccepted - True if the applicationw is accepted, false otherwise
+   */
   const handleApplicationDecision = async (application: ModApplication, isAccepted: boolean) => {
     try {
       const { username } = application;
+      const id = application._id;
+      if (id === undefined) {
+        setErr('Application id not found');
+        return;
+      }
+      const updatedApplication = await updateModApplicationStatus(id, username, isAccepted);
+      if (updatedApplication === false) {
+        setErr('Error updating application');
+      }
       if (isAccepted === true) {
         const updatedUser = await makeUserModerator(username);
         if (!updatedUser) {
           setErr('Error accepting application');
         }
       }
-      const removedApplication = await deleteModApplication(username);
-      if (removedApplication === false) {
-        setErr('Error accepting application');
-      }
       setApplications(prev => prev.filter(modApp => modApp._id !== application._id));
+      setNumApps(prev => prev - 1);
     } catch (error) {
       setErr('Error processing application');
     }
   };
 
-  //   useEffect(() => {
-  //     /**
-  //      * Function to handle updates to the answers of a question.
-  //      *
-  //      * @param answer - The updated answer object.
-  //      */
-  //     const handleNewApplication = (newApplication: ModApplication) => {
-  //       setApplications(prevApplications => [...prevApplications, newApplication]);
-  //     };
+  useEffect(() => {
+    const handleApplicationUpdate = (app: ModApplication) => {
+      setApplications(prev => [app, ...prev]);
+      setNumApps(prev => prev + 1);
+    };
 
-  //     socket.on('newApplication', handleNewApplication);
+    socket.on('modApplicationUpdate', handleApplicationUpdate);
 
-  //     return () => {
-  //       socket.off('newApplication', handleNewApplication);
-  //     };
-  //   }, []);
+    return () => {
+      socket.off('modApplicationUpdate', handleApplicationUpdate);
+    };
+  }, [socket]);
 
   return {
     applications,
+    numApps,
     err,
     handleApplicationDecision,
   };

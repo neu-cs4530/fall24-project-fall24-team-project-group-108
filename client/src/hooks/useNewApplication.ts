@@ -55,7 +55,7 @@ const useModApplication = () => {
       const axiosErr = err as AxiosError;
       if (axiosErr.response) {
         if (axiosErr.response.status === 409) {
-          setTextErr('You already submitted an unresolved application!');
+          setTextErr('Cannot create another application right now!');
         } else {
           setTextErr('Failed to submit application');
         }

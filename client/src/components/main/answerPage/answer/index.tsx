@@ -3,6 +3,7 @@ import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
 import { Comment } from '../../../../types';
+import useModStatus from '../../../../hooks/useModStatus';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -12,6 +13,8 @@ import { Comment } from '../../../../types';
  * - meta Additional metadata related to the answer.
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
+ * - handleReport Callback function to handle adding a new report.
+ * - isReported True if user already reported answer.
  */
 interface AnswerProps {
   text: string;
@@ -19,6 +22,9 @@ interface AnswerProps {
   meta: string;
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
+  handleReport: () => void;
+  handleRemove: () => void;
+  isReported: boolean;
 }
 
 /**
@@ -30,8 +36,21 @@ interface AnswerProps {
  * @param meta Additional metadata related to the answer.
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
+ * @param handleReport Function to handle adding a new report.
+ * @param handleRemove Function to remove an answer.
+ * @param isReported True if user already reported answer.
  */
-const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerProps) => {
+const AnswerView = ({
+  text,
+  ansBy,
+  meta,
+  comments,
+  handleAddComment,
+  handleReport,
+  handleRemove,
+  isReported,
+}: AnswerProps) => {
+  const { moderatorStatus } = useModStatus();
   const navigate = useNavigate();
 
   /**
@@ -47,6 +66,7 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
         {handleHyperlink(text)}
       </div>
       <div className='answerAuthor'>
+        <div className='answer_author'>{ansBy}</div>
         <div
           className='answer_author'
           onClick={e => {
@@ -58,6 +78,18 @@ const AnswerView = ({ text, ansBy, meta, comments, handleAddComment }: AnswerPro
         <div className='answer_question_meta'>{meta}</div>
       </div>
       <CommentSection comments={comments} handleAddComment={handleAddComment} />
+      {isReported ? (
+        <button className='reported-button'>Reported</button>
+      ) : (
+        <button onClick={handleReport} className='report-button'>
+          Report
+        </button>
+      )}
+      {moderatorStatus && (
+        <button className='remove-button' onClick={() => handleRemove()}>
+          Remove
+        </button>
+      )}
     </div>
   );
 };

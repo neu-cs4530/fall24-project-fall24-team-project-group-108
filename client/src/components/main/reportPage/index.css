@@ -1,0 +1,23 @@
+.report-container {
+  border: 1px solid #ccc;
+  border-radius: 0.125rem;
+  background-color: #fefefe;
+  max-width: 390px;
+  width: 100%;
+  min-height: 100px;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+.report-container h3 {
+  margin-top: 15px;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.report-container p {
+  color: red;
+  text-align: left;
+  margin-left: 25px;
+  font-size: 13px;
+}
