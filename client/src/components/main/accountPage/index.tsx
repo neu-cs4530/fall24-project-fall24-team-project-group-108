@@ -39,17 +39,13 @@ const AccountPage = () => {
       <div className='profileTabs'>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} aria-label='basic tabs example' centered>
+            <Tab label='Badges' />
             <Tab label='Questions' />
             <Tab label='Answers' />
-            <Tab label='Badges' />
           </Tabs>
         </Box>
         <div>
           {value === 0 &&
-            (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
-          {value === 1 &&
-            (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
-          {value === 2 &&
             (userLoggedIn ? (
               <BadgesTab
                 user={'you'}
@@ -65,6 +61,10 @@ const AccountPage = () => {
                 navigate={navigate}
               />
             ))}
+          {value === 1 &&
+            (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
+          {value === 2 &&
+            (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
         </div>
       </div>
     </div>

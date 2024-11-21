@@ -85,7 +85,7 @@ app.use('/modApplication', modApplicationController(socket));
 app.use('/userReport', userReportController(socket));
 app.use('/correspondence', correspondenceController(socket));
 app.use('/message', messageController(socket));
-app.use('/modApplication', modApplicationController());
+app.use('/modApplication', modApplicationController(socket));
 app.use('/notifications', notificationController(socket));
 
 // Export the app instance
