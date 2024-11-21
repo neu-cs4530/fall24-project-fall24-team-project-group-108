@@ -87,4 +87,4 @@ const changeProfilePicture = async (username: string, badgeName: string): Promis
   return res.data;
 };
 
-export { authenticateUser, createUser, resetPassword, makeUserModerator, getUsers, changeProfilePicture };
+export { authenticateUser, createUser, makeUserModerator, getUsers, changeProfilePicture };

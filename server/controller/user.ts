@@ -3,14 +3,17 @@ import {
   AddUserRequest,
   FindUserRequest,
   MakeUserModeratorRequest,
-  ResetPasswordRequest,
   GetUserRequest,
   User,
   UpdateProfileIconRequest,
 } from '../types';
-import { addUser, findUser, populateUser, updatePassword, getAllUsers, 
+import {
+  addUser,
+  findUser,
+  getAllUsers,
   updateUserProfilePicture,
-  updateUserModStatus, } from '../models/application';
+  updateUserModStatus,
+} from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -150,7 +153,6 @@ export const userController = () => {
     }
   };
 
-
   /**
    * Retrieves a list of all users in the db
    * Error if there is a problem retrieving any of the users
@@ -159,10 +161,7 @@ export const userController = () => {
    *
    * @returns A Promise that resolves to void.
    */
-  const getUsers = async (
-    req: GetUserRequest,
-    res: Response,
-  ): Promise<void> => {
+  const getUsers = async (req: GetUserRequest, res: Response): Promise<void> => {
     try {
       const ulist: User[] = await getAllUsers();
       res.json(ulist);

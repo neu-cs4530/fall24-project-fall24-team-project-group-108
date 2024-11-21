@@ -8,7 +8,7 @@ import {
   UpdateMessageRequest,
   UpdateMessageViewsRequest,
   UpdateMessageEmojisRequest,
-  Correspondence
+  Correspondence,
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
@@ -17,7 +17,7 @@ import {
   addMessageToCorrespondence,
   updateMessageById,
   updateMessageViewsById,
-  updateMessageEmojisById
+  updateMessageEmojisById,
 } from '../models/application';
 import CorrespondenceModel from '../models/correspondence';
 import MessageModel from '../models/message';
@@ -178,7 +178,10 @@ const messageController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const updateMessageViews = async (req: UpdateMessageViewsRequest, res: Response): Promise<void> => {
+  const updateMessageViews = async (
+    req: UpdateMessageViewsRequest,
+    res: Response,
+  ): Promise<void> => {
     const { mid, username } = req.body;
     try {
       const result = await updateMessageViewsById(mid, username);
@@ -186,11 +189,9 @@ const messageController = (socket: FakeSOSocket) => {
         throw new Error(result.error);
       }
 
-      const updatedCorrespondenceWithMessage = await CorrespondenceModel.findOne(
-        { messages: { _id: mid } } 
-      ).populate([
-        { path: 'messages', model: MessageModel },
-      ]) as Correspondence;
+      const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+        messages: { _id: mid },
+      }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
 
       socket.emit('correspondenceUpdate', updatedCorrespondenceWithMessage);
       socket.emit('messageUpdate', result);
@@ -212,7 +213,10 @@ const messageController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const updateMessageEmojis = async (req: UpdateMessageEmojisRequest, res: Response): Promise<void> => {
+  const updateMessageEmojis = async (
+    req: UpdateMessageEmojisRequest,
+    res: Response,
+  ): Promise<void> => {
     const { mid, emojis } = req.body;
     try {
       const result = await updateMessageEmojisById(mid, emojis);
@@ -221,11 +225,9 @@ const messageController = (socket: FakeSOSocket) => {
       }
       socket.emit('messageUpdate', result);
 
-      const updatedCorrespondenceWithMessage = await CorrespondenceModel.findOne(
-        { messages: { _id: mid } } 
-      ).populate([
-        { path: 'messages', model: MessageModel },
-      ]) as Correspondence;
+      const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+        messages: { _id: mid },
+      }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
 
       socket.emit('correspondenceUpdate', updatedCorrespondenceWithMessage);
 
@@ -238,7 +240,6 @@ const messageController = (socket: FakeSOSocket) => {
       }
     }
   };
-
 
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getMessage', getMessagesByOrder);

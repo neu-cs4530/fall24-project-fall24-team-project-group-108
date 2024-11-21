@@ -26,12 +26,12 @@ const messageSchema: Schema = new Schema(
     isCodeStyle: {
       type: Boolean,
     },
-    fileName: {type: String},
-    fileData: [{type: Number}],
-    emojiTracker: { 
+    fileName: { type: String },
+    fileData: [{ type: Number }],
+    emojiTracker: {
       type: Map,
       of: String,
-    }
+    },
   },
   { collection: 'Message' },
 );

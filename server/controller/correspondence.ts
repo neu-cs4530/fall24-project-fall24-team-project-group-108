@@ -18,7 +18,7 @@ import {
   updateCorrespondenceById,
   updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
-  fetchCorrespondenceById
+  fetchCorrespondenceById,
 } from '../models/application';
 
 const correspondenceController = (socket: FakeSOSocket) => {
@@ -73,8 +73,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
       const c = await fetchCorrespondenceById(cid);
 
       res.json(c);
-      return;
-
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching correspondence by id: ${err.message}`);
@@ -173,8 +171,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
     }
   };
 
-  
-
   /**
    * Adds a new correspondence to the database. The correspondence is first validated and then saved.
    * If saving the correspondence fails, the HTTP response status is updated.
@@ -184,7 +180,10 @@ const correspondenceController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-   const updateCorrespondence = async (req: UpdateCorrespondenceRequest, res: Response): Promise<void> => {
+  const updateCorrespondence = async (
+    req: UpdateCorrespondenceRequest,
+    res: Response,
+  ): Promise<void> => {
     const { cid, updatedMessageMembers } = req.body;
     try {
       const result = await updateCorrespondenceById(cid, updatedMessageMembers);
@@ -204,7 +203,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
     }
   };
 
-    /**
+  /**
    * Updates a correspondence's userEditing value if someone is typing a message or not
    *
    * @param req The AddCorrespondenceRequest object containing the question data.
@@ -212,26 +211,29 @@ const correspondenceController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-     const updateCorrespondenceUserTyping = async (req: UpdateCorrespondenceUserTypingRequest, res: Response): Promise<void> => {
-      const { cid, userTyping } = req.body;
-      try {
-        const result = await updateCorrespondenceUserTypingById(cid, userTyping);
-        if ('error' in result) {
-          throw new Error(result.error);
-        }
-  
-        socket.emit('correspondenceUpdate', result);
-        res.json(result);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          res.status(500).send(`Error when saving correspondence: ${err.message}`);
-        } else {
-          res.status(500).send(`Error when saving correspondence`);
-        }
+  const updateCorrespondenceUserTyping = async (
+    req: UpdateCorrespondenceUserTypingRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { cid, userTyping } = req.body;
+    try {
+      const result = await updateCorrespondenceUserTypingById(cid, userTyping);
+      if ('error' in result) {
+        throw new Error(result.error);
       }
-    };
 
-    /**
+      socket.emit('correspondenceUpdate', result);
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
+
+  /**
    * Adds a user to the list of people who have viewed the correspondence
    *
    * @param req The AddCorrespondenceRequest object containing the question data.
@@ -239,24 +241,27 @@ const correspondenceController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-     const updateCorrespondenceViews = async (req: UpdateCorrespondenceViewsRequest, res: Response): Promise<void> => {
-      const { cid, username } = req.body;
-      try {
-        const result = await updateCorrespondenceViewsById(cid, username);
-        if ('error' in result) {
-          throw new Error(result.error);
-        }
-  
-        socket.emit('correspondenceUpdate', result);
-        res.json(result);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          res.status(500).send(`Error when saving correspondence: ${err.message}`);
-        } else {
-          res.status(500).send(`Error when saving correspondence`);
-        }
+  const updateCorrespondenceViews = async (
+    req: UpdateCorrespondenceViewsRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { cid, username } = req.body;
+    try {
+      const result = await updateCorrespondenceViewsById(cid, username);
+      if ('error' in result) {
+        throw new Error(result.error);
       }
-    };
+
+      socket.emit('correspondenceUpdate', result);
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
 
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getCorrespondence', getCorrespondencesByFilter);

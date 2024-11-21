@@ -505,7 +505,9 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
  */
 export const getAllUsers = async (): Promise<User[]> => {
   const ulist = await UserModel.find();
-  ulist.sort((user1, user2) => user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()))
+  ulist.sort((user1, user2) =>
+    user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()),
+  );
   return ulist;
 };
 /**
@@ -727,9 +729,7 @@ export const fetchCorrespondenceById = async (
   cid: string,
 ): Promise<CorrespondenceResponse | null> => {
   try {
-    const c = await CorrespondenceModel.findOne(
-      { _id: new ObjectId(cid) },
-    );
+    const c = await CorrespondenceModel.findOne({ _id: new ObjectId(cid) });
     return c;
   } catch (error) {
     return { error: 'Error when fetching a correspondence' };
@@ -1116,7 +1116,7 @@ export const addMessageToCorrespondence = async (
     }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $push: { messages: { $each: [message._id] } } , $set: {views: message.views}},
+      { $push: { messages: { $each: [message._id] } }, $set: { views: message.views } },
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
@@ -1154,7 +1154,6 @@ export const updateCorrespondenceById = async (
   }
 };
 
-
 /**
  * Updates a correspondence for the given id.
  *
@@ -1163,15 +1162,16 @@ export const updateCorrespondenceById = async (
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
- export const updateCorrespondenceUserTypingById = async (cid: string, userTyping: string[]): Promise<CorrespondenceResponse> => {
+export const updateCorrespondenceUserTypingById = async (
+  cid: string,
+  userTyping: string[],
+): Promise<CorrespondenceResponse> => {
   try {
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $set: { userTyping: userTyping } },
-      { new: true }
-    ).populate([
-      { path: 'messages', model: MessageModel },
-    ]);
+      { $set: { userTyping } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when updating correspondence');
     }
@@ -1189,15 +1189,16 @@ export const updateCorrespondenceById = async (
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
- export const updateCorrespondenceViewsById = async (cid: string, username: string): Promise<CorrespondenceResponse> => {
+export const updateCorrespondenceViewsById = async (
+  cid: string,
+  username: string,
+): Promise<CorrespondenceResponse> => {
   try {
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
       { $push: { views: username } },
-      { new: true }
-    ).populate([
-      { path: 'messages', model: MessageModel },
-    ]);
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when updating correspondence');
     }
@@ -1215,12 +1216,15 @@ export const updateCorrespondenceById = async (
  *
  * @returns Promise<MessageResponse> - The updated message or an error message
  */
- export const updateMessageViewsById = async (mid: string, username: string): Promise<MessageResponse> => {
+export const updateMessageViewsById = async (
+  mid: string,
+  username: string,
+): Promise<MessageResponse> => {
   try {
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
       { $addToSet: { views: username } },
-      { new: true }
+      { new: true },
     );
     if (result === null) {
       throw new Error('Error when updating message');
@@ -1239,12 +1243,15 @@ export const updateCorrespondenceById = async (
  *
  * @returns Promise<MessageResponse> - The updated message or an error message
  */
- export const updateMessageEmojisById = async (mid: string, emojis: { [key: string]: string }): Promise<MessageResponse> => {
+export const updateMessageEmojisById = async (
+  mid: string,
+  emojis: { [key: string]: string },
+): Promise<MessageResponse> => {
   try {
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
-      { $set: { emojiTracker: {...emojis} } },
-      { new: true }
+      { $set: { emojiTracker: { ...emojis } } },
+      { new: true },
     );
     if (result === null) {
       throw new Error('Error when updating messages emojis');
@@ -1254,8 +1261,6 @@ export const updateCorrespondenceById = async (
     return { error: 'Error when updating messages emojis' };
   }
 };
-
-
 
 /**
  * Updates a message for the given id.
