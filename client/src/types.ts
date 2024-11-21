@@ -162,19 +162,6 @@ export interface TagCounts {
 }
 
 /**
- * Interface representing the structure of an UploadedFile object.
- *
- * - fileName - the name of the file
- * - data - The binary data of the file
- */
-export interface UploadedFile {
-  _id?: string;
-  fileName: string;
-  size: number;
-  data: Buffer;
-}
-
-/**
  * Interface representing the structure of a Message object.
  *
  * - messageText - The content of the message
@@ -240,5 +227,4 @@ export interface ServerToClientEvents {
   commentUpdate: (update: CommentUpdatePayload) => void;
   correspondenceUpdate: (update: Correspondence) => void;
   messageUpdate: (update: Message) => void;
-  uploadedFileUpdate: (update: UploadedFile) => void;
 }

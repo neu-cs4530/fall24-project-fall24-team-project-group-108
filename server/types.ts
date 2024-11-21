@@ -264,22 +264,6 @@ export interface Question {
     emojis: {[key: string]: string};
   };
 }
-
-/**
- * Interface representing the structure of an UploadedFile object.
- *
- * - _id - The id of the UploadedFile object
- * - fileName - the name of the file
- * - size - # of bytes of the file
- * - data - The binary data of the file
- */
- export interface UploadedFile {
-   _id?: ObjectId,
-  fileName: string,
-  size: Number,
-  data: Buffer,
-}
-
 /**
  * Interface representing the structure of a Message object.
  *
@@ -334,11 +318,6 @@ export type MessageResponse = Message | { error: string };
  * Type representing the possible responses for a Correspondence-related operation.
  */
 export type CorrespondenceResponse = Correspondence | { error: string };
-
-/**
- * Type representing the possible responses for an UploadedFile-related operation.
- */
-export type UploadedFileResponse = UploadedFile | { error: string };
 
 /**
  * Interface for the request query to find questions using a search string, which contains:
@@ -404,17 +383,6 @@ export interface AddMessageRequest extends Request {
  */
 export interface AddCorrespondenceRequest extends Request {
   body: Correspondence;
-}
-
-/**
- * Interface for the request body when adding a new uploaded file.
- * - body - The uploaded file being added.
- */
-export interface AddUploadedFileRequest extends Request {
-  body: {
-    mid: string;
-    uploadedFile: UploadedFile;
-  }
 }
 
 /**
@@ -720,18 +688,6 @@ export interface FindCorrespondenceByIdRequest extends Request {
   };
 }
 
-
-/**
- * Interface for the request parameters when finding a uploaded file by its ID.
- * - ufid - The unique identifier of the uploaded file.
- */
-export interface FindUploadedFileByIdRequest extends Request {
-  params: {
-    ufid: string;
-  };
-}
-
-
 /**
  * Interface for the request parameters when finding a correspondence by its ID.
  * - cid - The unique identifier of the correspondence.
@@ -758,5 +714,4 @@ export interface ServerToClientEvents {
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageResponse) => void;
   correspondenceUpdate: (correspondence: CorrespondenceResponse) => void;
-  uploadedFileUpdate: (uploadedFile: UploadedFileResponse) => void;
 }

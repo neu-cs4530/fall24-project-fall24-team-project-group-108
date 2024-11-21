@@ -20,7 +20,6 @@ import modApplicationController from './controller/modApplication';
 import badgeProgressController from './controller/badgeProgress';
 import correspondenceController from './controller/correspondence';
 import messageController from './controller/message';
-import uploadedFileController from './controller/uploadedFile';
 
 dotenv.config();
 
@@ -85,7 +84,6 @@ app.use('/user', userController());
 app.use('/modApplication', modApplicationController());
 app.use('/correspondence', correspondenceController(socket));
 app.use('/message', messageController(socket));
-app.use('/uploadedFile', uploadedFileController(socket));
 
 // Export the app instance
 export { app, server, startServer };

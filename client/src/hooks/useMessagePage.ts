@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
-import { Correspondence, Message, UploadedFile } from '../types';
+import { Correspondence, Message } from '../types';
 import {
   addCorrespondence,
   getCorrespondencesByOrder,
@@ -10,7 +10,6 @@ import {
   updateCorrespondenceViewsById,
 } from '../services/correspondenceService';
 import { addMessage, updateMessageViewsById } from '../services/messageService';
-import { addUploadedFile } from '../services/uploadedFileService';
 
 /**
  * Custom hook for managing the message page state, filtering, and real-time updates.
