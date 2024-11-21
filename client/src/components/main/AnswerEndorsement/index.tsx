@@ -46,11 +46,12 @@ const AnswerEndorsement = ({ answer, questionID }: AnswerEndorsementProps) => {
   const handleEndorsementClick = async () => {
     try {
       if (answer._id) {
-        await endorseAnswer(questionID, answer._id, !endorse, user);
+        await endorseAnswer(questionID, answer._id, !endorse);
         setEndorsed(!endorse);
       }
     } catch (error) {
-      // Handle error
+      // eslint-disable-next-line no-console
+      console.error(`Error toggling endorsement: ${(error as Error).message}`);
     }
   };
 

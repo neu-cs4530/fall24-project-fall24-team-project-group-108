@@ -5,11 +5,7 @@ import {
   populateDocument,
   saveAnswer,
   endorseAnswer,
-  getQuestionById,
-  getQuestionByAnswerId,
 } from '../models/application';
-import AnswerModel from '../models/answers';
-import QuestionModel from '../models/questions';
 
 const answerController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -100,23 +96,7 @@ const answerController = (socket: FakeSOSocket) => {
    */
   const updateEndorsement = async (req: EndorseRequest, res: Response): Promise<void> => {
     try {
-      const { qid, aid, endorsed, user } = req.body;
-
-      // Find the question by ID
-      const question = await getQuestionById(qid);
-
-      if (!question) {
-        res.status(404).json({ message: 'Question not found' });
-        return;
-      }
-
-      // Check if the user endorsing the answer is the one who asked the question
-      if (question.askedBy !== user.username) {
-        res
-          .status(403)
-          .json({ message: 'Only the user who asked the question can endorse answers' });
-        return;
-      }
+      const { aid, endorsed } = req.body;
 
       // Find and update the endorsement status of the answer in the database
       const updatedAnswer = await endorseAnswer(aid, endorsed);
@@ -131,7 +111,7 @@ const answerController = (socket: FakeSOSocket) => {
     }
   };
 
-  // add appropriate HTTP verbs and their endpoints to the router.
+  // Add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
   router.patch('/endorseAnswer', updateEndorsement);
 

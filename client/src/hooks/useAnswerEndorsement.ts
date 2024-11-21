@@ -11,21 +11,11 @@ import useUserContext from './useUserContext';
  */
 
 const useAnswerEndorsement = ({ answer }: { answer: Answer }) => {
-  const { user, socket } = useUserContext();
+  const { socket } = useUserContext();
   const [endorse, setEndorsed] = useState<boolean>(false);
 
   useEffect(() => {
-    /**
-     * Function to get the endorsed value
-     *
-     * @returns boolean
-     */
-    const getEndorsedValue = () => {
-      if (answer.endorsed) {
-        return true;
-      }
-      return false;
-    };
+    const getEndorsedValue = () => answer.endorsed;
 
     setEndorsed(getEndorsedValue());
   }, [answer, socket]);

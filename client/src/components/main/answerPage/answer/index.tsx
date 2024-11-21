@@ -4,7 +4,7 @@ import CommentSection from '../../commentSection';
 import './index.css';
 import { Answer, Comment, Question } from '../../../../types';
 import AnswerEndorsement from '../../AnswerEndorsement';
-import { Comment } from '../../../../types';
+
 import useModStatus from '../../../../hooks/useModStatus';
 
 /**

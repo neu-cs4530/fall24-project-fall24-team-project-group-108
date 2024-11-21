@@ -1389,7 +1389,6 @@ export const endorseAnswer = async (aid: string, endorsed: boolean): Promise<Ans
     if (result === null) {
       throw new Error('Failed to endorse answer');
     }
-
     return result;
   } catch (error) {
     return { error: `Error when endorsing answer: ${(error as Error).message}` };
@@ -1424,7 +1423,7 @@ export const getQuestionByAnswerId = async (aid: string): Promise<Question | nul
   } catch (error) {
     return null;
   }
-}
+};
 
 /**
  * Updates the badgeProgress for a user and a given category.

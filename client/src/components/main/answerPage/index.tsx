@@ -78,6 +78,8 @@ const AnswerPage = () => {
             handleReport={() => handleReport(a._id, 'answer', a.text, a.ansBy, question._id)}
             handleRemove={() => handleReportDecision(a, 'answer')}
             isReported={wasAnsReported(a)}
+            answer={a}
+            question={question}
           />
         ))}
       <button

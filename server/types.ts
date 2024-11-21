@@ -65,10 +65,6 @@ export interface EndorseRequest extends Request {
     qid: string;
     aid: string;
     endorsed: boolean;
-    user: {
-      _id: string;
-      username: string;
-    };
   };
 }
 
