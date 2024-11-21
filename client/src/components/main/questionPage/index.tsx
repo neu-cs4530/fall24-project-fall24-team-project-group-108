@@ -1,4 +1,3 @@
-import React from 'react';
 import './index.css';
 import QuestionHeader from './header';
 import QuestionView from './question';

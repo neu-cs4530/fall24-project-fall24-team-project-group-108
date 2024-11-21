@@ -3,6 +3,22 @@
   display: flex;
   flex-direction: row;
   border-bottom: #000000 1px dashed;
+  position: relative;
+}
+
+.profile-hover-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10; /* Ensure the hover appears above other content */
+  visibility: hidden; /* Hide by default */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.profile-hover-container.show {
+  visibility: visible;
+  opacity: 1; /* Make visible when hover state is true */
 }
 
 .answerText {

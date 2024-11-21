@@ -1,6 +1,16 @@
 import express, { Response } from 'express';
-import { AddUserRequest, FindUserRequest, MakeUserModeratorRequest } from '../types';
-import { addUser, findUser, updateUserModStatus } from '../models/application';
+import {
+  AddUserRequest,
+  FindUserRequest,
+  MakeUserModeratorRequest,
+  UpdateProfileIconRequest,
+} from '../types';
+import {
+  addUser,
+  findUser,
+  updateUserProfilePicture,
+  updateUserModStatus,
+} from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -111,9 +121,39 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Makes an existing user in the database a moderator. If updating the isModerator field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateProfilePicture = async (
+    req: UpdateProfileIconRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username, badgeName } = req.body;
+    try {
+      const populatedUser = await updateUserProfilePicture(username, badgeName);
+      if (populatedUser && 'error' in populatedUser) {
+        throw new Error(populatedUser.error);
+      }
+
+      res.json(populatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user profile picture: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user profile picture`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
   router.post('/createUser', createUser);
   router.post('/makeUserModerator', makeUserModerator);
+  router.post('/updatePicture', updateProfilePicture);
 
   return router;
 };

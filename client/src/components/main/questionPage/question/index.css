@@ -2,6 +2,22 @@
   display: flex;
   flex-direction: row;
   border-top: #000000 1px dashed;
+  position: relative; /* Make sure the parent is positioned for absolute children */
+}
+
+.profile-hover-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10; /* Ensure the hover appears above other content */
+  visibility: hidden; /* Hide by default */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.profile-hover-container.show {
+  visibility: visible;
+  opacity: 1; /* Make visible when hover state is true */
 }
 
 .postStats {

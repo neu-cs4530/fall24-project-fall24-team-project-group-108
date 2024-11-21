@@ -6,7 +6,13 @@ import {
   UserBadgeRequest,
   EarnedUserRequest,
 } from '../types';
-import { getAllBadges, getBadgesByUser, getBadgeUsers, saveBadge } from '../models/application';
+import {
+  getAllBadges,
+  getBadgeCategoryAndTierByUsername,
+  getBadgesByUser,
+  getBadgeUsers,
+  saveBadge,
+} from '../models/application';
 
 const badgeController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -117,9 +123,46 @@ const badgeController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Retrieves the category and tier of a badge by its name.
+   *
+   * @param req - The HTTP request object containing the badge name in the query parameters.
+   * @param res - The HTTP response object used to send back the badge details or an error message.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getBadgeDetails = async (
+    req: { query: { username: string } },
+    res: Response,
+  ): Promise<void> => {
+    const { username } = req.query;
+
+    if (!username) {
+      res.status(400).send('Username is required');
+      return;
+    }
+
+    try {
+      const badgeDetails = await getBadgeCategoryAndTierByUsername(username);
+      if (badgeDetails.error) {
+        res.status(404).send(badgeDetails.error);
+        return;
+      }
+
+      res.json({ category: badgeDetails.category, tier: badgeDetails.tier });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error retrieving badge details: ${err.message}`);
+      } else {
+        res.status(500).send(`Error retrieving badge details`);
+      }
+    }
+  };
+
   router.get('/allBadges', getBadges);
   router.get('/byUser/:username', getUserBadges);
   router.get('/getEarnedUsers/:badgeName', getEarnedUsers);
+  router.get('/getBadgeDetails', getBadgeDetails);
   router.post('/addBadge', addBadgeRoute);
 
   return router;

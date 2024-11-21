@@ -1,8 +1,8 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { getMetaData } from '../../../../tool';
 import { Question } from '../../../../types';
+import ProfileHover from '../../accountPage/profileHover';
+import useQuestion from '../../../../hooks/useQuestion';
 
 /**
  * Interface representing the props for the Question component.
@@ -21,35 +21,16 @@ interface QuestionProps {
  * @param q - The question object containing question details.
  */
 const QuestionView = ({ q }: QuestionProps) => {
-  const navigate = useNavigate();
-
-  /**
-   * Function to navigate to the home page with the specified tag as a search parameter.
-   *
-   * @param tagName - The name of the tag to be added to the search parameters.
-   */
-  const clickTag = (tagName: string) => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('tag', tagName);
-
-    navigate(`/home?${searchParams.toString()}`);
-  };
-
-  /**
-   * Function to navigate to the specified question page based on the question ID.
-   *
-   * @param questionID - The ID of the question to navigate to.
-   */
-  const handleAnswer = (questionID: string) => {
-    navigate(`/question/${questionID}`);
-  };
-
-  /**
-   * Function to navigate to the specified user profile based on the user ID.
-   */
-  const handleAuthorClick = () => {
-    navigate(`/account/${q.askedBy}`); // Assuming you have an ID for the author
-  };
+  const {
+    handleAnswer,
+    clickTag,
+    isHovered,
+    iconDetails,
+    handleAuthorClick,
+    handleHoverEnter,
+    setIsHovered,
+    badges,
+  } = useQuestion(q);
 
   return (
     <div
@@ -79,13 +60,19 @@ const QuestionView = ({ q }: QuestionProps) => {
           ))}
         </div>
       </div>
+      <div className={`profile-hover-container ${isHovered ? 'show' : ''}`}>
+        <ProfileHover user={q.askedBy} iconData={iconDetails} badges={badges} />
+      </div>
+
       <div className='lastActivity'>
         <div
           className='question_author'
           onClick={e => {
-            e.stopPropagation(); // prevent triggering the parent div's click event
+            e.stopPropagation();
             handleAuthorClick();
-          }}>
+          }}
+          onMouseEnter={handleHoverEnter}
+          onMouseLeave={() => setIsHovered(false)}>
           {q.askedBy}
         </div>
         <div>&nbsp;</div>
