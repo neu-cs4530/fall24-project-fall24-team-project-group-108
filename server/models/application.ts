@@ -346,6 +346,75 @@ export const updateUserModStatus = async (username: string): Promise<UserRespons
 };
 
 /**
+ * Updates a user's profile picture.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @param badgeName - The badge icon for their profile picture.
+ * @returns {User} - The updated user object.
+ */
+export const updateUserProfilePicture = async (
+  username: string,
+  badgeName: string,
+): Promise<UserResponse> => {
+  try {
+    // find the badge
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' };
+    }
+
+    // find the user
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // update and save
+    user.profileIcon = badge.name;
+    await user.save();
+    return user;
+  } catch (err: unknown) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    return { error: 'Failed to update user profile picture' };
+  }
+};
+
+/**
+ * Gets a badge's category and tier based off of its name.
+ * @param badgeName - The badge name.
+ */
+export const getBadgeCategoryAndTierByUsername = async (
+  username: string,
+): Promise<{ category?: string; tier?: string; error?: string }> => {
+  try {
+    // find the user
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // extract the profile icon
+    const badgeName = user.profileIcon;
+    if (!badgeName) {
+      return { error: 'Profile icon not set for the user' };
+    }
+
+    // find the badge
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' };
+    }
+
+    return { category: badge.category, tier: badge.tier };
+  } catch (err: unknown) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+    return { error: 'Failed to retrieve badge category and tier' };
+  }
+};
+
+/**
  * Updates a specificed moderator application from the db's status.
  *
  * @param username - the username of the user's application being deleted

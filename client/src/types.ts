@@ -11,6 +11,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: string;
   infractions: string[];
 }
 
