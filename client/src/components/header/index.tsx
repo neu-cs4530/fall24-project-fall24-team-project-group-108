@@ -13,7 +13,10 @@ const Header = () => {
   return (
     <div id='header' className='header'>
       <div></div>
-      <div className='title'>Fake Stack Overflow</div>
+      <div className='logo-section'>
+        <img src='/codescout.png' alt='Logo' style={{ width: '60px', height: '60px' }}></img>
+        <div className='title'>Code Scout</div>
+      </div>
       <input
         id='searchBar'
         placeholder='Search ...'

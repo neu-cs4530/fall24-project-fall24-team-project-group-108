@@ -145,6 +145,7 @@ const useSignUp = () => {
       setSignUpErr('Username already in use');
       setUsername('');
       setPassword('');
+      setReenterPassword('');
     }
   };
 

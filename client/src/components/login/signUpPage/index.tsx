@@ -23,9 +23,12 @@ const SignUp = () => {
 
   return (
     <div className='container'>
+      <div className='logo-section'>
+        <img src='/codescout.png' alt='Logo' style={{ width: '75px', height: '75px' }}></img>
+        <h2 className='title'>Code Scout</h2>
+      </div>
       <div className='form-container'>
         <h2>Sign Up</h2>
-        <h4>Create a username and password</h4>
         <form onSubmit={handleSubmit}>
           <h5>Username</h5>
           <input

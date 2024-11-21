@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import useUserContext from './useUserContext';
-import { Badge, Question } from '../types';
+import { Answer, Badge, Question } from '../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
 import { fetchBadgesByUser } from '../services/badgeService';
 
@@ -20,7 +20,7 @@ import { fetchBadgesByUser } from '../services/badgeService';
  */
 const useAccountPage = () => {
   const { sentUser } = useParams();
-  const { user } = useUserContext();
+  const { user, socket } = useUserContext();
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
@@ -89,6 +89,29 @@ const useAccountPage = () => {
     fetchQuestionData();
     fetchAnswerData();
     fetchUserBadges();
+
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      setQlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+      setAlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+    };
+
+    socket.on('removePostUpdate', handleRemovePostUpdate);
+
+    return () => {
+      socket.off('removePostUpdate', handleRemovePostUpdate);
+    };
   }, [user, sentUser]);
 
   return {

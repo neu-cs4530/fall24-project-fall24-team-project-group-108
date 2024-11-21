@@ -438,7 +438,7 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
 export const filterQuestionsByAnswerer = async (answerer: string): Promise<Question[]> => {
   try {
     // find all answers from the given user
-    const alist = await AnswerModel.find({ ansBy: answerer });
+    const alist = await AnswerModel.find({ ansBy: answerer, isRemoved: false });
 
     // find all questions that are linked to the answers
     const answerIds = alist.map(answer => answer._id);
