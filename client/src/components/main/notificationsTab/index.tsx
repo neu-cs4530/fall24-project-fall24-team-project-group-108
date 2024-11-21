@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import Switch from '@mui/material/Switch';
 import './index.css';
 import { Notification } from '../../../types';
 import { getMetaData } from '../../../tool';
-import { markNotificationAsRead } from '../../../services/notificationService';
+import useNotificationsTab from '../../../hooks/useNotificationsTab';
 
 interface NotificationsTabProps {
   initialUnreadNotifications: Notification[];
@@ -23,31 +22,18 @@ const NotificationsTab = ({
   onClose,
   handleUpdate,
 }: NotificationsTabProps) => {
-  const [activeTab, setActiveTab] = useState<'unread' | 'read'>('unread');
-  const [unreadNotifications, setUnreadNotifications] = useState(initialUnreadNotifications);
-  const [readNotifications, setReadNotifications] = useState(initialReadNotifications);
-
-  const handleTabChange = (tab: 'unread' | 'read') => {
-    setActiveTab(tab);
-  };
-
-  const handleNotificationClick = async (notification: Notification) => {
-    try {
-      // Mark the notification as read
-      await markNotificationAsRead(notification._id as string);
-
-      // Update local state to move the notification from unread to read
-      setUnreadNotifications(prevUnread => prevUnread.filter(n => n._id !== notification._id));
-      setReadNotifications(prevRead => [notification, ...prevRead]);
-      handleUpdate(notification);
-
-      // Navigate to the notification URL
-      handleClick(notification.redirectUrl);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to mark notification as read:', error);
-    }
-  };
+  const {
+    activeTab,
+    handleTabChange,
+    unreadNotifications,
+    readNotifications,
+    handleNotificationClick,
+  } = useNotificationsTab({
+    handleUpdate,
+    initialReadNotifications,
+    initialUnreadNotifications,
+    handleClick,
+  });
 
   return (
     <div className='notifications-dropdown'>

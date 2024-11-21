@@ -1,8 +1,11 @@
 import express, { Response } from 'express';
-import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket, Notification } from '../types';
-import { addAnswerToQuestion, populateDocument, saveAnswer } from '../models/application';
-import QuestionModel from '../models/questions';
-import NotificationModel from '../models/notifications';
+import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket } from '../types';
+import {
+  addAnswerToQuestion,
+  populateDocument,
+  saveAnswer,
+  saveAnswerNotification,
+} from '../models/application';
 
 const answerController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -72,26 +75,8 @@ const answerController = (socket: FakeSOSocket) => {
         throw new Error(populatedAns.error as string);
       }
 
-      // find the user to alert about their question being answered
-      const question = await QuestionModel.findById(qid).exec();
-      if (!question) {
-        throw new Error('Question not found');
-      }
-
-      const authorUsername = question.askedBy;
-
-      // create the notification for the question author
-      const notification: Notification = {
-        user: authorUsername,
-        type: 'answer',
-        caption: `${ansInfo.ansBy} answered your question`,
-        read: false,
-        createdAt: new Date(),
-        redirectUrl: `/question/${qid}`,
-      };
-
-      // save the notification to the db
-      const savedNotification = await NotificationModel.create(notification);
+      // create the notification in the db
+      const savedNotification = await saveAnswerNotification(qid, ansInfo);
 
       if ('error' in savedNotification) {
         throw new Error(savedNotification.error as string);
