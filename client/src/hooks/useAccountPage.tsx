@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useUserContext from './useUserContext';
-import { Badge, Question } from '../types';
+import { Answer, Badge, Question } from '../types';
 import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
 import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../services/badgeService';
 import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
@@ -37,7 +37,7 @@ interface ProfileIconDetails {
 const useAccountPage = () => {
   const { getBadgeIcon } = useBadgePage();
   const { sentUser } = useParams();
-  const { user } = useUserContext();
+  const { user, socket } = useUserContext();
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
@@ -126,7 +126,30 @@ const useAccountPage = () => {
     fetchAnswerData();
     fetchUserBadges();
     fetchProfileIconDetails();
-  }, [user, sentUser]);
+
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      setQlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+      setAlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+    };
+
+    socket.on('removePostUpdate', handleRemovePostUpdate);
+
+    return () => {
+      socket.off('removePostUpdate', handleRemovePostUpdate);
+    };
+  }, [user, sentUser, socket]);
 
   /**
    * Renders the profile picture of a user.
