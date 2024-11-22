@@ -3,11 +3,14 @@ import {
   AddUserRequest,
   FindUserRequest,
   MakeUserModeratorRequest,
+  GetUserRequest,
+  User,
   UpdateProfileIconRequest,
 } from '../types';
 import {
   addUser,
   findUser,
+  getAllUsers,
   updateUserProfilePicture,
   updateUserModStatus,
 } from '../models/application';
@@ -150,7 +153,29 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Retrieves a list of all users in the db
+   * Error if there is a problem retrieving any of the users
+   *
+   * @param res The HTTP response object used to send back list of users ordered alphabetically
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getUsers = async (req: GetUserRequest, res: Response): Promise<void> => {
+    try {
+      const ulist: User[] = await getAllUsers();
+      res.json(ulist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching list of users: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching list of users`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
+  router.get('/getUsers', getUsers);
   router.post('/createUser', createUser);
   router.post('/makeUserModerator', makeUserModerator);
   router.post('/updatePicture', updateProfilePicture);

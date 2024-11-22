@@ -481,7 +481,7 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 //  *
 //  * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
 //  */
-export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
+export const getMessagesByOrder = async (): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
 };
@@ -496,6 +496,19 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
     { path: 'messages', model: MessageModel },
   ]);
   return clist;
+};
+/**
+ * Retrieves a list of all users in the db in alphabetical order
+ *
+ *
+ * @returns {Promise<User[]>} - Promise that resolves to a list of users
+ */
+export const getAllUsers = async (): Promise<User[]> => {
+  const ulist = await UserModel.find();
+  ulist.sort((user1, user2) =>
+    user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()),
+  );
+  return ulist;
 };
 /**
  * Retrieves questions from the database that were answered by the given user.
@@ -701,6 +714,25 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
     return c;
   } catch (error) {
     return { error: 'Error when fetching and updating a message' };
+  }
+};
+
+/**
+ * Fetches a correspondence by its ID
+ *
+ * @param {string} cid - The ID of the correspondence to fetch.
+ *
+ * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence,
+ *                                           null if the correspondence is not found, or an error message.
+ */
+export const fetchCorrespondenceById = async (
+  cid: string,
+): Promise<CorrespondenceResponse | null> => {
+  try {
+    const c = await CorrespondenceModel.findOne({ _id: new ObjectId(cid) });
+    return c;
+  } catch (error) {
+    return { error: 'Error when fetching a correspondence' };
   }
 };
 
@@ -1084,8 +1116,7 @@ export const addMessageToCorrespondence = async (
     }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $push: { messages: { $each: [message._id] } } },
-      // { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { $push: { messages: { $each: [message._id] } }, $set: { views: message.views } },
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
@@ -1124,6 +1155,114 @@ export const updateCorrespondenceById = async (
 };
 
 /**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string[]} userTyping - A list of usernames who are typing
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const updateCorrespondenceUserTypingById = async (
+  cid: string,
+  userTyping: string[],
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $set: { userTyping } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string} username - The username to add to the people who have viewed the competition
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const updateCorrespondenceViewsById = async (
+  cid: string,
+  username: string,
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $push: { views: username } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a message for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} username - The username to add to the people who have viewed the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageViewsById = async (
+  mid: string,
+  username: string,
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating message');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating message' };
+  }
+};
+
+/**
+ * Updates a message with the updated emojis for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} emojis - The username to add to the people who have viewed the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageEmojisById = async (
+  mid: string,
+  emojis: { [key: string]: string },
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { emojiTracker: { ...emojis } } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating messages emojis');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating messages emojis' };
+  }
+};
+
+/**
  * Updates a message for the given id.
  *
  * @param {string} mid - The ID of the message to update
@@ -1153,8 +1292,6 @@ export const updateMessageById = async (
     if (!updatedCorrespondenceWithMessage) {
       return { error: 'Error when retrieving updated correspondence' };
     }
-
-    // console.log(updatedCorrespondenceWithMessage);
 
     return updatedCorrespondenceWithMessage;
   } catch (error) {

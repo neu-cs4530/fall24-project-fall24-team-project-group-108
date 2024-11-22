@@ -58,6 +58,19 @@ const makeUserModerator = async (username: string): Promise<User> => {
 };
 
 /**
+ * Function to get a list of all users
+ *
+ * @throws Error if there is an issue fetching or filtering messages.
+ */
+const getUsers = async (): Promise<User[]> => {
+  const res = await api.get(`${USER_API_URL}/getUsers`);
+  if (res.status !== 200) {
+    throw new Error('Error when fetching or filtering correspondences');
+  }
+  return res.data;
+};
+
+/**
  * Updates a user's profile picture.
  *
  * @param username - The username of the user being edited.
@@ -74,4 +87,4 @@ const changeProfilePicture = async (username: string, badgeName: string): Promis
   return res.data;
 };
 
-export { authenticateUser, createUser, makeUserModerator, changeProfilePicture };
+export { authenticateUser, createUser, makeUserModerator, getUsers, changeProfilePicture };
