@@ -4,7 +4,6 @@
   align-items: flex-start;
   height: 100%;
   background-color: white;
-  margin-top: 0%;
 }
 
 .all_badges_link {
@@ -18,21 +17,24 @@
   text-decoration: underline;
 }
 
-.page-title {
-  align-self: center;
-  margin: 0;
+.page_title {
+  font-size: 25px;
+    font-weight: bold;
+    align-self: center;
+    margin-top: 3%;
+    margin-bottom: 3%;
+    color: rgb(92, 92, 92);
 }
 
-.badge-grid {
+.badge_grid {
   display: grid;
   grid-template-rows: 100px;
   grid-auto-rows: 100px;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px; 
-  width: 100%;
-  margin: 0;
-  padding-bottom: 7%;
-  padding-top: 2%;
+  width: 80%;
+  padding-bottom: 12%;
+  padding-top: 5%;
   padding-left: 6%;
   padding-right: 6%;
 }
@@ -52,6 +54,6 @@
 }
 
 .no-badges-message {
-  margin-left: 5%;
+  margin-left: 9%;
   margin-bottom: 5%;
 }

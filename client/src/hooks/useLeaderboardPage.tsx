@@ -11,7 +11,7 @@ import { TagCounts } from '../types';
 const useLeaderboardPage = () => {
   const { tid } = useParams();
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
   const navigate = useNavigate();
   const [countList, setCountList] = useState<TagCounts[]>([]);
 

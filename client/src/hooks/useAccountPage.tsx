@@ -10,7 +10,7 @@ import QuestionsTab from '../components/main/accountPage/questionsTab';
 import AnswersTab from '../components/main/accountPage/answersTab';
 import BadgesTab from '../components/main/accountPage/badgesTab';
 
-interface ProfileIconDetails {
+export interface ProfileIconDetails {
   category: BadgeCategory | null;
   tier: BadgeTier | null;
 }
@@ -44,7 +44,7 @@ const useAccountPage = () => {
   const [alist, setAlist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
-  const [profileIconDetails, setProfileIconDetails] = useState<ProfileIconDetails | null>(null);
+  const [currentDetails, setCurrentDetails] = useState<ProfileIconDetails | null>(null);
 
   // determine if the profile being viewed is for the currently logged in user
   let userLoggedIn: boolean;
@@ -110,15 +110,15 @@ const useAccountPage = () => {
      */
     const fetchProfileIconDetails = async () => {
       try {
-        const details = await getBadgeDetailsByUsername(user.username);
-        setProfileIconDetails({
+        const details = await getBadgeDetailsByUsername(sentUser as string);
+        setCurrentDetails({
           category: (details.category as BadgeCategory) || 'Unknown Category',
           tier: (details.tier as BadgeTier) || 'Unknown Tier',
         });
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error(`Failed to fetch details for profile icon: ${user.profileIcon}`, error);
-        setProfileIconDetails(null);
+        console.error(`Failed to fetch details for profile icon: ${sentUser}`, error);
+        setCurrentDetails(null);
       }
     };
 
@@ -155,12 +155,9 @@ const useAccountPage = () => {
    * Renders the profile picture of a user.
    * @returns Their profile icon or the default icon.
    */
-  const renderProfilePicture = () => {
-    if (profileIconDetails?.category && profileIconDetails?.tier) {
-      return getBadgeIcon(
-        profileIconDetails.category as BadgeCategory,
-        profileIconDetails.tier as BadgeTier,
-      );
+  const renderProfilePicture = (details: ProfileIconDetails) => {
+    if (details?.category && details?.tier) {
+      return getBadgeIcon(details.category as BadgeCategory, details.tier as BadgeTier);
     }
 
     return <AccountCircleIcon sx={{ fontSize: 100 }} />;
@@ -204,9 +201,10 @@ const useAccountPage = () => {
     setEditModalOpen,
     editModalOpen,
     user,
-    profileIconDetails,
+    currentDetails,
     renderProfilePicture,
     renderTabContent,
+    setCurrentDetails,
   };
 };
 

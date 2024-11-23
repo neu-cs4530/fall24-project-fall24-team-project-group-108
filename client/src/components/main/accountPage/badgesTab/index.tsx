@@ -19,7 +19,7 @@ const BadgesTab = ({ user, handleClick, userBadges, navigate }: BadgesTabProps) 
 
   return (
     <div className='badge_tab'>
-      <div className='page-title'>All Badges Earned By {user}:</div>
+      <div className='page_title'>Badges earned by {user}:</div>
 
       <BadgeCategorySection
         title='Questions'
