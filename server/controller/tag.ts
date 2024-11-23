@@ -1,7 +1,6 @@
 import express, { Request, Response, Router } from 'express';
 import { getTagCountMap } from '../models/application';
 import TagModel from '../models/tags';
-import TagAnswerCountModel from '../models/tagAnswerCounts';
 import LeaderboardModel from '../models/leaderboards';
 
 const tagController = () => {
@@ -77,9 +76,9 @@ const tagController = () => {
         return;
       }
 
-      // Find all leaderboard entries sorted 
+      // Find all leaderboard entries sorted
       const leaderboardEntries = await LeaderboardModel.find({ tag: tag._id })
-        .sort({ position: 1 }) 
+        .sort({ position: 1 })
         .populate('user', 'username')
         .exec();
 

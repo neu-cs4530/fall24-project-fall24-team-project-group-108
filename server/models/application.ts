@@ -1748,17 +1748,17 @@ export const updateBadgeProgress = async (
 export const updateTagAnswers = async (
   username: string,
   qid: string,
-  socket: FakeSOSocket
+  socket: FakeSOSocket,
 ): Promise<TagAnswerCountResponse> => {
   try {
-    // Fetch the question 
+    // Fetch the question
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
       return { error: 'Question not found' };
     }
 
     // For each tag of this questino
-    const updatePromises = question.tags.map(async (tagId) => {
+    const updatePromises = question.tags.map(async tagId => {
       let tagAnswerCount = await TagAnswerCountModel.findOne({
         user: username,
         tag: tagId,
@@ -1780,7 +1780,7 @@ export const updateTagAnswers = async (
 
       // Find all sorted TagAnswerCounts for this tag
       const leaderboardEntries = await TagAnswerCountModel.find({ tag: tagId })
-        .sort({ count: -1 })  
+        .sort({ count: -1 })
         .exec();
 
       // Loop through all the leaderboard entries and update positions
@@ -1826,9 +1826,9 @@ export const updateTagAnswers = async (
           // Save the notification and emit it via socket
           const savedNotification = await NotificationModel.create(notification);
           if (savedNotification) {
-            console.log(`emitting notif`);
             socket.emit('notificationUpdate', savedNotification);
           } else {
+            // eslint-disable-next-line no-console
             console.error('Notification is undefined or invalid:', savedNotification);
           }
         }

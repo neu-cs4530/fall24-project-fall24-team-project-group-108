@@ -1,7 +1,6 @@
 // Leaderboard Document Schema
 import mongoose, { Model } from 'mongoose';
-import { Leaderboard, TagAnswerCount } from '../types';
-import tagAnswerCountSchema from './schema/tagAnswerCount';
+import { Leaderboard } from '../types';
 import leaderboardSchema from './schema/leaderboard';
 
 /**
