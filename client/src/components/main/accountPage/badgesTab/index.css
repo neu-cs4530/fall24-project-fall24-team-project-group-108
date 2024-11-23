@@ -3,14 +3,15 @@
   flex-direction: column;
   align-items: flex-start;
   height: 100%;
-  background-color: #f2f2f2;
+  background-color: white;
+  margin-top: 0%;
 }
 
 .all_badges_link {
   color: #858585;
   align-self: flex-end;
-  padding-top: 1%;
-  padding-right: 1%;
+  margin-right: 2%;
+  margin-bottom: 2%;
 }
 
 .all_badges_link:hover {
@@ -19,6 +20,7 @@
 
 .page-title {
   align-self: center;
+  margin: 0;
 }
 
 .badge-grid {
@@ -45,4 +47,11 @@
 
 .badge-category {
   margin: 0 0 10px 5%;
+  font-size: 16px;
+  color: rgb(113, 113, 113);
+}
+
+.no-badges-message {
+  margin-left: 5%;
+  margin-bottom: 5%;
 }

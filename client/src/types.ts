@@ -13,6 +13,7 @@ export interface User {
   badges: Badge[];
   profileIcon?: string;
   infractions: string[];
+  doNotDisturb?: boolean;
 }
 
 /**
@@ -176,6 +177,27 @@ export interface Question {
 }
 
 /**
+ * Interface representing the structure of a Notification object.
+ *
+ * - _id - The unique identifier for the notif.
+ * - user - The user receiving the notification.
+ * - type - The type of notification it is.
+ * - caption - The caption of the notification.
+ * - read - Whether or not the notification was read.
+ * - createdAt - When the notification was made.
+ * - redirectUrl - The url to go to when the notification is clicked.
+ */
+export interface Notification {
+  _id?: string;
+  user: string;
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message';
+  caption: string;
+  read: boolean;
+  createdAt: Date;
+  redirectUrl: string;
+}
+
+/**
  * Interface representing tag counts for the leaderboard.
  *
  * - user - The username.
@@ -287,4 +309,5 @@ export interface ServerToClientEvents {
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
+  notificationUpdate: (notification: Notification) => void;
 }

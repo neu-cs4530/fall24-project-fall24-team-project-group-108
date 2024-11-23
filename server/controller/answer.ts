@@ -1,6 +1,11 @@
 import express, { Response } from 'express';
 import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket } from '../types';
-import { addAnswerToQuestion, populateDocument, saveAnswer } from '../models/application';
+import {
+  addAnswerToQuestion,
+  populateDocument,
+  saveAnswer,
+  saveAnswerNotification,
+} from '../models/application';
 
 const answerController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -51,6 +56,7 @@ const answerController = (socket: FakeSOSocket) => {
     const ansInfo: Answer = req.body.ans;
 
     try {
+      // save the answer
       const ansFromDb = await saveAnswer(ansInfo);
 
       if ('error' in ansFromDb) {
@@ -69,11 +75,19 @@ const answerController = (socket: FakeSOSocket) => {
         throw new Error(populatedAns.error as string);
       }
 
-      // Populates the fields of the answer that was added and emits the new object
+      // create the notification in the db
+      const savedNotification = await saveAnswerNotification(qid, ansInfo);
+
+      if ('error' in savedNotification) {
+        throw new Error(savedNotification.error as string);
+      }
+
+      // emit the answer and notificatoin
       socket.emit('answerUpdate', {
         qid,
         answer: populatedAns as AnswerResponse,
       });
+      socket.emit('notificationUpdate', savedNotification);
       res.json(ansFromDb);
     } catch (err) {
       res.status(500).send(`Error when adding answer: ${(err as Error).message}`);

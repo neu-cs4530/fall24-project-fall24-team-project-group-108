@@ -1,8 +1,9 @@
 .question {
   display: flex;
   flex-direction: row;
-  border-top: #000000 1px dashed;
-  position: relative; /* Make sure the parent is positioned for absolute children */
+  border-top: #8b8b8b 1px solid;
+  margin-left: 4%;
+  margin-right: 4%;
 }
 
 .profile-hover-container {
@@ -58,7 +59,7 @@
 }
 
 .question_author {
-  color: red;
+  color: #64ade1;
 }
 
 .question_author:hover {

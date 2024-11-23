@@ -76,6 +76,7 @@ export interface Tag {
  * - isModerator - the current state of the user's moderator status.
  * - badges - The badges obtained by the user.
  * - infractions - A list of answer/question id's that were removed by moderators
+ * - doNotDisturb - Whether or not the user is on dnd.
  */
 export interface User {
   _id?: ObjectId;
@@ -85,6 +86,7 @@ export interface User {
   badges: Badge[];
   profileIcon?: string;
   infractions: string[];
+  doNotDisturb?: false;
 }
 
 /**
@@ -105,6 +107,16 @@ export interface AddUserRequest extends Request {
  */
 export interface MakeUserModeratorRequest extends Request {
   body: {
+    username: string;
+  };
+}
+
+/**
+ * Interface extending the request body when getting a user's dnd status:
+ * - username - The user.
+ */
+export interface GetUserStatusRequest extends Request {
+  params: {
     username: string;
   };
 }
@@ -320,6 +332,31 @@ export interface Correspondence {
   views: string[],
   userTyping: string[]
 }
+
+
+/**
+ * Interface representing the structure of a Notification object.
+ *
+ * - user - The user receiving the notification.
+ * - type - The type of notification it is.
+ * - caption - The caption of the notification.
+ * - read - Whether or not the notification was read.
+ * - createdAt - When the notification was made.
+ * - redirectUrl - The url to go to when the notification is clicked.
+ */
+export interface Notification {
+  user: string,
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message',
+  caption: string,
+  read: boolean,
+  createdAt: Date,
+  redirectUrl: string
+}
+
+/**
+ * Type representing the possible responses for an Notification-related operation.
+ */
+export type NotificationResponse = Notification | { error: string };
 
 /**
  * Type representing the possible responses for a Question-related operation.
@@ -831,4 +868,5 @@ export interface ServerToClientEvents {
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
+  notificationUpdate: (notification: NotificationResponse) => void;
 }

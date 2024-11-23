@@ -6,6 +6,7 @@ import {
   AddMessageRequest,
   FakeSOSocket,
   UpdateMessageRequest,
+  Notification,
   UpdateMessageViewsRequest,
   UpdateMessageEmojisRequest,
   Correspondence,
@@ -19,6 +20,7 @@ import {
   updateMessageViewsById,
   updateMessageEmojisById,
 } from '../models/application';
+import NotificationModel from '../models/notifications';
 import CorrespondenceModel from '../models/correspondence';
 import MessageModel from '../models/message';
 
@@ -125,6 +127,34 @@ const messageController = (socket: FakeSOSocket) => {
       if (status && 'error' in status) {
         throw new Error(status.error as string);
       }
+
+      const notificationPromises = [];
+
+      for (const member of status.messageMembers) {
+        if (member !== messageFromDb.messageBy) {
+          // create the notification for the question author
+          const notification: Notification = {
+            user: member,
+            type: 'message',
+            caption: `${messageFromDb.messageBy} sent you a message`,
+            read: false,
+            createdAt: new Date(),
+            redirectUrl: `/messagePage`,
+          };
+
+          // save the notification to the db and push the promise into the array
+          const promise = NotificationModel.create(notification).then(savedNotification => {
+            if ('error' in savedNotification) {
+              throw new Error(savedNotification.error as string);
+            }
+            socket.emit('notificationUpdate', savedNotification);
+          });
+
+          notificationPromises.push(promise);
+        }
+      }
+
+      await Promise.all(notificationPromises);
 
       socket.emit('correspondenceUpdate', status);
       res.json(status);

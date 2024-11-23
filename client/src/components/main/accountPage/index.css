@@ -1,18 +1,30 @@
 
-.profilePageContainer {
+.backgroundContainer {
 background-color: #f2f2f2;
-height: 100%;
-width: 100%;
+height: 90%;
+width: 92%;
 display: flex;
-flex-direction: column;
+align-items: center;
+justify-content: space-between;
+flex-direction: row;
+padding-left: 4%;
+padding-right: 4%;
 }
 
-.profileHeader {
-height: 15%;
-display: flex;
-flex-direction: row;
-justify-content: space-between;
-padding-top: 3%;
+.leftBubble {
+background-color: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+height: 75%;
+width: 30%;
+}
+
+.rightBubble {
+background-color: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+height: 75%;
+width: 68%;
 }
 
 .profileHeaderInfo {
@@ -37,11 +49,8 @@ padding-top: 2%;
 color: #858585;
 }
 
-.profileHeaderButtons {
-margin-right: 5%;
-display: flex;
-flex-direction: row;
-gap: 3%;
-height: 25%;
+.profileTabs {
+max-height: 100%;  
+overflow-y: auto;  
 }
 

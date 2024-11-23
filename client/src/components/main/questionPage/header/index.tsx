@@ -28,7 +28,7 @@ interface QuestionHeaderProps {
  */
 const QuestionHeader = ({ titleText, qcnt, setQuestionOrder }: QuestionHeaderProps) => (
   <div>
-    <div className='space_between right_padding'>
+    <div className='space_between right_padding question-title'>
       <div className='bold_title'>{titleText}</div>
       <AskQuestionButton />
     </div>

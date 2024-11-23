@@ -14,18 +14,20 @@ const TagPage = () => {
   const { tlist, clickTag, clickLeaderboard } = useTagPage();
 
   return (
-    <>
-      <div className='space_between right_padding'>
-        <div className='bold_title'>{tlist.length} Tags</div>
-        <div className='bold_title'>All Tags</div>
-        <AskQuestionButton />
+    <div className='page-background'>
+      <div className='tag-bubble'>
+        <div className='space_between right_padding'>
+          <div className='bold_title'>{tlist.length} Tags</div>
+          <div className='bold_title'>All Tags</div>
+          <AskQuestionButton />
+        </div>
+        <div className='tag_list right_padding'>
+          {tlist.map((t, idx) => (
+            <TagView key={idx} t={t} clickTag={clickTag} clickLeaderboard={clickLeaderboard} />
+          ))}
+        </div>
       </div>
-      <div className='tag_list right_padding'>
-        {tlist.map((t, idx) => (
-          <TagView key={idx} t={t} clickTag={clickTag} clickLeaderboard={clickLeaderboard} />
-        ))}
-      </div>
-    </>
+    </div>
   );
 };
 

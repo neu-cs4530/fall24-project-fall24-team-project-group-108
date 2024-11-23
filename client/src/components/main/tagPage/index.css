@@ -3,3 +3,21 @@
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 80px 20px;
 }
+
+.page-background {
+  background-color: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.tag-bubble {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 75%;
+  width: 90%;
+  overflow-y: auto;
+  margin-top: 7%;
+}

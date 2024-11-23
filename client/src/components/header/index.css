@@ -1,10 +1,31 @@
 .header {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: space-around;
-  height: 10%;
+  justify-content: space-between;
+  height: 9.5%;
   width: 100%;
-  background: #dddddd;
+  background: white;
+  border-bottom: 1px solid rgb(207, 207, 207);
+}
+
+.user-greeting {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+  color: #363845;
+  padding-left: 4%;
+}
+
+.left-header {
+  display: flex;
+  flex-direction: row;
+  gap: 5%;
+  height: 100%;
+  width: 40%;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 3%;
 }
 
 .title {

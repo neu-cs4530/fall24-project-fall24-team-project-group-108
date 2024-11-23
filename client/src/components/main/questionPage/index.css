@@ -2,6 +2,21 @@
   margin-right: 15%;
 }
 
-.question_list:last-child {
-  border-bottom: #000000 1px dashed;
+.page-background {
+  background-color: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
 }
+
+.question-bubble {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  height: 75%;
+  width: 90%;
+  overflow-y: auto;
+  margin-top: 7%;
+}
+

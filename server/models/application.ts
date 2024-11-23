@@ -26,6 +26,8 @@ import {
   Correspondence,
   MessageResponse,
   CorrespondenceResponse,
+  Notification,
+  FakeSOSocket,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
@@ -39,6 +41,7 @@ import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
 import UserReportModel from './userReport';
+import NotificationModel from './notifications';
 
 /**
  * Parses tags from a search string.
@@ -346,6 +349,61 @@ export const updateUserModStatus = async (username: string): Promise<UserRespons
 };
 
 /**
+ * Updates a user to switch their doNotDisturb field.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const updateDoNotDisturb = async (username: string): Promise<UserResponse> => {
+  try {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { username },
+      [
+        {
+          $set: {
+            doNotDisturb: {
+              $cond: {
+                if: { $eq: ['$doNotDisturb', null] },
+                then: true, // Set to true if null
+                else: { $not: '$doNotDisturb' }, // Otherwise, toggle
+              },
+            },
+          },
+        },
+      ],
+      { new: true },
+    );
+
+    if (!updatedUser) {
+      throw new Error(`Failed to fetch and populate a user`);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Gets a user's dnd field.
+ *
+ * @param username - The username of the user being fetched.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const getDoNotDisturbStatus = async (username: string): Promise<boolean> => {
+  try {
+    const user = await UserModel.findOne({ username }, { doNotDisturb: 1 });
+
+    if (!user) {
+      throw new Error(`User with username "${username}" not found.`);
+    }
+
+    return user.doNotDisturb ?? false;
+  } catch (error) {
+    throw new Error(`Error when fetching user document: ${(error as Error).message}`);
+  }
+};
+
  * Updates a user's profile picture.
  *
  * @param username - The username of the user being updated in the db.
@@ -1577,16 +1635,49 @@ export const getTagCountMap = async (): Promise<Map<string, number> | null | { e
 };
 
 /**
+ * Saves a new badge notification to the database.
+ *
+ * @param {string} username - The username of the user who earned the badge
+ * @param {Comment} comment - The name of the badge that was earned
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+const saveBadgeNotification = async (
+  username: string,
+  badgeName: string,
+): Promise<Notification> => {
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'badge',
+    caption: `Congrats! You earned the ${badgeName} badge `,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/account/${username}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
  * Updates the badgeProgress for a user and a given category.
  *
  * @param {string} username - The username to update
  * @param {category} ans - The category of badge to update
+ * @param {FakeSocket} socket - The socket to emit notifications
  *
  * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
  */
 export const updateBadgeProgress = async (
   username: string,
   category: string,
+  socket: FakeSOSocket,
 ): Promise<BadgeProgressResponse> => {
   try {
     const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
@@ -1614,16 +1705,23 @@ export const updateBadgeProgress = async (
           badgeProgress.currentValue += 1;
           await badgeProgress.save();
 
-          // if the user just acquired the badge,
-          // add them to the badge's list
+          // if the user just acquired the badge
           if (badgeProgress.currentValue === badgeProgress.targetValue) {
             const user = await UserModel.findOne({ username });
             if (user) {
-              await BadgeModel.findOneAndUpdate(
+              // add them to the badge's list of users who earned it
+              const badge = await BadgeModel.findOneAndUpdate(
                 { _id: badgeProgress.badge },
                 { $addToSet: { users: user._id } },
                 { new: true },
               );
+
+              if (badge) {
+                // send them a notification
+                const savedNotification = await saveBadgeNotification(username, badge.name);
+
+                socket.emit('notificationUpdate', savedNotification);
+              }
             }
           }
           return badgeProgress;
@@ -1680,4 +1778,126 @@ export const updateTagAnswers = async (
   } catch (error) {
     return { error: 'Error when updating tag progress' };
   }
+};
+
+/**
+ * Saves a new answer notification to the database.
+ *
+ * @param {string} qid - The id of the question related to the answer
+ * @param {Answer} answer - The answer info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved answer, or an error message if the save failed
+ */
+export const saveAnswerNotification = async (
+  qid: string,
+  ansInfo: Answer,
+): Promise<Notification> => {
+  // find the user to alert about their question being answered
+  const question = await QuestionModel.findById(qid).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // create the notification for the question author
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'answer',
+    caption: `${ansInfo.ansBy} answered your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // save the notification to the db
+  const savedNotification = await NotificationModel.create(notification);
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment question notification to the database.
+ *
+ * @param {string} id - The id of the question related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveQuestionCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  // if its a question, notify the question author
+  const question = await QuestionModel.findById(id).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${id}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment answer notification to the database.
+ *
+ * @param {string} id - The id of the answer related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveAnswerCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  const answer = await AnswerModel.findById(id).exec();
+  if (!answer) {
+    throw new Error('Answer not found');
+  }
+
+  // Find the question
+  const answerQuestion = await QuestionModel.findOne({
+    answers: new ObjectId(id),
+  }).exec();
+
+  if (!answerQuestion) {
+    throw new Error('Question not found for the answer');
+  }
+
+  const authorUsername = answer.ansBy;
+  const qid = answerQuestion._id.toString();
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your answer`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
 };

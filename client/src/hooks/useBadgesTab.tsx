@@ -25,14 +25,14 @@ const useBadgesTab = () => {
     navigate: NavigateFunction;
   }) => (
     <>
-      <h3 className='badge-category'>{title}:</h3>
-      <div className='badge-grid'>
-        {badges.length === 0 ? (
-          <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
-        ) : (
-          badges.map(badge => (
+      <div className='badge-category'>{title.toUpperCase()}:</div>
+
+      {badges.length === 0 ? (
+        <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
+      ) : (
+        badges.map(badge => (
+          <div className='badge-grid' key={badge.name}>
             <Card
-              key={badge.name}
               className='badge-item'
               onMouseEnter={() => setHoveredBadge(badge.name)}
               onMouseLeave={() => setHoveredBadge(null)}
@@ -48,9 +48,9 @@ const useBadgesTab = () => {
                 />
               )}
             </Card>
-          ))
-        )}
-      </div>
+          </div>
+        ))
+      )}
     </>
   );
 

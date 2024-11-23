@@ -40,7 +40,7 @@ const badgeProgressController = (socket: FakeSOSocket) => {
     const { category } = req.body;
 
     try {
-      const updatedBadgeProgress = await updateBadgeProgress(username, category);
+      const updatedBadgeProgress = await updateBadgeProgress(username, category, socket);
 
       if ('error' in updatedBadgeProgress) {
         throw new Error(updatedBadgeProgress.error);

@@ -71,13 +71,6 @@ const MessageView = ({ message }: MessageProps) => {
             </button>
           </div>
         )}
-        {/* <div className='codeStyle'>{message.messageText}</div> */}
-        {/* <textarea
-        className='messageText'
-        placeholder='New Message...'
-        value={message.messageText}
-        // onChange={e => setMessageText(e.target.value)}
-      /> */}
         {user.username === message.messageBy ? (
           <button
             className='editMessageButton'

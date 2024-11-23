@@ -2,8 +2,7 @@
 .answer {
   display: flex;
   flex-direction: row;
-  border-bottom: #000000 1px dashed;
-  position: relative;
+  border-bottom: #706f6f 2px solid;
 }
 
 .profile-hover-container {
