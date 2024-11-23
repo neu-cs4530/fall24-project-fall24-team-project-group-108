@@ -1,10 +1,8 @@
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import './index.css';
-import QuestionsTab from './questionsTab';
-import AnswersTab from './answersTab';
-import BadgesTab from './badgesTab';
 import useAccountPage from '../../../hooks/useAccountPage';
+import EditAccountModal from './editModal';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
@@ -15,22 +13,30 @@ const AccountPage = () => {
     sentUser,
     value,
     userLoggedIn,
-    alist,
-    qlist,
-    handleAuthorClick,
     handleChange,
     badgeList,
     navigate,
+    setEditModalOpen,
+    editModalOpen,
+    renderProfilePicture,
+    renderTabContent,
   } = useAccountPage();
 
   return (
     <div className='backgroundContainer'>
       <div className='leftBubble'>
         <div className='profileHeaderInfo'>
-          <AccountCircleIcon sx={{ fontSize: 100 }} />
+          {renderProfilePicture()}
           <div className='profileHeaderUsername'>
             <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
           </div>
+        </div>
+        <div className='profileHeaderButtons'>
+          {userLoggedIn && (
+            <Button variant='contained' onClick={() => setEditModalOpen(true)}>
+              Set Picture
+            </Button>
+          )}
         </div>
       </div>
       <div className='rightBubble'>
@@ -65,7 +71,17 @@ const AccountPage = () => {
               (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
           </div>
         </div>
+        
       </div>
+
+      {editModalOpen && (
+        <EditAccountModal
+          onClose={() => setEditModalOpen(false)}
+          userBadges={badgeList}
+          user={sentUser as string}
+          nav={navigate}
+        />
+      )}
     </div>
   );
 };

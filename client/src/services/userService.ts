@@ -75,6 +75,19 @@ const toggleDoNotDisturb = async (username: string): Promise<User> => {
 };
 
 /**
+ * Function to get a list of all users
+ *
+ * @throws Error if there is an issue fetching or filtering messages.
+ */
+const getUsers = async (): Promise<User[]> => {
+  const res = await api.get(`${USER_API_URL}/getUsers`);
+  if (res.status !== 200) {
+    throw new Error('Error when fetching or filtering correspondences');
+  }
+  return res.data;
+};
+
+/**
  * Gets a user's do not disturb setting.
  *
  * @param username - The username of the user.
@@ -89,5 +102,22 @@ const getDoNotDisturb = async (username: string): Promise<boolean> => {
   }
   return res.data;
 };
+ 
+/**
+ * Updates a user's profile picture.
+ *
+ * @param username - The username of the user being edited.
+ * @param badgeName - The badge they are updating their profile picture to.
+ *
+ * @returns the User object with an updated isModerator field.
+ */
+const changeProfilePicture = async (username: string, badgeName: string): Promise<User> => {
+  const data = { username, badgeName };
+  const res = await api.post(`${USER_API_URL}/updatePicture`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while updating user profile picture');
+  }
+  return res.data;
+};
 
-export { authenticateUser, createUser, makeUserModerator, toggleDoNotDisturb, getDoNotDisturb };
+export { authenticateUser, createUser, makeUserModerator, toggleDoNotDisturb, getDoNotDisturb, getUsers, changeProfilePicture };

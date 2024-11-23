@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { EmojiClickData } from 'emoji-picker-react';
 import useUserContext from './useUserContext';
 import { Message } from '../types';
-import { updateMessageById } from '../services/messageService';
+import { updateMessageById, updateMessageEmojisById } from '../services/messageService';
 
 /**
  * Custom hook for managing the message page state, filtering, and real-time updates.
@@ -19,6 +20,13 @@ const useMessageView = (message: Message) => {
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
   const [messageId] = useState<string>(message._id || '');
+  const [showReadReceipts, setShowReadReceipts] = useState<boolean>(false);
+  const [currentMessage, setCurrentMessage] = useState<Message>({ ...message });
+  const [currentEmojis, setCurrentEmojis] = useState<{ [key: string]: string }>(
+    message.emojiTracker ? { ...message.emojiTracker } : {},
+  );
+  const [viewEmojiPicker, setViewEmojiPicker] = useState<boolean>(false);
+  const [hasFile] = useState<boolean>(!!currentMessage.fileData && !!currentMessage.fileName);
 
   useEffect(() => {
     const updateMessage = async () => {
@@ -51,6 +59,8 @@ const useMessageView = (message: Message) => {
     const handleMessageUpdate = (updatedMessage: Message) => {
       if (updatedMessage._id === messageId) {
         setEditingText(updatedMessage.messageText);
+        setCurrentMessage({ ...updatedMessage });
+        setCurrentEmojis({ ...currentEmojis, ...updatedMessage.emojiTracker });
       }
     };
 
@@ -59,7 +69,42 @@ const useMessageView = (message: Message) => {
     return () => {
       socket.off('messageUpdate', handleMessageUpdate);
     };
-  }, [socket, messageId]);
+  }, [socket, messageId, currentEmojis]);
+
+  const handleEmojiSelection = (selectedEmoji: EmojiClickData) => {
+    setViewEmojiPicker(false);
+    const updatedCurrentEmojis = { ...currentEmojis };
+    if (!(user.username in currentEmojis)) {
+      updatedCurrentEmojis[user.username] = selectedEmoji.emoji;
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    } else if (currentEmojis[user.username] === selectedEmoji.emoji) {
+      delete updatedCurrentEmojis[user.username];
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    } else {
+      updatedCurrentEmojis[user.username] = selectedEmoji.emoji;
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    }
+    const updateEmojisDb = async (mid: string, updatedEmojis: { [key: string]: string }) => {
+      const updatedMessage = await updateMessageEmojisById(mid, { ...updatedEmojis });
+      setCurrentMessage({ ...updatedMessage });
+    };
+    updateEmojisDb(currentMessage._id || '', updatedCurrentEmojis);
+  };
+
+  const handleDownloadFile = () => {
+    if (currentMessage.fileData) {
+      const bufferData = new Uint8Array(currentMessage.fileData);
+      const dataType = new TextDecoder().decode(bufferData.slice(1, 4)).toLowerCase();
+      const mimePath = dataType === 'pdf' ? 'application/pdf' : 'image/jpg';
+      const blobObject = new Blob([bufferData], { type: mimePath });
+      const url = window.URL.createObjectURL(blobObject);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = currentMessage.fileName || 'file'; // The filename that will be used for the downloaded file
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+  };
 
   return {
     isEditing,
@@ -73,6 +118,16 @@ const useMessageView = (message: Message) => {
     isDeleted,
     setIsDeleted,
     user,
+    showReadReceipts,
+    setShowReadReceipts,
+    currentMessage,
+    setCurrentMessage,
+    currentEmojis,
+    handleEmojiSelection,
+    viewEmojiPicker,
+    setViewEmojiPicker,
+    hasFile,
+    handleDownloadFile,
   };
 };
 

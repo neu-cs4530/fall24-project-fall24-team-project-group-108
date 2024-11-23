@@ -7,7 +7,6 @@
       float: right;
       text-align: right;
       width: 5%;
-      margin-right: 10%;
   }
 
   .messageText {
@@ -72,8 +71,28 @@
 .editMessageButton {
     float: right;
     text-align: right;
-    width: 4%;
+    width: 8%;
     margin-left: 1%;
+}
+
+.deleteMessageButton {
+    float: right;
+    text-align: right;
+    width: 8%;
+    margin-left: 1%;
+}
+
+.readReceipts {
+    float: right;
+    text-align: right;
+    width: 6%;
+    margin-left: 1%;
+    margin-right: 10%;
+}
+
+.readReceipts:hover{
+  border: 1px solid #888;
+  background-color: #ddd;
 }
 
 .codeStyle {

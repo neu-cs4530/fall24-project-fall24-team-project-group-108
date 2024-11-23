@@ -11,6 +11,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: string;
   infractions: string[];
   doNotDisturb?: boolean;
 }
@@ -215,6 +216,7 @@ export interface TagCounts {
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
+ * - file - A possible uploaded file the user has attached to the message
  */
 export interface Message {
   _id?: string;
@@ -222,8 +224,11 @@ export interface Message {
   messageDateTime: Date;
   messageBy: string;
   messageTo: string[];
-  views?: string[];
+  views: string[];
   isCodeStyle: boolean;
+  fileName?: string;
+  fileData?: number[];
+  emojiTracker?: { [key: string]: string };
 }
 
 /**
@@ -236,7 +241,8 @@ export interface Correspondence {
   _id?: string;
   messages: Message[];
   messageMembers: string[];
-  views?: string[];
+  views: string[];
+  userTyping: string[];
 }
 
 /**

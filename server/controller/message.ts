@@ -7,6 +7,9 @@ import {
   FakeSOSocket,
   UpdateMessageRequest,
   Notification,
+  UpdateMessageViewsRequest,
+  UpdateMessageEmojisRequest,
+  Correspondence,
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
@@ -14,8 +17,12 @@ import {
   saveMessage,
   addMessageToCorrespondence,
   updateMessageById,
+  updateMessageViewsById,
+  updateMessageEmojisById,
 } from '../models/application';
 import NotificationModel from '../models/notifications';
+import CorrespondenceModel from '../models/correspondence';
+import MessageModel from '../models/message';
 
 const messageController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -193,11 +200,84 @@ const messageController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Adds a given username to a list of people who have viewed the message
+   *
+   * @param req The AddMessageRequest object containing the question data.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateMessageViews = async (
+    req: UpdateMessageViewsRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { mid, username } = req.body;
+    try {
+      const result = await updateMessageViewsById(mid, username);
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+
+      const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+        messages: { _id: mid },
+      }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
+
+      socket.emit('correspondenceUpdate', updatedCorrespondenceWithMessage);
+      socket.emit('messageUpdate', result);
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
+
+  /**
+   * Updates the emoji tracker in the message with the corresponding id
+   *
+   * @param req The UpdateMessageEmojisRequest object containing the message id and updated emojis.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateMessageEmojis = async (
+    req: UpdateMessageEmojisRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { mid, emojis } = req.body;
+    try {
+      const result = await updateMessageEmojisById(mid, emojis);
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+      socket.emit('messageUpdate', result);
+
+      const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+        messages: { _id: mid },
+      }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
+
+      socket.emit('correspondenceUpdate', updatedCorrespondenceWithMessage);
+
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getMessage', getMessagesByOrder);
   router.get('/getMessageById/:qid', getMessageById);
   router.post('/addMessage', addMessage);
   router.post('/updateMessage', updateMessage);
+  router.post('/updateMessageViews', updateMessageViews);
+  router.post('/updateMessageEmojis', updateMessageEmojis);
 
   return router;
 };

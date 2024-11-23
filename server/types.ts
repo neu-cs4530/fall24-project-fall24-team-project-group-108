@@ -84,6 +84,7 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: string;
   infractions: string[];
   doNotDisturb?: false;
 }
@@ -118,6 +119,18 @@ export interface GetUserStatusRequest extends Request {
   params: {
     username: string;
   };
+}
+
+/**
+ * Interface extending the request body when updating a profile icon in the db:
+ * - username - The user being updated.
+ * - badgeName - The badge being used as a profile icon.
+ */
+export interface UpdateProfileIconRequest extends Request {
+  body: {
+    username: string;
+    badgeName: string;
+  }
 }
 
 /**
@@ -227,6 +240,59 @@ export interface Question {
   isRemoved: boolean;
 }
 
+
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - userTyping - the username who is typing or null if no one is typing
+ */
+ export interface UpdateCorrespondenceUserTypingRequest extends Request {
+  body: {
+    cid: string;
+    userTyping: string[];
+  };
+}
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - username - the username who is typing or null if no one is typing
+ */
+ export interface UpdateCorrespondenceViewsRequest extends Request {
+  body: {
+    cid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - username - the username who has just viewed the message
+ */
+ export interface UpdateMessageViewsRequest extends Request {
+  body: {
+    mid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - emojis - a dictionary where each key is a username, and each value is their chosen emoji
+ */
+ export interface UpdateMessageEmojisRequest extends Request {
+  body: {
+    mid: string;
+    emojis: {[key: string]: string};
+  };
+}
 /**
  * Interface representing the structure of a Message object.
  *
@@ -243,9 +309,13 @@ export interface Question {
   messageDateTime: Date,
   messageBy: string,
   messageTo: string[],
-  views?: string[],
+  views: string[],
   isCodeStyle: boolean,
+  fileName?: string,
+  fileData?: number[],
+  emojiTracker?: { [key: string]: string },
 }
+
 
 /**
  * Interface representing the structure of a Correspondence object.
@@ -259,7 +329,8 @@ export interface Correspondence {
   _id?: string,
   messages: Message[],
   messageMembers: string[],
-  views?: string[]
+  views: string[],
+  userTyping: string[]
 }
 
 
@@ -697,11 +768,17 @@ export interface AnswerUpdatePayload {
 }
 
 /**
- * Interface for the request query to find correspondences using a search string, which contains:
- * - order - The order in which to sort the correspondences
- * - askedBy - The username of the user who asked the correspondences
+ * Interface for the request query to find correspondences, which contains no arguments
  */
  export interface FindCorrespondenceRequest extends Request {
+  query: {
+  };
+}
+
+/**
+ * Interface for the request query to find all users in the db, which contains no arguments
+ */
+ export interface GetUserRequest extends Request {
   query: {
   };
 }
@@ -726,6 +803,17 @@ export interface FindMessageByIdRequest extends Request {
  * - cid - The unique identifier of the correspondence.
  */
 export interface FindCorrespondenceByIdRequest extends Request {
+  params: {
+    cid: string;
+  };
+}
+
+/**
+ * Interface for the request parameters when finding a correspondence by its ID.
+ * - cid - The unique identifier of the correspondence.
+ * - username - The name of th user to add to the views
+ */
+export interface FindCorrespondenceByIdWithViewsRequest extends Request {
   params: {
     cid: string;
   };
@@ -775,7 +863,7 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageResponse) => void;
-  correspondenceUpdate: (message: CorrespondenceResponse) => void;
+  correspondenceUpdate: (correspondence: CorrespondenceResponse) => void;
   modApplicationUpdate: (update: ModApplicationResponse) => void;
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
