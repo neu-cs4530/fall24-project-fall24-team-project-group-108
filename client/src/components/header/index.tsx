@@ -83,10 +83,6 @@ const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps
             },
           }}
         />
-        <div className='logo-section'>
-          <img src='/codescout.png' alt='Logo' style={{ width: '60px', height: '60px' }}></img>
-          <div className='title'>Code Scout</div>
-        </div>
       </div>
     </div>
   );

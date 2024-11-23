@@ -13,7 +13,10 @@ const SideBarNav = () => {
   return (
     <>
       <div id='sideBarNav' className='sideBarNav'>
-        <div className='site-title'>codescout</div>
+        <div className='site-title'>
+          <img src='/codescout.png' alt='Logo' style={{ width: '60px', height: '60px' }}></img>
+          <div className='title'> codescout</div>
+        </div>
         <NavLink
           to='/home'
           id='menu_questions'
