@@ -1,8 +1,10 @@
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import './index.css';
 import useAccountPage from '../../../hooks/useAccountPage';
 import EditAccountModal from './editModal';
+import BadgesTab from './badgesTab';
+import QuestionsTab from './questionsTab';
+import AnswersTab from './answersTab';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
@@ -13,13 +15,15 @@ const AccountPage = () => {
     sentUser,
     value,
     userLoggedIn,
+    alist,
+    qlist,
+    handleAuthorClick,
     handleChange,
     badgeList,
     navigate,
     setEditModalOpen,
     editModalOpen,
     renderProfilePicture,
-    renderTabContent,
   } = useAccountPage();
 
   return (
@@ -71,7 +75,6 @@ const AccountPage = () => {
               (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
           </div>
         </div>
-        
       </div>
 
       {editModalOpen && (

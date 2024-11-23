@@ -404,6 +404,7 @@ export const getDoNotDisturbStatus = async (username: string): Promise<boolean> 
   }
 };
 
+/**
  * Updates a user's profile picture.
  *
  * @param username - The username of the user being updated in the db.

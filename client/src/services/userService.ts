@@ -102,7 +102,7 @@ const getDoNotDisturb = async (username: string): Promise<boolean> => {
   }
   return res.data;
 };
- 
+
 /**
  * Updates a user's profile picture.
  *
@@ -120,4 +120,12 @@ const changeProfilePicture = async (username: string, badgeName: string): Promis
   return res.data;
 };
 
-export { authenticateUser, createUser, makeUserModerator, toggleDoNotDisturb, getDoNotDisturb, getUsers, changeProfilePicture };
+export {
+  authenticateUser,
+  createUser,
+  makeUserModerator,
+  toggleDoNotDisturb,
+  getDoNotDisturb,
+  getUsers,
+  changeProfilePicture,
+};

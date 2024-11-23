@@ -172,7 +172,7 @@ export const userController = () => {
         res.status(500).send(`Error when updating user moderator status`);
       }
     }
-  }
+  };
 
   const updateProfilePicture = async (
     req: UpdateProfileIconRequest,
