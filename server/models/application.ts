@@ -772,7 +772,7 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
     );
     return c;
   } catch (error) {
-    return { error: 'Error when fetching and updating a message' };
+    return { error: 'Error when fetching and updating a correspondence' };
   }
 };
 

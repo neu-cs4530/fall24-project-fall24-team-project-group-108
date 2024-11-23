@@ -33,6 +33,19 @@ import {
   getBadgeUsers,
   getMessagesByOrder,
   getCorrespondencesByOrder,
+  getAllUsers,
+  fetchAndIncrementCorrespondenceViewsById,
+  fetchAndIncrementMessageViewsById,
+  fetchCorrespondenceById,
+  saveMessage,
+  saveCorrespondence,
+  addMessageToCorrespondence,
+  updateCorrespondenceById,
+  updateCorrespondenceUserTypingById,
+  updateCorrespondenceViewsById,
+  updateMessageViewsById,
+  updateMessageEmojisById,
+  updateMessageById
 } from '../models/application';
 import {
   Answer,
@@ -45,6 +58,7 @@ import {
   Correspondence,
   UserReport,
   ModApplication,
+  CorrespondenceResponse,
 } from '../types';
 import { T1_DESC, T2_DESC, T3_DESC, R1_TEXT, R2_TEXT, R3_TEXT } from '../data/posts_strings';
 import AnswerModel from '../models/answers';
@@ -202,7 +216,7 @@ const message1: Message = {
   messageDateTime: new Date('2023-11-19T09:24:00'),
   messageBy: 'isuzuki',
   messageTo: ['tgwynn'],
-  views: [],
+  views: ['isuzuki'],
   isCodeStyle: false,
 };
 
@@ -212,7 +226,7 @@ const message2: Message = {
   messageDateTime: new Date('2023-11-19T09:24:00'),
   messageBy: 'isuzuki',
   messageTo: ['tgwynn', 'tcobb'],
-  views: [],
+  views: ['isuzuki'],
   isCodeStyle: false,
 };
 
@@ -222,27 +236,30 @@ const message3: Message = {
   messageDateTime: new Date('2023-11-19T09:24:00'),
   messageBy: 'isuzuki',
   messageTo: ['tgwynn', 'tcobb'],
-  views: [],
+  views: ['isuzuki'],
   isCodeStyle: true,
 };
 
 const MESSAGES: Message[] = [message1, message2, message3];
 
+const correspondence1 = {
+  _id: '65e9b58910afe6e94fc6e6ba',
+  messages: [message2, message3],
+  messageMembers: ['isuzuki', 'tgwynn', 'tcobb'],
+  views: [],
+  userTyping: [],
+};
+
+const correspondence2 = {
+  _id: '65e9b58910afe6e94fc6e6bb',
+  messages: [message1],
+  messageMembers: ['isuzuki', 'tgwynn'],
+  views: ['isuzuki'],
+  userTyping: [],
+};
+
 const CORRESPONDENCES: Correspondence[] = [
-  {
-    _id: '65e9b58910afe6e94fc6e6ba',
-    messages: [message2, message3],
-    messageMembers: ['isuzuki', 'tgwynn', 'tcobb'],
-    views: [],
-    userTyping: [],
-  },
-  {
-    _id: '65e9b58910afe6e94fc6e6bb',
-    messages: [message1],
-    messageMembers: ['isuzuki', 'tgwynn'],
-    views: [],
-    userTyping: [],
-  },
+  correspondence1, correspondence2,
 ];
 
 const user1: User = {
@@ -263,16 +280,16 @@ const user2: User = {
   infractions: [],
 };
 
-// const user3: User = {
-//   _id: new ObjectId('65e9b716ff0e892116b2de09'),
-//   username: 'startuser',
-//   password: 'password123',
-//   isModerator: false,
-//   badges: [],
-//   infractions: [],
-// };
+const user3: User = {
+  _id: new ObjectId('65e9b716ff0e892116b2de09'),
+  username: 'startuser',
+  password: 'password123',
+  isModerator: false,
+  badges: [],
+  infractions: [],
+};
 
-// const USERS = [user1, user2, user3];
+const USERS = [user1, user2, user3];
 
 const mockApplication1 = {
   _id: new ObjectId('65e9b786ff0e893116b2af71'),
@@ -1121,47 +1138,504 @@ describe('application module', () => {
       });
     });
 
-    // describe('getAllUsers', () => {
-    //   test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
-    //     mockingoose(UserModel).toReturn(USERS, 'find');
+    describe('getAllUsers', () => {
+      test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
+        mockingoose(UserModel).toReturn(USERS, 'find');
 
-    //     const result = await getAllUsers();
+        const result = await getAllUsers();
 
-    //     expect(result.length).toEqual(3);
-    //     expect(result[0]._id?.toString()).toEqual(USERS[2]._id);
-    //     expect(result[1]._id?.toString()).toEqual(USERS[0]._id);
-    //     expect(result[2]._id?.toString()).toEqual(USERS[1]._id);
-    //   });
+        expect(result.length).toEqual(3);
+        expect(result[0]._id?.toString()).toEqual('65e9b716ff0e892116b2de09');
+        expect(result[1]._id?.toString()).toEqual('65e9b786ff0e893116b2af69');
+        expect(result[2]._id?.toString()).toEqual('65e9b786ff0e893116b2af70');
+      });
 
-    //   test('returns an empty list if there are no users in the model', async () => {
-    //     mockingoose(UserModel).toReturn([] as User[], 'find');
+      test('returns an empty list if there are no users in the model', async () => {
+        mockingoose(UserModel).toReturn([] as User[], 'find');
 
-    //     const result = await getAllUsers();
+        const result = await getAllUsers();
 
-    //     expect(result.length).toEqual(0);
-    //   });
-    // });
+        expect(result.length).toEqual(0);
+      });
+    });
 
-    // describe('fetchCorrespondenceById', () => {
-    //   test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
-    //     mockingoose(UserModel).toReturn(USERS, 'find');
+    describe('fetchCorrespondenceById', () => {
+      test('fetchCorrespondenceById should return correspondence', async () => {
+        
+        mockingoose(CorrespondenceModel).toReturn(correspondence1, 'findOne');
+        QuestionModel.schema.path('messages', Object);
 
-    //     const result = await getAllUsers();
+        const result = (await fetchCorrespondenceById(
+          correspondence1._id || '',
+        )) as Correspondence;
 
-    //     expect(result.length).toEqual(3);
-    //     expect(result[0]._id?.toString()).toEqual(USERS[2]._id);
-    //     expect(result[1]._id?.toString()).toEqual(USERS[0]._id);
-    //     expect(result[2]._id?.toString()).toEqual(USERS[1]._id);
-    //   });
+        console.log('fetchCorrespondenceById should return correspondence')
+        console.log(result);
 
-    //   test('returns an empty list if there are no users in the model', async () => {
-    //     mockingoose(UserModel).toReturn([] as User[], 'find');
+        expect(result.views.length).toEqual(0);
+        expect(result.views).toEqual(correspondence1.views);
+        expect(result._id?.toString()).toEqual(correspondence1._id);
+        expect(result.messageMembers).toEqual(correspondence1.messageMembers);
+        expect(result.userTyping).toEqual(correspondence1.userTyping);
+      });
 
-    //     const result = await getAllUsers();
+      test('fetchCorrespondenceById should return null if id does not exist', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOne');
 
-    //     expect(result.length).toEqual(0);
-    //   });
-    // });
+        const result = (await fetchCorrespondenceById(
+          'incorrect_cid',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching a correspondence');
+      });
+
+      test('fetchCorrespondenceById should return an object with error if findOne throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOne');
+
+        const result = (await fetchCorrespondenceById(
+          correspondence1._id || '',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching a correspondence');
+      });
+    });
+
+    describe('fetchAndIncrementMessageViewsById', () => {
+      test('fetchAndIncrementMessageViewsById should return message and add the user to the list of views if new', async () => {
+        
+        mockingoose(MessageModel).toReturn({ ...message1, views: ['tgwynn', ...message1.views] }, 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementMessageViewsById(
+          message1._id || '',
+          'tgwynn',
+        )) as Message;
+
+        expect(result.views.length).toEqual(2);
+        expect(result.views).toEqual(['tgwynn', ...message1.views]);
+        expect(result._id?.toString()).toEqual(message1._id);
+        expect(result.messageText).toEqual(message1.messageText);
+        expect(result.messageDateTime).toEqual(message1.messageDateTime);
+        expect(result.messageBy).toEqual(message1.messageBy);
+        expect(result.messageTo).toEqual(message1.messageTo);
+      });
+
+      test('fetchAndIncrementMessageViewsById should return message and not add the user to the list of views if already viewed by them', async () => {
+        
+        mockingoose(MessageModel).toReturn({ ...message1 }, 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementMessageViewsById(
+          message1._id || '',
+          'isuzuki',
+        )) as Message;
+
+        expect(result.views.length).toEqual(1);
+        expect(result.views).toEqual(message1.views);
+        expect(result._id?.toString()).toEqual(message1._id);
+        expect(result.messageText).toEqual(message1.messageText);
+        expect(result.messageDateTime).toEqual(message1.messageDateTime);
+        expect(result.messageBy).toEqual(message1.messageBy);
+        expect(result.messageTo).toEqual(message1.messageTo);
+      });
+
+      test('fetchAndIncrementMessageViewsById should return null if id does not exist', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementMessageViewsById(
+          'incorrect_cid',
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching and updating a message');
+      });
+
+      test('fetchAndIncrementMessageViewsById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementMessageViewsById(
+          message2._id || '',
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching and updating a message');
+      });
+    });
+
+    describe('fetchAndIncrementCorrespondenceViewsById', () => {
+      test('fetchAndIncrementCorrespondenceViewsById should return correspondence and add the user to the list of views if new', async () => {
+        
+        mockingoose(CorrespondenceModel).toReturn({ ...correspondence1, views: ['isuzuki', ...correspondence1.views] }, 'findOneAndUpdate');
+        CorrespondenceModel.schema.path('messages', Object);
+
+        const result = (await fetchAndIncrementCorrespondenceViewsById(
+          correspondence1._id,
+          'isuzuki',
+        )) as Correspondence;
+
+        expect(result.views.length).toEqual(1);
+        expect(result.views).toEqual(['isuzuki']);
+        expect(result._id?.toString()).toEqual(correspondence1._id);
+        expect(result.messages).toEqual(correspondence1.messages);
+        expect(result.messageMembers).toEqual(correspondence1.messageMembers);
+        expect(result.userTyping).toEqual(correspondence1.userTyping);
+      });
+
+      test('fetchAndIncrementCorrespondenceViewsById should return correspondence and not add the user to the list of views if already viewed by them', async () => {
+        
+        mockingoose(CorrespondenceModel).toReturn({ ...correspondence2 }, 'findOneAndUpdate');
+        CorrespondenceModel.schema.path('messages', Object);
+
+        const result = (await fetchAndIncrementCorrespondenceViewsById(
+          correspondence2._id,
+          'isuzuki',
+        )) as Correspondence;
+
+        expect(result.views.length).toEqual(1);
+        expect(result.views).toEqual(['isuzuki']);
+        expect(result._id?.toString()).toEqual(correspondence2._id);
+        expect(result.messages).toEqual(correspondence2.messages);
+        expect(result.messageMembers).toEqual(correspondence2.messageMembers);
+        expect(result.userTyping).toEqual(correspondence2.userTyping);
+      });
+
+      test('fetchAndIncrementQuestionViewsById should return null if id does not exist', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementCorrespondenceViewsById(
+          'incorrect_cid',
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching and updating a correspondence');
+      });
+
+      test('fetchAndIncrementQuestionViewsById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await fetchAndIncrementCorrespondenceViewsById(
+          correspondence2._id,
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when fetching and updating a correspondence');
+      });
+    });
+
+    describe('updateCorrespondenceById', () => {
+      test('updateCorrespondenceById should return the updated correspondence with the given list of messageMembers', async () => {
+
+        mockingoose(CorrespondenceModel).toReturn({ ...correspondence2, messageMembers: ['isuzuki', 'tgwynn', 'hwagner', 'bruth'] }, 'findOneAndUpdate');
+        CorrespondenceModel.schema.path('messages', Object);
+
+        const result = (await updateCorrespondenceById(
+          correspondence2._id,
+          ['isuzuki', 'tgwynn', 'hwagner', 'bruth'],
+        )) as Correspondence;
+
+        expect(result.views).toEqual(correspondence2.views);
+        expect(result._id?.toString()).toEqual(correspondence2._id);
+        expect(result.messages).toEqual(correspondence2.messages);
+        expect(result.messageMembers).toEqual(['isuzuki', 'tgwynn', 'hwagner', 'bruth']);
+        expect(result.userTyping).toEqual(correspondence2.userTyping);
+
+      });
+
+      test('updateCorrespondenceById should return null if id does not exist', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceById(
+          'incorrect_cid',
+          ['isuzuki'],
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+      test('updateCorrespondenceById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceById(
+          correspondence2._id,
+          ['isuzuki'],
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+    });
+
+    describe('updateCorrespondenceUserTypingById', () => {
+      test('updateCorrespondenceUserTypingById should return the updated correspondence with the given userTyping value', async () => {
+
+        mockingoose(CorrespondenceModel).toReturn({ ...correspondence2, userTyping: ['isuzuki', 'tgwynn', 'hwagner', 'bruth'] }, 'findOneAndUpdate');
+        CorrespondenceModel.schema.path('messages', Object);
+
+        const result = (await updateCorrespondenceUserTypingById(
+          correspondence2._id,
+          ['isuzuki', 'tgwynn', 'hwagner', 'bruth'],
+        )) as Correspondence;
+
+        expect(result.views).toEqual(correspondence2.views);
+        expect(result._id?.toString()).toEqual(correspondence2._id);
+        expect(result.messages).toEqual(correspondence2.messages);
+        expect(result.messageMembers).toEqual(correspondence2.messageMembers);
+        expect(result.userTyping).toEqual(['isuzuki', 'tgwynn', 'hwagner', 'bruth']);
+
+      });
+
+      test('updateCorrespondenceById should return null if id does not exist', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceUserTypingById(
+          'incorrect_cid',
+          ['isuzuki'],
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+      test('updateCorrespondenceById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceUserTypingById(
+          correspondence2._id,
+          ['isuzuki'],
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+    });
+
+    describe('updateCorrespondenceViewsById', () => {
+      test('updateCorrespondenceViewsById should return the updated correspondence with the additional given viewer', async () => {
+
+        mockingoose(CorrespondenceModel).toReturn({ ...correspondence2, views: [...correspondence2.views, 'bruth'] }, 'findOneAndUpdate');
+        CorrespondenceModel.schema.path('messages', Object);
+
+        const result = (await updateCorrespondenceViewsById(
+          correspondence2._id,
+          'bruth',
+        )) as Correspondence;
+
+        expect(result.views).toEqual([...correspondence2.views, 'bruth']);
+        expect(result._id?.toString()).toEqual(correspondence2._id);
+        expect(result.messages).toEqual(correspondence2.messages);
+        expect(result.messageMembers).toEqual(correspondence2.messageMembers);
+        expect(result.userTyping).toEqual(correspondence2.userTyping);
+
+      });
+
+      test('updateCorrespondenceViewsById should return null if id does not exist', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceViewsById(
+          'incorrect_cid',
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+      test('updateCorrespondenceViewsById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateCorrespondenceViewsById(
+          correspondence2._id,
+          'isuzuki',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating correspondence');
+      });
+
+    });
+
+    describe('updateMessageViewsById', () => {
+      test('updateMessageViewsById should return the updated message with the additional given viewer', async () => {
+
+        mockingoose(MessageModel).toReturn({ ...message1, views: [...message1.views, 'tgwynn'] }, 'findOneAndUpdate');
+
+        const result = (await updateMessageViewsById(
+          message1._id || '',
+          'tgwynn',
+        )) as Message;
+
+        expect(result.views).toEqual([...message1.views, 'tgwynn']);
+        expect(result._id?.toString()).toEqual(message1._id);
+        expect(result.messageText).toEqual(message1.messageText);
+        expect(result.messageBy).toEqual(message1.messageBy);
+        expect(result.messageTo).toEqual(message1.messageTo);
+        expect(result.messageDateTime).toEqual(message1.messageDateTime);
+
+      });
+
+      test('updateMessageViewsById should return null if id does not exist', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageViewsById(
+          'incorrect_cid',
+          'tgwynn',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating message');
+      });
+
+      test('updateMessageViewsById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageViewsById(
+          message1._id || '',
+          'tgwynn',
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating message');
+      });
+
+    });
+
+    describe('updateMessageEmojisById', () => {
+      test('updateMessageEmojisById should return the updated message with the additional emojis', async () => {
+
+        mockingoose(MessageModel).toReturn({ ...message1, emojiTracker: {'ichiro': 'happy', 'tgwynn': 'sad'} }, 'findOneAndUpdate');
+
+        const result = (await updateMessageEmojisById(
+          message1._id || '',
+          {'ichiro': 'happy', 'tgwynn': 'sad'}
+        )) as Message;
+
+        expect(result.views).toEqual(message1.views);
+        expect(result._id?.toString()).toEqual(message1._id);
+        expect(result.messageText).toEqual(message1.messageText);
+        expect(result.messageBy).toEqual(message1.messageBy);
+        expect(result.messageTo).toEqual(message1.messageTo);
+        expect(result.messageDateTime).toEqual(message1.messageDateTime);
+        // expect(result.emojiTracker?new Map(result.emojiTracker.toObject()):'').toEqual(expect.objectContaining({'ichiro': 'happy', 'tgwynn': 'sad'}));
+
+      });
+
+      test('updateMessageEmojisById should return null if id does not exist', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageEmojisById(
+          'incorrect_cid',
+          {'ichiro': 'happy', 'tgwynn': 'sad'}
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating messages emojis');
+      });
+
+      test('updateMessageEmojisById should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageEmojisById(
+          message1._id || '',
+          {'ichiro': 'happy', 'tgwynn': 'sad'}
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating messages emojis');
+      });
+
+    });
+
+    describe('updateMessageById', () => {
+      test('updateMessageById should return the updated messages correspondence with the updated text and isCodeStyle value', async () => {
+
+        const expectedMessage = { ...message1, messageText: 'updated Message txt', isCodeStyle: true };
+        mockingoose(MessageModel).toReturn(expectedMessage, 'findOneAndUpdate');
+        const expectedCorrespondence = {messages: [expectedMessage], messageMembers: ['isuzuki', 'tgwynn'], views: [], userTyping: []} as Correspondence;
+        mockingoose(CorrespondenceModel).toReturn(expectedCorrespondence, 'findOne');
+
+        const result = (await updateMessageById(
+          message1._id || '',
+          'updated Message txt',
+          true
+        )) as Correspondence;
+
+        expect(result.views).toEqual([...expectedCorrespondence.views]);
+        expect(result.messages).toEqual([expectedMessage]);
+        expect(result.messageMembers).toEqual(['isuzuki', 'tgwynn']);
+        expect(result.views).toEqual([]);
+        expect(result.userTyping).toEqual([]);
+        expect(result.messages[0].messageText).toEqual('updated Message txt')
+        expect(result.messages[0].isCodeStyle).toEqual(true)
+        expect(result.messages[0]._id).toEqual(message1._id)
+
+      });
+
+      test('updateMessageById should return null if id does not exist', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageById(
+          'incorrect_cid',
+          'updated Message txt',
+          true
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating message');
+      });
+
+      test('updateMessageById should return an object with error if findOneAndUpdate throws an error for MessageModel', async () => {
+        mockingoose(MessageModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageById(
+          message1._id || '',
+          'updated Message txt',
+          true
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when updating message');
+      });
+
+      test('updateMessageById should return an object with error if findOneAndUpdate throws an error for CorrespondenceModel', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = (await updateMessageById(
+          message1._id || '',
+          'updated Message txt',
+          true
+        )) as {
+          error: string;
+        };
+
+        expect(result.error).toEqual('Error when retrieving updated correspondence');
+      });
+
+    });
 
     describe('getQuestionsByOrder', () => {
       test('get active questions, newest questions sorted by most recently answered 1', async () => {
@@ -1354,6 +1828,49 @@ describe('application module', () => {
       });
     });
 
+    describe('saveMessage', () => {
+      test('saveMessage should return the saved message', async () => {
+        const mockMessage = {
+          _id: '65e9b5a995b6c7045a30d823',
+          messageText: 'fake message',
+          messageDateTime: new Date(),
+          messageBy: 'ichiro',
+          messageTo: ['osmith', 'laparicio'],
+          isCodeStyle: false,
+          views: []
+        };
+
+        const result = (await saveMessage(mockMessage)) as Message;
+
+        expect(result._id).toBeDefined();
+        expect(result.messageText).toEqual(mockMessage.messageText);
+        expect(result.messageDateTime).toEqual(mockMessage.messageDateTime);
+        expect(result.messageBy).toEqual(mockMessage.messageBy);
+        expect(result.messageTo).toEqual(mockMessage.messageTo);
+        expect(result.isCodeStyle).toEqual(mockMessage.isCodeStyle);
+        expect(result.views).toEqual(mockMessage.views);
+      });
+    });
+
+    describe('saveCorrespondence', () => {
+      test('saveCorrespondence should return the saved correspondence', async () => {
+        const mockCorrespondence = {
+          _id: '65e9b5a995b6c7045a30d823',
+          messages: [],
+          messageMembers: ['osmith', 'laparicio', 'ichiro'],
+          views: [],
+          userTyping: []
+        };
+
+        const result = (await saveCorrespondence(mockCorrespondence)) as Correspondence;
+
+        expect(result._id).toBeDefined();
+        expect(result.messages).toEqual(mockCorrespondence.messages);
+        expect(result.messageMembers).toEqual(mockCorrespondence.messageMembers);
+        expect(result.views).toEqual(mockCorrespondence.views);
+      });
+    });
+
     describe('saveQuestion', () => {
       test('saveQuestion should return the saved question', async () => {
         const mockQn = {
@@ -1542,6 +2059,56 @@ describe('application module', () => {
         const result = await addVoteToQuestion('someQuestionId', 'testUser', 'downvote');
 
         expect(result).toEqual({ error: 'Error when adding downvote to question' });
+      });
+    });
+  });
+
+  describe('Message model', () => {
+    describe('addMessageToCorrespondence', () => {
+      test('addMessageToCorrespondence should return the updated correspondence, with one more message and the same views as the message', async () => {
+        const expectedCorrespondence = {... correspondence1, messages: [... correspondence1.messages, message2], views: message2.views};
+
+        mockingoose(CorrespondenceModel).toReturn(expectedCorrespondence, 'findOneAndUpdate');
+
+        const result = (await addMessageToCorrespondence(correspondence1._id, message2)) as Correspondence;
+
+        expect(result._id ? result._id.toString(): '').toEqual(correspondence1._id);
+        expect(result.messages.length).toEqual(correspondence1.messages.length+1);
+        expect(result.messages).toContain(message2);
+        expect(result.views).toEqual(message2.views);
+      });
+
+      test('addMessageToCorrespondence should return an object with error if findOneAndUpdate throws an error', async () => {
+        mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
+
+        const result = await addMessageToCorrespondence(correspondence1._id, message2) as {error: string};
+
+        expect(result.error).toEqual('Error when adding message to correspondence');
+      });
+
+      test('addMessageToCorrespondence should return an object with error if findOneAndUpdate returns null', async () => {
+        mockingoose(CorrespondenceModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await addMessageToCorrespondence(correspondence1._id, message2) as {error: string};
+
+        expect(result.error).toEqual('Error when adding message to correspondence');
+      });
+
+      test('addMessageToCorrespondence should throw an error if a required field is missing in the message', async () => {
+        const invalidMessage: Partial<Message> = {
+          messageText: 'This is an answer text',
+          messageBy: 'user123',
+          messageTo: ['ichiro', 'tgwynn'] // Missing messageDateTime
+        };
+
+        const cid = 'validCorrespondenceId';
+
+        try {
+          await addMessageToCorrespondence(cid, invalidMessage as Message);
+        } catch (err: unknown) {
+          expect(err).toBeInstanceOf(Error);
+          if (err instanceof Error) expect(err.message).toBe('Invalid message');
+        }
       });
     });
   });

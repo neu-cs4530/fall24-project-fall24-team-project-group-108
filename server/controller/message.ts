@@ -6,7 +6,6 @@ import {
   AddMessageRequest,
   FakeSOSocket,
   UpdateMessageRequest,
-  Notification,
   UpdateMessageViewsRequest,
   UpdateMessageEmojisRequest,
   Correspondence,
@@ -20,12 +19,38 @@ import {
   updateMessageViewsById,
   updateMessageEmojisById,
 } from '../models/application';
-import NotificationModel from '../models/notifications';
 import CorrespondenceModel from '../models/correspondence';
 import MessageModel from '../models/message';
 
 const messageController = (socket: FakeSOSocket) => {
   const router = express.Router();
+
+  /**
+   * Gets a list of all messages in the database
+   * @param _ 
+   * @param res 
+   */
+  const getMessages = async(_: Request, res: Response): Promise<void> => {
+
+    try {
+      const mlist = await getMessagesByOrder();
+
+      if (mlist && !('error' in mlist)) {
+        // socket.emit('viewsUpdate', m);
+        res.json(mlist);
+        return;
+      }
+
+      throw new Error('Error while fetching messages');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching messages: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching messages`);
+      }
+    }
+
+  }
 
   /**
    * Retrieves a message by its unique ID, and increments the view count for that message.
@@ -58,8 +83,8 @@ const messageController = (socket: FakeSOSocket) => {
         res.json(m);
         return;
       }
-
       throw new Error('Error while fetching message by id');
+
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching message by id: ${err.message}`);
@@ -84,7 +109,10 @@ const messageController = (socket: FakeSOSocket) => {
     message.messageBy !== undefined &&
     message.messageBy !== '' &&
     message.messageDateTime !== undefined &&
-    message.messageDateTime !== null;
+    message.messageDateTime !== null &&
+    message.isCodeStyle !== undefined &&
+    message.views !== undefined &&
+    message.views.every(element => [...message.messageTo, message.messageBy].includes(element));
 
   /**
    * Checks if the provided message request contains the required fields.
@@ -127,34 +155,6 @@ const messageController = (socket: FakeSOSocket) => {
       if (status && 'error' in status) {
         throw new Error(status.error as string);
       }
-
-      const notificationPromises = [];
-
-      for (const member of status.messageMembers) {
-        if (member !== messageFromDb.messageBy) {
-          // create the notification for the question author
-          const notification: Notification = {
-            user: member,
-            type: 'message',
-            caption: `${messageFromDb.messageBy} sent you a message`,
-            read: false,
-            createdAt: new Date(),
-            redirectUrl: `/messagePage`,
-          };
-
-          // save the notification to the db and push the promise into the array
-          const promise = NotificationModel.create(notification).then(savedNotification => {
-            if ('error' in savedNotification) {
-              throw new Error(savedNotification.error as string);
-            }
-            socket.emit('notificationUpdate', savedNotification);
-          });
-
-          notificationPromises.push(promise);
-        }
-      }
-
-      await Promise.all(notificationPromises);
 
       socket.emit('correspondenceUpdate', status);
       res.json(status);
@@ -273,7 +273,7 @@ const messageController = (socket: FakeSOSocket) => {
 
   // add appropriate HTTP verbs and their endpoints to the router
   router.get('/getMessage', getMessagesByOrder);
-  router.get('/getMessageById/:qid', getMessageById);
+  router.get('/getMessageById/:mid', getMessageById);
   router.post('/addMessage', addMessage);
   router.post('/updateMessage', updateMessage);
   router.post('/updateMessageViews', updateMessageViews);
