@@ -29,11 +29,10 @@ const AccountPage = () => {
   return (
     <div className='backgroundContainer'>
       <div className='leftBubble'>
-        <div className='profileHeaderInfo'>
-          {renderProfilePicture()}
-          <div className='profileHeaderUsername'>
-            <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
-          </div>
+        <div className='profilePicture'>{renderProfilePicture()}</div>
+
+        <div className='profileHeaderUsername'>
+          <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
         </div>
         <div className='profileHeaderButtons'>
           {userLoggedIn && (
@@ -44,36 +43,34 @@ const AccountPage = () => {
         </div>
       </div>
       <div className='rightBubble'>
+        <div className='stickyTabs'>
+          <Tabs value={value} onChange={handleChange} aria-label='basic tabs example' centered>
+            <Tab label='Badges' />
+            <Tab label='Questions' />
+            <Tab label='Answers' />
+          </Tabs>
+        </div>
         <div className='profileTabs'>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={value} onChange={handleChange} aria-label='basic tabs example' centered>
-              <Tab label='Badges' />
-              <Tab label='Questions' />
-              <Tab label='Answers' />
-            </Tabs>
-          </Box>
-          <div>
-            {value === 0 &&
-              (userLoggedIn ? (
-                <BadgesTab
-                  user={'you'}
-                  handleClick={handleAuthorClick}
-                  userBadges={badgeList}
-                  navigate={navigate}
-                />
-              ) : (
-                <BadgesTab
-                  user={sentUser}
-                  handleClick={handleAuthorClick}
-                  userBadges={badgeList}
-                  navigate={navigate}
-                />
-              ))}
-            {value === 1 &&
-              (userLoggedIn ? QuestionsTab('you', qlist) : QuestionsTab(sentUser as string, qlist))}
-            {value === 2 &&
-              (userLoggedIn ? AnswersTab('you', alist) : AnswersTab(sentUser as string, alist))}
-          </div>
+          {value === 0 &&
+            (userLoggedIn ? (
+              <BadgesTab
+                user={'You'}
+                handleClick={handleAuthorClick}
+                userBadges={badgeList}
+                navigate={navigate}
+              />
+            ) : (
+              <BadgesTab
+                user={sentUser}
+                handleClick={handleAuthorClick}
+                userBadges={badgeList}
+                navigate={navigate}
+              />
+            ))}
+          {value === 1 &&
+            (userLoggedIn ? QuestionsTab('You', qlist) : QuestionsTab(sentUser as string, qlist))}
+          {value === 2 &&
+            (userLoggedIn ? AnswersTab('You', alist) : AnswersTab(sentUser as string, alist))}
         </div>
       </div>
 
