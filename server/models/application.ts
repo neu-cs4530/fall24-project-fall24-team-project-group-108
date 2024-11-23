@@ -1808,7 +1808,6 @@ export const updateTagAnswers = async (
         }
 
         await leaderboardEntry?.save();
-        console.log(`${entry.user} position from ${oldPosition} to ${newPosition}`);
 
         // If position changed, notify the user
         if (oldPosition !== null && oldPosition !== newPosition) {
@@ -1823,7 +1822,6 @@ export const updateTagAnswers = async (
             createdAt: new Date(),
             redirectUrl: `/tags/${tagName}`,
           };
-          console.log(notification);
 
           // Save the notification and emit it via socket
           const savedNotification = await NotificationModel.create(notification);
