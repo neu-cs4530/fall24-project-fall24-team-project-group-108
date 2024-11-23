@@ -11,18 +11,10 @@ interface ProfileHoverProps {
 }
 
 const ProfileHover = ({ user, iconData, badges }: ProfileHoverProps) => {
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const { getBadgeIcon } = useBadgePage();
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePosition({ x: e.clientX, y: e.clientY });
-  };
 
   const maxX = window.innerWidth - 200;
   const maxY = window.innerHeight - 200;
-
-  const adjustedX = Math.min(mousePosition.x + 630, maxX);
-  const adjustedY = Math.min(mousePosition.y + 270, maxY);
 
   const renderProfilePicture = () => {
     if (iconData?.category && iconData?.tier) {
@@ -40,13 +32,7 @@ const ProfileHover = ({ user, iconData, badges }: ProfileHoverProps) => {
   const limitedBadgeList = badgeList.length > 110 ? `${badgeList.slice(0, 50)}...` : badgeList;
 
   return (
-    <div
-      className='profile-hover'
-      style={{
-        left: adjustedX,
-        top: adjustedY,
-      }}
-      onMouseMove={handleMouseMove}>
+    <div className='profile-hover'>
       <div className='hover-container'>
         <div className='profile-icon'>{renderProfilePicture()}</div>
 
