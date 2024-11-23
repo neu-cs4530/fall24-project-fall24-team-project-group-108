@@ -623,8 +623,23 @@ export interface Badge {
  */
 export interface TagAnswerCount {
   _id?: ObjectId;
-  user: User;
+  user: string;
   tag: Tag;
+  count: number;
+}
+
+/**
+ * Interface representing a Leaderboard, which contains:
+ * - `user`: The id of the user
+ * - `tag`: The id of the tag being ranked
+ * - `position`: The position of the user in the leaderboard for the given tag
+ * - `count`: The number of answers the user has for this tag (used for ranking)
+ */
+export interface Leaderboard {
+  _id?: ObjectId;
+  user: string;
+  tag: Tag;
+  position: number;
   count: number;
 }
 

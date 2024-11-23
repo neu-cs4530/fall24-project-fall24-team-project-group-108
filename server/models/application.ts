@@ -42,6 +42,7 @@ import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
 import UserReportModel from './userReport';
 import NotificationModel from './notifications';
+import LeaderboardModel from './leaderboards';
 
 /**
  * Parses tags from a search string.
@@ -1747,34 +1748,99 @@ export const updateBadgeProgress = async (
 export const updateTagAnswers = async (
   username: string,
   qid: string,
+  socket: FakeSOSocket
 ): Promise<TagAnswerCountResponse> => {
   try {
-    // all tags associated with the question
+    // Fetch the question 
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
       return { error: 'Question not found' };
     }
 
-    const updatePromises = question.tags.map(async tagId => {
-      const tagAnswerCount = await TagAnswerCountModel.findOne({
+    // For each tag of this questino
+    const updatePromises = question.tags.map(async (tagId) => {
+      let tagAnswerCount = await TagAnswerCountModel.findOne({
         user: username,
         tag: tagId,
       }).exec();
 
       if (tagAnswerCount) {
-        // if it exists, update the count
+        // If tagcount exists, update the count
         tagAnswerCount.count += 1;
-        return tagAnswerCount.save();
+      } else {
+        // If not, create a new one
+        tagAnswerCount = await TagAnswerCountModel.create({
+          tag: tagId,
+          user: username,
+          count: 1,
+        });
       }
-      // create a new TagAnswerCount
-      return TagAnswerCountModel.create({
-        tag: tagId,
-        user: username,
-        count: 1,
+
+      await tagAnswerCount.save();
+
+      // Find all sorted TagAnswerCounts for this tag
+      const leaderboardEntries = await TagAnswerCountModel.find({ tag: tagId })
+        .sort({ count: -1 })  
+        .exec();
+
+      // Loop through all the leaderboard entries and update positions
+      const leaderboardPromises = leaderboardEntries.map(async (entry, index) => {
+        const leaderboardEntry = await LeaderboardModel.findOne({
+          user: entry.user,
+          tag: tagId,
+        }).exec();
+
+        const oldPosition = leaderboardEntry?.position ?? null;
+        const newPosition = index + 1;
+
+        if (leaderboardEntry) {
+          // If leaderboard entry exists
+          leaderboardEntry.position = index + 1;
+          leaderboardEntry.count = entry.count;
+        } else {
+          // Create a new leaderboard entry if it doesn't exist
+          await LeaderboardModel.create({
+            user: entry.user,
+            tag: tagId,
+            position: index + 1,
+            count: entry.count,
+          });
+        }
+
+        await leaderboardEntry?.save();
+        console.log(`${entry.user} position from ${oldPosition} to ${newPosition}`);
+
+        // If position changed, notify the user
+        if (oldPosition !== null && oldPosition !== newPosition) {
+          const tag = await TagModel.findById(tagId).exec();
+          const tagName = tag?.name || 'Unknown Tag';
+
+          const notification: Notification = {
+            user: Array.isArray(entry.user) ? entry.user[0] : entry.user,
+            type: 'leaderboard',
+            caption: `Your position on the ${tagName} leaderboard changed from ${oldPosition} to ${newPosition}`,
+            read: false,
+            createdAt: new Date(),
+            redirectUrl: `/tags/${tagName}`,
+          };
+          console.log(notification);
+
+          // Save the notification and emit it via socket
+          const savedNotification = await NotificationModel.create(notification);
+          if (savedNotification) {
+            console.log(`emitting notif`);
+            socket.emit('notificationUpdate', savedNotification);
+          } else {
+            console.error('Notification is undefined or invalid:', savedNotification);
+          }
+        }
       });
+
+      await Promise.all(leaderboardPromises);
     });
 
     await Promise.all(updatePromises);
+
     return question;
   } catch (error) {
     return { error: 'Error when updating tag progress' };

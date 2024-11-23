@@ -269,7 +269,7 @@ const questionController = (socket: FakeSOSocket) => {
     const { user } = req.query;
     const { qid } = req.query;
     try {
-      const updatedQuestion = await updateTagAnswers(user, qid);
+      const updatedQuestion = await updateTagAnswers(user, qid, socket);
       res.json(updatedQuestion);
     } catch (err: unknown) {
       if (err instanceof Error) {
