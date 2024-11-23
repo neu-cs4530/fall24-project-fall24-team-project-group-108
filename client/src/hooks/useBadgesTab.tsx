@@ -31,11 +31,12 @@ const useBadgesTab = () => {
   }) => (
     <>
       <div className='badge-category'>{title.toUpperCase()}:</div>
-      <div className='badge_grid'>
-        {badges.length === 0 ? (
-          <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
-        ) : (
-          badges.map(badge => (
+
+      {badges.length === 0 ? (
+        <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
+      ) : (
+        <div className='badge_grid'>
+          {badges.map(badge => (
             <div
               key={badge.name}
               className='badge-item'
@@ -53,9 +54,9 @@ const useBadgesTab = () => {
                 />
               )}
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </>
   );
 

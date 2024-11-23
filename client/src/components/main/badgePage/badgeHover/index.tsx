@@ -13,7 +13,7 @@ const BadgeHover = (props: BadgeHoverProps) => (
     <div className='badge-info'>
       <div>{props.badge.name}</div>
       <div>{props.badge.description}</div>
-      <div className='user-count'>Your Count: {props.count}</div>
+      {props.count ? <div className='user-count'>Your Count: {props.count}</div> : <></>}
     </div>
   </div>
 );

@@ -1,6 +1,6 @@
-import { Box, Button, Tab, Tabs } from '@mui/material';
+import { Button, Tab, Tabs } from '@mui/material';
 import './index.css';
-import useAccountPage from '../../../hooks/useAccountPage';
+import useAccountPage, { ProfileIconDetails } from '../../../hooks/useAccountPage';
 import EditAccountModal from './editModal';
 import BadgesTab from './badgesTab';
 import QuestionsTab from './questionsTab';
@@ -23,13 +23,17 @@ const AccountPage = () => {
     navigate,
     setEditModalOpen,
     editModalOpen,
+    currentDetails,
     renderProfilePicture,
+    setCurrentDetails,
   } = useAccountPage();
 
   return (
     <div className='backgroundContainer'>
       <div className='leftBubble'>
-        <div className='profilePicture'>{renderProfilePicture()}</div>
+        <div className='profilePicture'>
+          {renderProfilePicture(currentDetails as ProfileIconDetails)}
+        </div>
 
         <div className='profileHeaderUsername'>
           <div>{userLoggedIn ? 'Your Profile' : sentUser}</div>
@@ -80,6 +84,7 @@ const AccountPage = () => {
           userBadges={badgeList}
           user={sentUser as string}
           nav={navigate}
+          setProfilePicture={setCurrentDetails}
         />
       )}
     </div>

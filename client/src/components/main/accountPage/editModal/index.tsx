@@ -12,6 +12,7 @@ import { Badge } from '../../../../types';
 import './index.css';
 import useBadgePage, { BadgeCategory, BadgeTier } from '../../../../hooks/useBadgePage';
 import { changeProfilePicture } from '../../../../services/userService';
+import { ProfileIconDetails } from '../../../../hooks/useAccountPage';
 
 // Interface for the props of EditAccountModal component
 interface EditAccountModalProps {
@@ -19,12 +20,60 @@ interface EditAccountModalProps {
   userBadges: Badge[];
   user: string;
   nav: NavigateFunction;
+  setProfilePicture: (details: ProfileIconDetails) => void;
+}
+
+/**
+ * Maps badge name to details.
+ */
+const iconMap: { [badgeKey in BadgeCategory]: { [tierKey in BadgeTier]: string } } = {
+  answers: {
+    bronze: 'Helper',
+    silver: 'Guide',
+    gold: 'Sage',
+  },
+  questions: {
+    bronze: 'Curious',
+    silver: 'Inquirer',
+    gold: 'Investigator',
+  },
+  votes: {
+    bronze: 'Voter',
+    silver: 'Critic',
+    gold: 'Curator',
+  },
+  comments: {
+    bronze: 'Observer',
+    silver: 'Commentator',
+    gold: 'Debater',
+  },
+};
+
+/**
+ * Finds badge details based on badge name.
+ */
+function reverseBadgeLookup(badgeName: string): ProfileIconDetails | null {
+  for (const category of Object.keys(iconMap)) {
+    const tierMap = iconMap[category as BadgeCategory];
+    for (const tier of Object.keys(tierMap)) {
+      if (tierMap[tier as BadgeTier] === badgeName) {
+        return { category: category as BadgeCategory, tier: tier as BadgeTier };
+      }
+    }
+  }
+  return null;
 }
 
 /**
  * EditAccountModal component
  */
-const EditAccountModal = ({ onClose, userBadges, user, nav }: EditAccountModalProps) => {
+const EditAccountModal = ({
+  onClose,
+  userBadges,
+  user,
+  nav,
+  setProfilePicture,
+}: EditAccountModalProps) => {
   const [selectedBadge, setSelectedBadge] = useState<string>('');
   const { getBadgeIcon } = useBadgePage();
 
@@ -37,6 +86,7 @@ const EditAccountModal = ({ onClose, userBadges, user, nav }: EditAccountModalPr
 
   // Handle profile picture change
   const handleProfileChange = () => {
+    setProfilePicture(reverseBadgeLookup(selectedBadge) as ProfileIconDetails);
     changeProfilePicture(user, selectedBadge);
     onClose();
   };

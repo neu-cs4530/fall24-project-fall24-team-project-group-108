@@ -36,6 +36,7 @@
 
 .badge-category {
   align-self: flex-start;
+  padding-left: 3%;
 }
 
 .badge-grid {
@@ -44,7 +45,7 @@
   grid-auto-rows: 100px;
   grid-template-columns: repeat(3, 1fr);
   gap: 6%;
-  width: 90%;
+  width: 80%;
   height: 100%;
   box-sizing: border-box;
   padding-top: 2%;

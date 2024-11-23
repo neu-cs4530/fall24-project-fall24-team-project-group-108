@@ -75,5 +75,6 @@ overflow-y: auto;
 .stickyTabs .MuiTab-root.Mui-selected {
 color: white;
 font-weight: bold; 
+border-bottom: 4px solid rgb(61, 106, 222);
 }
   
