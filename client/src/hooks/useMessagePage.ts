@@ -32,6 +32,7 @@ const useMessagePage = () => {
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
+  const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -50,20 +51,15 @@ const useMessagePage = () => {
 
     const getUpdatedCorrespondence = async () => {
       if (selectedCorrespondence) {
-        if (messageText === '' && selectedCorrespondence.userTyping.includes(user.username)) {
-          const updatedUserTyping = selectedCorrespondence.userTyping.filter(
-            name => name !== user.username,
-          );
+        if (messageText === '' && currentUserTyping.includes(user.username)) {
+          const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
             selectedCorrespondence._id || '',
             [...updatedUserTyping],
           );
           setSelectedCorrespondence({ ...updatedCorrespondence });
-        } else if (
-          messageText !== '' &&
-          !selectedCorrespondence.userTyping.includes(user.username)
-        ) {
-          const updatedUserTyping = [...selectedCorrespondence.userTyping, user.username];
+        } else if (messageText !== '') {
+          const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
             selectedCorrespondence._id || '',
             [...updatedUserTyping],
@@ -74,7 +70,7 @@ const useMessagePage = () => {
     };
 
     getUpdatedCorrespondence();
-  }, [messageText, selectedCorrespondence, user.username]);
+  }, [messageText]);
 
   useEffect(() => {
     /**
@@ -111,6 +107,7 @@ const useMessagePage = () => {
       await fetchData();
       if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
+        setCurrentUserTyping([...correspondence.userTyping]);
         setSelectedCorrespondenceMessages([...correspondence.messages]);
       }
     };
@@ -147,6 +144,7 @@ const useMessagePage = () => {
       handleMessageViewsUpdate();
     }
     setSelectedCorrespondence(correspondence);
+    setCurrentUserTyping([...correspondence.userTyping]);
     setSelectedCorrespondenceMessages([...correspondence.messages]);
   };
 
@@ -207,6 +205,9 @@ const useMessagePage = () => {
       setMessageText('');
       handleMessageViewsUpdate();
       setUploadedFile(null);
+      setUploadedFileErr('');
+    } else {
+      setUploadedFileErr("Error: Can't send message with empty text");
     }
   };
 
@@ -221,7 +222,7 @@ const useMessagePage = () => {
 
     if (userUploadedFile.size / 1024 > 25) {
       eventTarget.value = '';
-      setUploadedFileErr('File Size Too Large');
+      setUploadedFileErr('Error: File Size Too Large');
       setUploadedFile(null);
     } else {
       setUploadedFileErr('');

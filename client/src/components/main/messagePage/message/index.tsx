@@ -1,5 +1,5 @@
 import './index.css';
-import EmojiPicker from 'emoji-picker-react';
+import { useNavigate } from 'react-router-dom';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
@@ -49,19 +49,25 @@ const MessageView = ({ message }: MessageProps) => {
     setDropDownEmojiSelected,
     dropDownEmojiSelected,
   } = useMessageView(message);
+  const navigate = useNavigate();
 
   return (
     // <div className='messageText'>
     <div className='messageContainer'>
       <div className='message right_padding'>
-        <div className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}>
-          {message.messageBy}
-          <br></br>
-          {Object.values(currentEmojis).join('  ')}
+        <div className='messageByContents'>
+          <div
+            className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}
+            onClick={e => {
+              e.stopPropagation();
+              navigate(`/account/${message.messageBy}`);
+            }}>
+            {message.messageBy}
+            {/* <br></br> */}
+            {/* {Object.values(currentEmojis).join('  ')} */}
+          </div>
+          <div>{Object.values(currentEmojis).join('  ')}</div>
         </div>
-        {/* <button className='readReceipts' onClick={() => setShowReadReceipts(!showReadReceipts)}>
-          Read Receipts
-        </button> */}
         {!isEditing ? (
           <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
         ) : (
@@ -84,29 +90,17 @@ const MessageView = ({ message }: MessageProps) => {
             </button>
           </div>
         )}
-        {/* {user.username === message.messageBy ? (
-          <button
-            className='editMessageButton'
-            disabled={isEditing}
-            onClick={() => setIsEditing(!isEditing)}>
-            Edit
-          </button>
-        ) : (
-          <div className='editMessageButton'></div>
-        )} */}
-        {/* {user.username === message.messageBy ? (
-          <button
-            className='deleteMessageButton'
-            disabled={isDeleted}
-            onClick={() => setIsDeleted(true)}>
-            Delete
-          </button>
-        ) : (
-          <div className='deleteMessageButton'></div>
-        )} */}
+
+        <div className='downloadableFile'>
+          {hasFile ? (
+            <div>
+              {' '}
+              <button onClick={handleDownloadFile}>{`Download 📎`}</button>{' '}
+            </div>
+          ) : null}
+        </div>
         <div className='dropDownEmoji'>
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            {/* Dropdown Button */}
             <button
               onClick={() => {
                 setDropDownEmojiSelected(!dropDownEmojiSelected);
@@ -116,7 +110,7 @@ const MessageView = ({ message }: MessageProps) => {
                 padding: '10px',
                 borderRadius: '5px',
                 border: '1px solid #ccc',
-                background: '#fff',
+                background: 'yellow',
                 cursor: 'pointer',
               }}
               disabled={isDeleted}>
@@ -174,7 +168,7 @@ const MessageView = ({ message }: MessageProps) => {
                 padding: '10px',
                 borderRadius: '5px',
                 border: '1px solid #ccc',
-                background: '#fff',
+                background: 'orange',
                 cursor: 'pointer',
               }}
               disabled={isDeleted}>
@@ -197,7 +191,7 @@ const MessageView = ({ message }: MessageProps) => {
                   borderRadius: '5px',
                   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
                 }}>
-                {['Edit', 'Delete', 'Show Read Receipts'].map((option, index) => (
+                {['Edit', 'Delete'].map((option, index) => (
                   <li
                     key={index}
                     // onClick={() => handleOptionClick(option)}
@@ -219,71 +213,24 @@ const MessageView = ({ message }: MessageProps) => {
             ) : null}
           </div>
         </div>
-        {/* <button onClick={() => setViewEmojiPicker(!viewEmojiPicker)}>Select an Emoji</button> */}
         <div
-          className={message.views.includes(user.username) ? 'messageDate' : 'messageDateUnread'}>
+          className='messageDate'
+          style={{ color: message.views.includes(user.username) ? 'black' : 'red' }}>
           {getMetaData(new Date(message.messageDateTime))}
-        </div>
-      </div>
-      <div className='message right_padding'>
-        <div className='messageBy'>
-          {showReadReceipts && currentMessage.views?.length > 0 ? (
-            <div>
-              {' '}
-              Read:<br></br>
-              {currentMessage.views
-                ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-                .join(', ')}{' '}
-            </div>
-          ) : null}
-          {showReadReceipts &&
-          currentMessage.views?.length !== currentMessage.messageTo.length + 1 ? (
-            <div>
-              {' '}
-              Not Read:<br></br>
-              {currentMessage.messageTo
-                .filter(username => !currentMessage.views?.includes(username))
-                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))//use .map
-                .join(', ')}{' '}
-            </div>
-          ) : null}
-          {/* <div> {Object.values(currentEmojis).join(', ')} </div> */}
-
-          {/* {hasFile ? (
-            <div>
-              {' '}
-              <button
-                onClick={handleDownloadFile}>{`Download ${currentMessage.fileName}`}</button>{' '}
-            </div>
-          ) : null} */}
-        </div>
-        <div className='messageText'>
-          {hasFile ? (
-            <div>
-              {' '}
-              <button
-                onClick={handleDownloadFile}>{`Download ${currentMessage.fileName}`}</button>{' '}
-            </div>
-          ) : null}
-        </div>
-        <div className='emojiPickerDiv' style={{ width: '10px', height: '10px' }}>
-          <EmojiPicker
-            open={viewEmojiPicker}
-            reactionsDefaultOpen={true}
-            allowExpandReactions={false}
-            width={20}
-            height={20}
-            onReactionClick={(selectedEmoji, event) => handleEmojiSelection(selectedEmoji)}
-          />
-        </div>
-        {/* <div> {Object.values(currentEmojis).join(', ')} </div> */}
-        {/* {hasFile ? (
-          <div>
-            {' '}
-            <button
-              onClick={handleDownloadFile}>{`Download ${currentMessage.fileName}`}</button>{' '}
+          <div className='messageDate-data-above'>
+            Read:{' '}
+            {currentMessage.views
+              ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+              .join(', ')}
           </div>
-        ) : null} */}
+          <div className='messageDate-data-below'>
+            Not Read:{' '}
+            {currentMessage.messageTo
+              .filter(username => !currentMessage.views?.includes(username))
+              .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+              .join(', ')}
+          </div>
+        </div>
       </div>
     </div>
   );

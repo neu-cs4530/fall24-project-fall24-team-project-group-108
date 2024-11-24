@@ -1,33 +1,36 @@
 #correspondence_list {
     float: left;
-    width: 30%;
+    width: 90%;
     max-height: 36em;
     overflow: scroll;
     border-style: solid;
+    margin-left: 5%;
 }
 
 
 #selected_correspondence {
-    width: 60%;
+    width: 90%;
     display: flex;
     border-collapse:collapse;
     max-height: 80%;
     overflow: scroll;
     flex-direction: column;
+    margin-left: 5%;
 }
 
 #file_uploader {
-    margin-left: 30%;
+    margin-left: 1%;
     width: 60%;
     display: flex;
     border-collapse:collapse;
     max-height: 80%;
     overflow: scroll;
     flex-direction: column;
+    margin-left: 6%;
 }
 
 #file_uploader_text {
-    margin-left: 30%;
+    margin-left: 1%;
     margin-top: 0.5%;
     width: 60%;
     display: flex;
@@ -35,6 +38,7 @@
     max-height: 80%;
     overflow: scroll;
     flex-direction: column;
+    margin-left: 6%;
 }
 
 #message_list_outer_wrapper {
@@ -43,27 +47,33 @@
     flex-direction:column-reverse;
 }
 
-#selected_correspondence_top {
+/* #selected_correspondence_top {
     max-height: 10em;
     font-size: 1em;
-}
+    width: 90%;
+    margin-left: 5%;
+} */
 
 #message_list {
-    max-height: 30em;
+    max-height: 22em;
     overflow: scroll;
     display: flex;
     flex-direction: column;
     overflow-y: 30em;
+    margin-left: 1%;
+    margin-right: 1%;
 }
 
 #selected_correspondence_bottom {
-    margin-top: 3%;
+    margin-top: 1%;
     margin-bottom: 1%;
     gap: 0.5em;
     height: 50%;
     /* margin-top: auto; */
     display: flex;
     vertical-align: bottom;
+    margin-left: 1%;
+    margin-right: 1%;
 }
 
 #message_text_input {
@@ -127,12 +137,46 @@
     font-size: 0.85rem;
   }
 
-  .updateMembersButton {
+  .selected_correspondence_top {
+      display: flex;
+      flex-direction: row;
+      width: 99%;
+      /* margin-left: 6%; */
+  }
 
-    width: 100%;
+  .backToCorrespondences {
+    width: 6%;
+    /* margin-left: 1%; */
+    /* margin-right: 1%; */
     }
+
+    .updateMembersButton {
+        width: 15%;
+      margin-left: 1%;
+      }
 
   .user-typing {
       font-size: 0.9rem;
       margin-left: 2%;
     }
+
+
+
+.page-background {
+    background-color: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .message-bubble {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    height: 75%;
+    width: 90%;
+    overflow-y: auto;
+    margin-top: 7%;
+  }
+  

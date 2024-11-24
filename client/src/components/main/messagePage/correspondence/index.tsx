@@ -1,6 +1,9 @@
 import './index.css';
+import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../../tool';
 import { Correspondence } from '../../../../types';
+import useQuestion from '../../../../hooks/useQuestion';
+import ProfileHover from '../../accountPage/profileHover';
 
 /**
  * Interface representing the props for the Question component.
@@ -20,37 +23,74 @@ interface CorrespondenceProps {
  *
  * @param correspondence - The question object containing question details.
  */
-const CorrespondenceView = ({ correspondence, username, onClickHandler }: CorrespondenceProps) => (
-  <button
-    className={
-      correspondence.views.includes(username)
-        ? 'correspondenceRead right_padding'
-        : 'correspondenceUnread right_padding'
-    }
-    onClick={() => {
-      onClickHandler(correspondence);
-    }}>
-    <div className='correspondenceData'>
-      <div className='correspondenceNames'>
-        {correspondence.messageMembers.map((memberName, idx) => (
-          <div key={idx}>{memberName}</div>
-        ))}
+const CorrespondenceView = ({ correspondence, username, onClickHandler }: CorrespondenceProps) => {
+  const navigate = useNavigate();
+
+  return (
+    <div
+      className='question right_padding'
+      onClick={() => {
+        onClickHandler(correspondence);
+      }}>
+      <div className='postStats'>
+        <div>{correspondence.messages.length || 0} messages</div>
+        {/* <div className='postStatsMembers'>Members: </div> */}
       </div>
-      <div className='correspondenceLatestMessageText'>
-        {correspondence.messages.length > 0
-          ? correspondence.messages[correspondence.messages.length - 1].messageText
-          : null}
+      <div className='messageMembersContainer'>
+        <div className='messageMembersTitle'>
+          {'Message Members:'}
+          <br></br>
+        </div>
+        <div className='question_tags'>
+          {correspondence.messageMembers
+            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+            .map((memberName, idx) => (
+              <div
+                key={idx}
+                className='memberLink'
+                onClick={e => {
+                  e.stopPropagation();
+                  navigate(`/account/${memberName}`);
+                }}>
+                {memberName} <br></br>
+              </div>
+            ))}
+        </div>
+      </div>
+      <div className='recentMessageContainer'>
+        <div className='messageMembersTitle'>
+          {'Recent Message:'}
+          <br></br>
+        </div>
+        <div className='postTitle'>
+          {correspondence.messages[correspondence.messages.length - 1].messageText}
+        </div>
       </div>
 
-      <div className='correspondenceTime'>
-        {correspondence.messages.length > 0
-          ? getMetaData(
-              new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
-            )
-          : 'No Time'}
+      <div className='lastActivity'>
+        {/* <div
+    className='question_author'
+    onClick={e => {
+      e.stopPropagation();
+      handleAuthorClick();
+    }}
+    onMouseEnter={handleHoverEnter}
+    onMouseLeave={() => setIsHovered(false)}>
+    {q.askedBy}
+  </div> */}
+
+        {/* <div className='postTitle'>
+          {correspondence.messages[correspondence.messages.length - 1].messageText}
+        </div> */}
+        <div>&nbsp;</div>
+        <div className='question_meta'>
+          {getMetaData(
+            new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
+          )}
+        </div>
       </div>
     </div>
-  </button>
-);
+  );
+};
 
 export default CorrespondenceView;
