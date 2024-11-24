@@ -9,6 +9,7 @@ import { Correspondence } from '../../../../types';
  */
 interface CorrespondenceProps {
   correspondence: Correspondence;
+  username: string;
   onClickHandler: (correspondence: Correspondence) => void;
 }
 
@@ -19,9 +20,13 @@ interface CorrespondenceProps {
  *
  * @param correspondence - The question object containing question details.
  */
-const CorrespondenceView = ({ correspondence, onClickHandler }: CorrespondenceProps) => (
+const CorrespondenceView = ({ correspondence, username, onClickHandler }: CorrespondenceProps) => (
   <button
-    className='correspondence right_padding'
+    className={
+      correspondence.views.includes(username)
+        ? 'correspondenceRead right_padding'
+        : 'correspondenceUnread right_padding'
+    }
     onClick={() => {
       onClickHandler(correspondence);
     }}>

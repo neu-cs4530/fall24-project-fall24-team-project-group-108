@@ -1,8 +1,18 @@
-.correspondence {
+.correspondenceUnread {
     flex-direction: row;
     border-top: #000000 1px dashed;
     width: 100%;
     cursor: pointer;
+    background-color: red;
+
+  }
+
+  .correspondenceRead {
+    flex-direction: row;
+    border-top: #000000 1px dashed;
+    width: 100%;
+    cursor: pointer;
+    background-color: gray;
 
   }
 

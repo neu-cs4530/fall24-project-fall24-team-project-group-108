@@ -27,6 +27,10 @@ const useMessageView = (message: Message) => {
   );
   const [viewEmojiPicker, setViewEmojiPicker] = useState<boolean>(false);
   const [hasFile] = useState<boolean>(!!currentMessage.fileData && !!currentMessage.fileName);
+  const [dropDownSelected, setDropDownSelected] = useState<boolean>(false);
+  const [dropDownEmojiSelected, setDropDownEmojiSelected] = useState<boolean>(false);
+  const [selectedMessageOptions, setSelectedMessageOptions] = useState<string[]>([]);
+  const [selectedEmojiOption, setSelectedEmojiOption] = useState<string>('');
 
   useEffect(() => {
     const updateMessage = async () => {
@@ -106,6 +110,54 @@ const useMessageView = (message: Message) => {
     }
   };
 
+  const handleMessageOptions = (messageOptions: string[]) => {
+    if (isDeleted || messageOptions.includes('Delete')) {
+      setIsDeleted(true);
+      setIsEditing(false);
+      setViewEmojiPicker(false);
+      setShowReadReceipts(false);
+    } else {
+      setIsEditing(messageOptions.includes('Edit'));
+      setViewEmojiPicker(messageOptions.includes('Select an Emoji'));
+      setShowReadReceipts(messageOptions.includes('Show Read Receipts'));
+    }
+    setDropDownSelected(false);
+  };
+
+  const handleMessageOptionSelection = (messageSelection: string) => {
+    if (selectedMessageOptions.includes(messageSelection)) {
+      const updatedSelectionList = selectedMessageOptions.filter(
+        selection => selection !== messageSelection,
+      );
+      handleMessageOptions(updatedSelectionList);
+      setSelectedMessageOptions(updatedSelectionList);
+    } else {
+      const updatedSelectionList = [...selectedMessageOptions, messageSelection];
+      handleMessageOptions(updatedSelectionList);
+      setSelectedMessageOptions(updatedSelectionList);
+    }
+  };
+
+  const handleEmojiOptionSelection = (emojiSelection: string) => {
+    // setViewEmojiPicker(false);
+    const updatedCurrentEmojis = { ...currentEmojis };
+    if (!(user.username in currentEmojis)) {
+      updatedCurrentEmojis[user.username] = emojiSelection;
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    } else if (currentEmojis[user.username] === emojiSelection) {
+      delete updatedCurrentEmojis[user.username];
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    } else {
+      updatedCurrentEmojis[user.username] = emojiSelection;
+      setCurrentEmojis({ ...updatedCurrentEmojis });
+    }
+    const updateEmojisDb = async (mid: string, updatedEmojis: { [key: string]: string }) => {
+      const updatedMessage = await updateMessageEmojisById(mid, { ...updatedEmojis });
+      setCurrentMessage({ ...updatedMessage });
+    };
+    updateEmojisDb(currentMessage._id || '', updatedCurrentEmojis);
+  };
+
   return {
     isEditing,
     setIsEditing,
@@ -128,6 +180,13 @@ const useMessageView = (message: Message) => {
     setViewEmojiPicker,
     hasFile,
     handleDownloadFile,
+    dropDownSelected,
+    setDropDownSelected,
+    selectedMessageOptions,
+    handleMessageOptionSelection,
+    handleEmojiOptionSelection,
+    setDropDownEmojiSelected,
+    dropDownEmojiSelected,
   };
 };
 

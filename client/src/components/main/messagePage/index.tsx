@@ -1,5 +1,6 @@
 import './index.css';
 import EmojiPicker from 'emoji-picker-react';
+import { Dropdown } from 'react-bootstrap';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
 import useBan from '../../../hooks/useBan';
@@ -25,7 +26,11 @@ const MessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
+    uploadedFile,
     setUploadedFile,
+    user,
+    handleUploadedFile,
+    uploadedFileErr,
   } = useMessagePage();
 
   return (
@@ -36,6 +41,7 @@ const MessagePage = () => {
           {correspondenceList.map((correspondence, idx) => (
             <CorrespondenceView
               correspondence={correspondence}
+              username={user.username}
               onClickHandler={handleSelectCorrespondence}
               key={idx}
             />
@@ -49,7 +55,7 @@ const MessagePage = () => {
               onClick={() => {
                 handleUpdateCorrespondence();
               }}>
-              Add/Delete Correspondence Members
+              Add Members to Correspondence
             </button>
           ) : null}
           <div id='message_list'>
@@ -59,12 +65,14 @@ const MessagePage = () => {
                 ))
               : 'No Messages Yet'}
           </div>
+          {selectedCorrespondence && selectedCorrespondence.userTyping.length > 0 ? (
+            // <pre>
+            <div id='user-typing' className='user-typing'>
+              {selectedCorrespondence.userTyping.join(',')} is typing...
+            </div>
+          ) : // </pre>
+          null}
           <div id='selected_correspondence_bottom' className='selected_correspondence_bottom'>
-            {selectedCorrespondence ? (
-              <button className='code-style-button' onClick={() => setIsCodeStyle(!isCodeStyle)}>
-                {'<Code> Style'}
-              </button>
-            ) : null}
             {selectedCorrespondence ? (
               <textarea
                 placeholder='New Message...'
@@ -74,28 +82,57 @@ const MessagePage = () => {
               />
             ) : null}
             {selectedCorrespondence ? (
+              <button className='code-style-button' onClick={() => setIsCodeStyle(!isCodeStyle)}>
+                {'<Code> Style'}
+              </button>
+            ) : null}
+            {selectedCorrespondence ? (
               <button className='send-message-button' onClick={handleSendMessage}>
                 Send Message
               </button>
             ) : null}
           </div>
-          {selectedCorrespondence && selectedCorrespondence.userTyping.length > 0 ? (
+          {/* {selectedCorrespondence && selectedCorrespondence.userTyping.length > 0 ? (
             <pre>
               <code id='user-typing' className='user-typing'>
                 {selectedCorrespondence.userTyping.join(',')} is typing...
               </code>
             </pre>
-          ) : null}
+          ) : null} */}
         </div>
+      </div>
+      <div id='file_uploader' className='file_uploader'>
         {selectedCorrespondence ? (
-          <input
-            type='file'
-            onChange={event => setUploadedFile(event.target.files ? event.target.files[0] : null)}
-          />
+          <div>
+            <input
+              type='file'
+              accept='.pdf,.jpg,.jpeg'
+              // value={uploadedFile ? uploadedFile.name : 'No file chosen'}
+              onChange={event => (event.target.files ? handleUploadedFile(event.target) : null)}
+            />
+            {/* <span id='errorMessage'>pdfs, jpgs, jpegs -- (25 KB Max)</span> */}
+          </div>
         ) : null}
-        <div style={{ width: '50px', height: '50px' }}>
-          <EmojiPicker open={false} reactionsDefaultOpen={true} allowExpandReactions={false} />
-        </div>
+      </div>
+      <div id='file_uploader_text' className='file_uploader_text'>
+        {selectedCorrespondence ? (
+          <div>
+            <span id='errorMessage'>pdfs, jpgs, jpegs -- (25 KB Max)</span>
+            {/* <span id='errorMessage' style={{ color: 'red' }}>
+              {uploadedFileErr}
+            </span> */}
+          </div>
+        ) : null}
+      </div>
+      <div id='file_uploader_text' className='file_uploader_text'>
+        {selectedCorrespondence ? (
+          <div>
+            {/* <span id='errorMessage'>pdfs, jpgs, jpegs -- (25 KB Max)</span> */}
+            <span id='errorMessage' style={{ color: 'red' }}>
+              Error: {uploadedFileErr}
+            </span>
+          </div>
+        ) : null}
       </div>
     </>
   );

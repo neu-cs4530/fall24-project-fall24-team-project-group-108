@@ -31,6 +31,7 @@ const useMessagePage = () => {
   const [messageText, setMessageText] = useState<string>('');
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -82,10 +83,20 @@ const useMessagePage = () => {
     const fetchData = async () => {
       try {
         const res = await getCorrespondencesByOrder();
-
-        setCorrespondenceList(
-          res.filter(correspondence => correspondence.messageMembers.indexOf(user.username) > -1),
+        const userCorrespondences = res.filter(
+          correspondence => correspondence.messageMembers.indexOf(user.username) > -1,
         );
+        // console.log(
+        //   userCorrespondences[0].messages[
+        //     userCorrespondences[0].messages.length - 1
+        //   ].messageDateTime.getTime(),
+        // );
+        // userCorrespondences.sort(
+        //   (a, b) =>
+        //     a.messages[a.messages.length - 1].messageDateTime.getTime() -
+        //     b.messages[b.messages.length - 1].messageDateTime.getTime(),
+        // );
+        setCorrespondenceList([...userCorrespondences]);
       } catch (error) {
         // Handle error
       }
@@ -199,6 +210,25 @@ const useMessagePage = () => {
     }
   };
 
+  const handleUploadedFile = (eventTarget: HTMLInputElement) => {
+    if (!eventTarget.files || eventTarget.files.length === 0) {
+      return;
+    }
+
+    const userUploadedFile = eventTarget.files[0];
+
+    console.log(userUploadedFile.size / 1024);
+
+    if (userUploadedFile.size / 1024 > 25) {
+      eventTarget.value = '';
+      setUploadedFileErr('File Size Too Large');
+      setUploadedFile(null);
+    } else {
+      setUploadedFileErr('');
+      setUploadedFile(userUploadedFile);
+    }
+  };
+
   return {
     user,
     correspondenceList,
@@ -217,6 +247,8 @@ const useMessagePage = () => {
     setIsCodeStyle,
     uploadedFile,
     setUploadedFile,
+    handleUploadedFile,
+    uploadedFileErr,
   };
 };
 
