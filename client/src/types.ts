@@ -212,11 +212,17 @@ export interface TagCounts {
 /**
  * Interface representing the structure of a Message object.
  *
+ * - _id - The unique identifier for the message. Optional field.
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
- * - file - A possible uploaded file the user has attached to the message
+ * - views - A list of usernames of users who have viewed the message
+ * - isCodeStyle - A boolean describing whether or not the message contains a code cell
+ * - fileName - The name of the file given. Optional field.
+ * - fileData - A Unit8Array describing the contents of the file. Optional field
+ * - emojiTracker - A map where each key is a user, and each value is their corresponding emoji reaction for the message. Optional Field
+ * - isDeleted - A boolean describing whether or not the message has been deleted
  */
 export interface Message {
   _id?: string;
@@ -229,6 +235,7 @@ export interface Message {
   fileName?: string;
   fileData?: number[];
   emojiTracker?: { [key: string]: string };
+  isDeleted: boolean;
 }
 
 /**
@@ -236,6 +243,8 @@ export interface Message {
  *
  * - messages - A list of all Messages sent between the users in messsageMembers
  * - messageMembers - A list of usernames of users involved in the messages
+ * - views - A list of people who have viewed the correspondence at its most recent update
+ * - userTyping - A list of users who are currently writing a message on the correspondence
  */
 export interface Correspondence {
   _id?: string;

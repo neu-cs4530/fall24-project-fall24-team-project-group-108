@@ -293,6 +293,20 @@ export interface Question {
     emojis: {[key: string]: string};
   };
 }
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - isDeleted - a boolean describing whether or not the current message is deleted
+ */
+ export interface UpdateMessageIsDeletedRequest extends Request {
+  body: {
+    mid: string;
+    isDeleted: boolean;
+  };
+}
+
 /**
  * Interface representing the structure of a Message object.
  *
@@ -302,6 +316,11 @@ export interface Question {
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
  * - views - A list of usernames of users who have viewed the message
+ * - isCodeStyle - A boolean describing whether or not the message contains a code cell
+ * - fileName - The name of the file given. Optional field.
+ * - fileData - A Unit8Array describing the contents of the file. Optional field
+ * - emojiTracker - A map where each key is a user, and each value is their corresponding emoji reaction for the message. Optional Field
+ * - isDeleted - A boolean describing whether or not the message has been deleted
  */
  export interface Message {
   _id?: string,
@@ -314,16 +333,16 @@ export interface Question {
   fileName?: string,
   fileData?: number[],
   emojiTracker?: { [key: string]: string },
+  isDeleted: boolean,
 }
-
 
 /**
  * Interface representing the structure of a Correspondence object.
  *
- * - _id - The unique identifier for the correspondence. Optional field.
  * - messages - A list of all Messages sent between the users in messsageMembers
  * - messageMembers - A list of usernames of users involved in the messages
- * - views - A list of usernames of users who have viewed the correspondence
+ * - views - A list of people who have viewed the correspondence at its most recent update
+ * - userTyping - A list of users who are currently writing a message on the correspondence
  */
 export interface Correspondence {
   _id?: string,
@@ -762,7 +781,6 @@ export interface AnswerUpdatePayload {
  */
  export interface FindMessageRequest extends Request {
   query: {
-    order: OrderType;
     askedBy: string;
   };
 }
@@ -787,6 +805,7 @@ export interface AnswerUpdatePayload {
 /**
  * Interface for the request parameters when finding a message by its ID.
  * - mid - The unique identifier of the message.
+ * - username - The name of the user who has just viewed the message
  */
 export interface FindMessageByIdRequest extends Request {
   params: {
@@ -811,7 +830,7 @@ export interface FindCorrespondenceByIdRequest extends Request {
 /**
  * Interface for the request parameters when finding a correspondence by its ID.
  * - cid - The unique identifier of the correspondence.
- * - username - The name of th user to add to the views
+ * - username - The name of the user to add to the views
  */
 export interface FindCorrespondenceByIdWithViewsRequest extends Request {
   params: {

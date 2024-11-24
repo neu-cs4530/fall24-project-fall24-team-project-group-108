@@ -32,7 +32,7 @@ import {
   getAllBadges,
   getBadgeUsers,
   getMessagesByOrder,
-  getCorrespondencesByOrder,
+  getCorrespondences,
 } from '../models/application';
 import {
   Answer,
@@ -1106,7 +1106,7 @@ describe('application module', () => {
       test('get a list of all the correspondences in CorrespondenceModel', async () => {
         mockingoose(CorrespondenceModel).toReturn(CORRESPONDENCES, 'find');
 
-        const result = await getCorrespondencesByOrder();
+        const result = await getCorrespondences();
 
         expect(result.length).toEqual(2);
         expect(result[0]._id?.toString()).toEqual(CORRESPONDENCES[0]._id);
@@ -1115,7 +1115,7 @@ describe('application module', () => {
       test('returns an empty list if there are no corerspondences in the model', async () => {
         mockingoose(CorrespondenceModel).toReturn([] as Correspondence[], 'find');
 
-        const result = await getCorrespondencesByOrder();
+        const result = await getCorrespondences();
 
         expect(result.length).toEqual(0);
       });

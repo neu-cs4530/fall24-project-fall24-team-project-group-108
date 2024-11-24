@@ -10,15 +10,17 @@ import {
   UpdateMessageViewsRequest,
   UpdateMessageEmojisRequest,
   Correspondence,
+  UpdateMessageIsDeletedRequest,
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
-  getMessagesByOrder,
+  getMessages,
   saveMessage,
   addMessageToCorrespondence,
   updateMessageById,
   updateMessageViewsById,
   updateMessageEmojisById,
+  updateMessageIsDeletedById,
 } from '../models/application';
 import NotificationModel from '../models/notifications';
 import CorrespondenceModel from '../models/correspondence';
@@ -31,8 +33,8 @@ const messageController = (socket: FakeSOSocket) => {
    * Retrieves a message by its unique ID, and increments the view count for that message.
    * If there is an error, the HTTP response's status is updated.
    *
-   * @param req The FindMessageByIdRequest object containing the question ID as a parameter.
-   * @param res The HTTP response object used to send back the question details.
+   * @param req The FindMessageByIdRequest object containing the message ID as a parameter.
+   * @param res The HTTP response object used to send back the message details.
    *
    * @returns A Promise that resolves to void.
    */
@@ -54,7 +56,6 @@ const messageController = (socket: FakeSOSocket) => {
       const m = await fetchAndIncrementMessageViewsById(mid, username);
 
       if (m && !('error' in m)) {
-        // socket.emit('viewsUpdate', m);
         res.json(m);
         return;
       }
@@ -84,7 +85,13 @@ const messageController = (socket: FakeSOSocket) => {
     message.messageBy !== undefined &&
     message.messageBy !== '' &&
     message.messageDateTime !== undefined &&
-    message.messageDateTime !== null;
+    message.messageDateTime !== null
+    message.isCodeStyle !== undefined &&
+    message.isCodeStyle !== null
+    message.isDeleted !== undefined &&
+    message.isDeleted !== null
+    message.views !== undefined &&
+    message.views !== null;;
 
   /**
    * Checks if the provided message request contains the required fields.
@@ -94,11 +101,13 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns `true` if the request is valid, otherwise `false`.
    */
   const isRequestValid = (req: AddMessageRequest): boolean => !!req.body.cid && !!req.body.message;
+
+
   /**
    * Adds a new message to the database. The message is first validated and then saved.
    * If saving the message fails, the HTTP response status is updated.
    *
-   * @param req The AddMessageRequest object containing the question data.
+   * @param req The AddMessageRequest object containing the new message data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -168,10 +177,10 @@ const messageController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Updates a message in the database. The message is first validated and then saved.
+   * Updates a message in the database with the new message text contents
    * If saving the message fails, the HTTP response status is updated.
    *
-   * @param req The AddMessageRequest object containing the question data.
+   * @param req The AddMessageRequest object containing the message text contents data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -203,7 +212,7 @@ const messageController = (socket: FakeSOSocket) => {
   /**
    * Adds a given username to a list of people who have viewed the message
    *
-   * @param req The AddMessageRequest object containing the question data.
+   * @param req The AddMessageRequest object containing the message new viewership data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -271,13 +280,50 @@ const messageController = (socket: FakeSOSocket) => {
     }
   };
 
+  /**
+   * Updates the isDeleted value for a given message by id
+   *
+   * @param req The UpdateMessageEmojisRequest object containing the message id and the new isDeleted value
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateMessageIsDeleted = async (
+    req: UpdateMessageIsDeletedRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { mid, isDeleted } = req.body;
+    try {
+      const result = await updateMessageIsDeletedById(mid, isDeleted);
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+      socket.emit('messageUpdate', result);
+
+      const updatedCorrespondenceWithMessage = (await CorrespondenceModel.findOne({
+        messages: { _id: mid },
+      }).populate([{ path: 'messages', model: MessageModel }])) as Correspondence;
+
+      socket.emit('correspondenceUpdate', updatedCorrespondenceWithMessage);
+
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving correspondence: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving correspondence`);
+      }
+    }
+  };
+
   // add appropriate HTTP verbs and their endpoints to the router
-  router.get('/getMessage', getMessagesByOrder);
+  router.get('/getMessage', getMessages);
   router.get('/getMessageById/:qid', getMessageById);
   router.post('/addMessage', addMessage);
   router.post('/updateMessage', updateMessage);
   router.post('/updateMessageViews', updateMessageViews);
   router.post('/updateMessageEmojis', updateMessageEmojis);
+  router.post('/updateMessageIsDeleted', updateMessageIsDeleted);
 
   return router;
 };

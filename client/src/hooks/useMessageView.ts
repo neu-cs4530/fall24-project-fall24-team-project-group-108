@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react';
 import { EmojiClickData } from 'emoji-picker-react';
 import useUserContext from './useUserContext';
 import { Message } from '../types';
-import { updateMessageById, updateMessageEmojisById } from '../services/messageService';
+import {
+  updateMessageById,
+  updateMessageEmojisById,
+  updateMessageIsDeletedById,
+} from '../services/messageService';
 
 /**
  * Custom hook for managing the message page state, filtering, and real-time updates.
@@ -10,6 +14,36 @@ import { updateMessageById, updateMessageEmojisById } from '../services/messageS
  * @returns titleText - The current title of the question page
  * @returns qlist - The list of questions to display
  * @returns setQuestionOrder - Function to set the sorting order of questions (e.g., newest, oldest).
+ */
+
+
+/**
+ * Custom hook for managing the message view state, ui interactions, and real-time updates
+ * @param message - The original contents of the message to start with
+ * @returns isEditing - A boolean determing if the message is currently being edited
+ * @returns setIsEditing - A function to set the isEditing value
+ * @returns editingText - A boolean describing the current contents of the message text
+ * @returns setEditingText - A function to set the current contents of the message text
+ * @returns isCodeStyle - A boolean describing if the message is a code cell
+ * @returns setIsCodeStyle - A function to set if the message is a code cell
+ * @returns saveClicked - A boolean describing if the edited message has been saved
+ * @returns setIsCodeStyle - A function to set if the edited message has been saved
+ * @returns isDeleted - A boolean describing if the message has been deleted
+ * @returns setIsDeleted - A function to set if the message has been deleted
+ * @returns user - A user object detailing the current user
+ * @returns currentMessage - A Message object detailing the current contents of the message
+ * @returns setCurrentMessage - A function to set the current contents of the message
+ * @returns currentEmojis - A Map object detailing the each user's emoji reaction the message
+ * @returns handleEmojiSelection - A function to handle a user's emoji reaction
+ * @returns hasFile - A boolean detailing if the message has a file attachment
+ * @returns handleDownloadFile - A function to handle a user's file upload
+ * @returns dropDownSelected - A boolean describing if the message options dropdown has been selected
+ * @returns setDropDownSelected - A function to set if the message options dropdown has been selected
+ * @returns selectedMessageOptions - A list of strings detailing which message options have been selected
+ * @returns handleMessageOptionSelection - A function to handle a message option selection
+ * @returns handleEmojiOptionSelection - A function to handle an emoji option selection
+ * @returns dropDownEmojiSelected - A boolean describing if the emoji options dropdown has been selected
+ * @returns setDropDownEmojiSelected - A function to set if the emoji options dropdown has been selected
  */
 const useMessageView = (message: Message) => {
   const { socket, user } = useUserContext();
@@ -48,15 +82,16 @@ const useMessageView = (message: Message) => {
   useEffect(() => {
     const updateMessage = async () => {
       await updateMessageById(messageId || '', 'Message was Deleted', false);
+      await updateMessageIsDeletedById(messageId || '', true);
     };
 
     // Need to update message by id, passing in new text
     if (isDeleted) {
       updateMessage();
-      setIsEditing(false);
     }
     setIsEditing(false);
     setSaveClicked(false);
+    setIsCodeStyle(false);
   }, [isDeleted, messageId]);
 
   useEffect(() => {
@@ -65,6 +100,10 @@ const useMessageView = (message: Message) => {
         setEditingText(updatedMessage.messageText);
         setCurrentMessage({ ...updatedMessage });
         setCurrentEmojis({ ...currentEmojis, ...updatedMessage.emojiTracker });
+        if (updatedMessage.isDeleted) {
+          setIsDeleted(true);
+          setIsEditing(false);
+        }
       }
     };
 
@@ -170,14 +209,10 @@ const useMessageView = (message: Message) => {
     isDeleted,
     setIsDeleted,
     user,
-    showReadReceipts,
-    setShowReadReceipts,
     currentMessage,
     setCurrentMessage,
     currentEmojis,
     handleEmojiSelection,
-    viewEmojiPicker,
-    setViewEmojiPicker,
     hasFile,
     handleDownloadFile,
     dropDownSelected,

@@ -4,15 +4,14 @@ import api from './config';
 const CORRESPONDENCE_API_URL = `${process.env.REACT_APP_SERVER_URL}/correspondence`;
 
 /**
- * Function to get messages by filter.
+ * Function to get all correspondences in db
  *
- * @param order - The order in which to fetch messages. Default is 'newest'.
- * @throws Error if there is an issue fetching or filtering messages.
+ * @throws Error if there is an issue fetching correspondences
  */
-const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
+const getCorrespondences = async (): Promise<Correspondence[]> => {
   const res = await api.get(`${CORRESPONDENCE_API_URL}/getCorrespondence`);
   if (res.status !== 200) {
-    throw new Error('Error when fetching or filtering correspondences');
+    throw new Error('Error when fetching correspondences');
   }
   return res.data;
 };
@@ -48,7 +47,7 @@ const addCorrespondence = async (c: Correspondence): Promise<Correspondence> => 
 };
 
 /**
- * Function to add a new correspondence.
+ * Function to update the members of a correspondence
  *
  * @param cid - The ID of the correspondence to retrieve.
  * @param updatedMessageMembers - the updated members of the correspondence
@@ -72,10 +71,10 @@ const updateCorrespondenceMembersById = async (
 };
 
 /**
- * Function to add a new correspondence.
+ * Function to update the list of users who are typing for a correspondence
  *
  * @param cid - The ID of the correspondence to retrieve.
- * @param updatedUserTyping - A list of usernames who are typing
+ * @param updatedUserTyping - A list of users who are currently typing on the correspondence
  * @throws Error if there is an issue updating the new correspondence.
  */
 const updateCorrespondenceUserTypingById = async (
@@ -96,8 +95,8 @@ const updateCorrespondenceUserTypingById = async (
 };
 
 /**
- * Function to add a new correspondence.
- *
+ * Function to add a new user who has viewed the correspondence
+ * 
  * @param cid - The ID of the correspondence to retrieve.
  * @param username - A new username who has viewed the correspondence
  * @throws Error if there is an issue updating the new correspondence.
@@ -112,7 +111,7 @@ const updateCorrespondenceViewsById = async (cid: string, username: string) => {
 };
 
 export {
-  getCorrespondencesByOrder,
+  getCorrespondences,
   getCorrespondenceById,
   addCorrespondence,
   updateCorrespondenceMembersById,

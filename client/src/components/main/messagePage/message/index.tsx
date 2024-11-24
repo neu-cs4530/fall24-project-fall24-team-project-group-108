@@ -32,13 +32,9 @@ const MessageView = ({ message }: MessageProps) => {
     isDeleted,
     setIsDeleted,
     user,
-    showReadReceipts,
-    setShowReadReceipts,
     currentMessage,
     currentEmojis,
     handleEmojiSelection,
-    viewEmojiPicker,
-    setViewEmojiPicker,
     hasFile,
     handleDownloadFile,
     dropDownSelected,
@@ -66,7 +62,7 @@ const MessageView = ({ message }: MessageProps) => {
             {/* <br></br> */}
             {/* {Object.values(currentEmojis).join('  ')} */}
           </div>
-          <div>{Object.values(currentEmojis).join('  ')}</div>
+          <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
         </div>
         {!isEditing ? (
           <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
@@ -81,7 +77,7 @@ const MessageView = ({ message }: MessageProps) => {
             <button
               className='messageTextEditCodeStyleButton'
               onClick={() => setIsCodeStyle(!isCodeStyle)}>
-              {'<Code> Style 📎'}
+              {'<Code> Style'}
             </button>
             <button
               className='messageTextEditSaveButton'
@@ -90,9 +86,8 @@ const MessageView = ({ message }: MessageProps) => {
             </button>
           </div>
         )}
-
         <div className='downloadableFile'>
-          {hasFile ? (
+          {hasFile && !isDeleted ? (
             <div>
               {' '}
               <button onClick={handleDownloadFile}>{`Download 📎`}</button>{' '}
@@ -100,118 +95,122 @@ const MessageView = ({ message }: MessageProps) => {
           ) : null}
         </div>
         <div className='dropDownEmoji'>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <button
-              onClick={() => {
-                setDropDownEmojiSelected(!dropDownEmojiSelected);
-                setDropDownSelected(false);
-              }}
-              style={{
-                padding: '10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                background: 'yellow',
-                cursor: 'pointer',
-              }}
-              disabled={isDeleted}>
-              Emoji
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropDownEmojiSelected ? (
-              <ul
-                className='dropDownContents'
+          {!isDeleted && (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                onClick={() => {
+                  setDropDownEmojiSelected(!dropDownEmojiSelected);
+                  setDropDownSelected(false);
+                }}
                 style={{
-                  display: 'flex',
-                  position: 'absolute',
-                  top: '40px',
-                  left: '0',
-                  listStyle: 'none',
-                  margin: '0',
                   padding: '10px',
-                  background: '#fff',
-                  border: '1px solid #ccc',
                   borderRadius: '5px',
-                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                }}>
-                {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
-                  <li
-                    key={index}
-                    // onClick={() => handleOptionClick(option)}
-                    style={{
-                      padding: '10px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                    onClick={() => handleEmojiOptionSelection(option)}>
-                    {option}
-                    {/* {selectedMessageOptions.includes(option) && (
+                  border: '1px solid #ccc',
+                  background: 'yellow',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                Emoji
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownEmojiSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    display: 'flex',
+                    position: 'absolute',
+                    top: '40px',
+                    left: '0',
+                    listStyle: 'none',
+                    margin: '0',
+                    padding: '10px',
+                    background: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}>
+                  {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
+                    <li
+                      key={index}
+                      // onClick={() => handleOptionClick(option)}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => handleEmojiOptionSelection(option)}>
+                      {option}
+                      {/* {selectedMessageOptions.includes(option) && (
                         <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
                       )} */}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )}
         </div>
         <div className='dropDown'>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            {/* Dropdown Button */}
-            <button
-              onClick={() => {
-                setDropDownSelected(!dropDownSelected);
-                setDropDownEmojiSelected(false);
-              }}
-              style={{
-                padding: '10px',
-                borderRadius: '5px',
-                border: '1px solid #ccc',
-                background: 'orange',
-                cursor: 'pointer',
-              }}
-              disabled={isDeleted}>
-              &#x22EE;
-            </button>
-
-            {/* Dropdown Menu */}
-            {dropDownSelected ? (
-              <ul
-                className='dropDownContents'
+          {!isDeleted && message.messageBy === user.username ? (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {/* Dropdown Button */}
+              <button
+                onClick={() => {
+                  setDropDownSelected(!dropDownSelected);
+                  setDropDownEmojiSelected(false);
+                }}
                 style={{
-                  position: 'absolute',
-                  top: '40px',
-                  left: '0',
-                  listStyle: 'none',
-                  margin: '0',
                   padding: '10px',
-                  background: '#fff',
-                  border: '1px solid #ccc',
                   borderRadius: '5px',
-                  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-                }}>
-                {['Edit', 'Delete'].map((option, index) => (
-                  <li
-                    key={index}
-                    // onClick={() => handleOptionClick(option)}
-                    style={{
-                      padding: '10px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                    onClick={() => handleMessageOptionSelection(option)}>
-                    {option}
-                    {selectedMessageOptions.includes(option) && (
-                      <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
+                  border: '1px solid #ccc',
+                  background: 'orange',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                &#x22EE;
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    position: 'absolute',
+                    top: '40px',
+                    left: '0',
+                    listStyle: 'none',
+                    margin: '0',
+                    padding: '10px',
+                    background: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}>
+                  {['Edit', 'Delete'].map((option, index) => (
+                    <li
+                      key={index}
+                      // onClick={() => handleOptionClick(option)}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => handleMessageOptionSelection(option)}>
+                      {option}
+                      {selectedMessageOptions.includes(option) && (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <div
           className='messageDate'

@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
 import { Correspondence, Message } from '../types';
 import {
-  getCorrespondencesByOrder,
+  getCorrespondences,
   updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
 } from '../services/correspondenceService';
@@ -78,7 +78,7 @@ const useMessagePage = () => {
      */
     const fetchData = async () => {
       try {
-        const res = await getCorrespondencesByOrder();
+        const res = await getCorrespondences();
         const userCorrespondences = res.filter(
           correspondence => correspondence.messageMembers.indexOf(user.username) > -1,
         );
