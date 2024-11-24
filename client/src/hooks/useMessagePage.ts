@@ -88,7 +88,7 @@ const useMessagePage = () => {
     user.username,
     currentUserTyping,
     isSelectedCorrespondence,
-    // selectedCorrespondenceId,
+    selectedCorrespondenceId,
   ]);
 
   useEffect(() => {
