@@ -1332,7 +1332,7 @@ export const updateMessageIsDeletedById = async (
   try {
     const result = await MessageModel.findOneAndUpdate(
       { _id: mid },
-      { $set: { isDeleted: isDeleted } },
+      { $set: { isDeleted } },
       { new: true },
     );
     if (result === null) {

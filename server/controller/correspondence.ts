@@ -32,10 +32,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
    *
    * @returns A Promise that resolves to void.
    */
-  const getCorrespondences = async (
-    _: FindCorrespondenceRequest,
-    res: Response,
-  ): Promise<void> => {
+  const getCorrespondences = async (_: FindCorrespondenceRequest, res: Response): Promise<void> => {
     try {
       const clist: Correspondence[] = await getAllCorrespondences();
       res.json(clist);

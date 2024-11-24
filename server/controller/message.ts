@@ -85,13 +85,13 @@ const messageController = (socket: FakeSOSocket) => {
     message.messageBy !== undefined &&
     message.messageBy !== '' &&
     message.messageDateTime !== undefined &&
-    message.messageDateTime !== null
+    message.messageDateTime !== null &&
     message.isCodeStyle !== undefined &&
-    message.isCodeStyle !== null
+    message.isCodeStyle !== null &&
     message.isDeleted !== undefined &&
-    message.isDeleted !== null
+    message.isDeleted !== null &&
     message.views !== undefined &&
-    message.views !== null;;
+    message.views !== null;
 
   /**
    * Checks if the provided message request contains the required fields.
@@ -101,7 +101,6 @@ const messageController = (socket: FakeSOSocket) => {
    * @returns `true` if the request is valid, otherwise `false`.
    */
   const isRequestValid = (req: AddMessageRequest): boolean => !!req.body.cid && !!req.body.message;
-
 
   /**
    * Adds a new message to the database. The message is first validated and then saved.
