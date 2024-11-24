@@ -94,7 +94,6 @@ const updateMessageIsDeletedById = async (mid: string, isDeleted: boolean) => {
   return res.data;
 };
 
-
 /**
  * Function to update the emoji reactions of a message
  *

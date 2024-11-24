@@ -83,25 +83,6 @@ const MessagePage = () => {
           ) : null}
           {selectedCorrespondence ? (
             <div id='selected_correspondence' className='selected_correspondence'>
-              {/* {selectedCorrespondence ? null : 'Please Select a Correspondence'} */}
-              {/* <div className='selected_correspondence_top'>
-                {
-                  <button
-                    className='backToCorrespondences'
-                    onClick={() => setSelectedCorrespondence(null)}>
-                    {'<-- Back'}
-                  </button>
-                }
-                {
-                  <button
-                    className='bluebtn updateMembersButton'
-                    onClick={() => {
-                      handleUpdateCorrespondence();
-                    }}>
-                    Add Members to Correspondence
-                  </button>
-                }
-              </div> */}
               <div id='message_list'>
                 {selectedCorrespondenceMessages.map((message, idx) => (
                   <MessageView message={message} key={idx} />

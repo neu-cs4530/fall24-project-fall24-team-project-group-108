@@ -96,7 +96,7 @@ const updateCorrespondenceUserTypingById = async (
 
 /**
  * Function to add a new user who has viewed the correspondence
- * 
+ *
  * @param cid - The ID of the correspondence to retrieve.
  * @param username - A new username who has viewed the correspondence
  * @throws Error if there is an issue updating the new correspondence.

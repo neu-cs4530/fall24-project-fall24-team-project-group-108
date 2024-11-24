@@ -1,0 +1,50 @@
+.unselectedUser {
+    background-color: transparent;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.unselectedUser:hover {
+    background-color: white;
+    color: black;
+    transform: scale(1.01);
+}
+
+.allUsers {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.userSelection {
+    display: float;
+    width: 50%;
+}
+
+.selectionSide {
+    /* display: float; */
+    width: 50%;
+}
+
+.searchBar {
+    /* text-align: center;
+    vertical-align: middle;
+    font-size: 20px; */
+    margin-bottom: 4%;
+    border: 1px solid black;
+    /* height: 33%; */
+}
+
+.selectedUsersTitle {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 20px;
+    margin-bottom: 4%;
+    border: 1px solid black;
+    height: 1.75em;
+}
+
+.selectedUsersList {
+    text-align: center;
+    /* vertical-align: middle; */
+    /* font-size: 20px; */
+}

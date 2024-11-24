@@ -9,7 +9,7 @@
 
 
 #selected_correspondence {
-    width: 90%;
+    width: 91%;
     display: flex;
     border-collapse:collapse;
     max-height: 80%;
@@ -152,7 +152,7 @@
 
     .updateMembersButton {
         width: 15%;
-      margin-left: 1%;
+      /* margin-left: 1%; */
       }
 
   .user-typing {
