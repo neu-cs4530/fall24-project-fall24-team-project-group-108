@@ -63,15 +63,22 @@ const useMessagePage = () => {
           setSelectedCorrespondenceId(updatedCorrespondence._id || '');
           setIsSelectedCorrespondence(true);
         } else if (messageText !== '') {
-          const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
-          const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondenceId || '',
-            [...updatedUserTyping],
-          );
-          setSelectedCorrespondence({ ...updatedCorrespondence });
-          setSelectedCorrespondenceId(updatedCorrespondence._id || '');
-          setIsSelectedCorrespondence(true);
+          if (!currentUserTyping.includes(user.username)) {
+            const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
+            const updatedCorrespondence = await updateCorrespondenceUserTypingById(
+              selectedCorrespondenceId || '',
+              [...updatedUserTyping],
+            );
+            setSelectedCorrespondence({ ...updatedCorrespondence });
+            setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+            setIsSelectedCorrespondence(true);
+          }
         }
+      } else if (currentUserTyping.includes(user.username)) {
+        const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
+        await updateCorrespondenceUserTypingById(selectedCorrespondenceId || '', [
+          ...updatedUserTyping,
+        ]);
       }
     };
 
@@ -81,7 +88,7 @@ const useMessagePage = () => {
     user.username,
     currentUserTyping,
     isSelectedCorrespondence,
-    selectedCorrespondenceId,
+    // selectedCorrespondenceId,
   ]);
 
   useEffect(() => {
@@ -256,6 +263,7 @@ const useMessagePage = () => {
     setUploadedFile,
     handleUploadedFile,
     uploadedFileErr,
+    setIsSelectedCorrespondence,
   };
 };
 

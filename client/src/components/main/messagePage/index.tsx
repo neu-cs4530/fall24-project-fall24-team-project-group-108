@@ -28,6 +28,7 @@ const MessagePage = () => {
     handleUploadedFile,
     uploadedFileErr,
     setSelectedCorrespondence,
+    setIsSelectedCorrespondence,
   } = useMessagePage();
 
   return (
@@ -60,7 +61,11 @@ const MessagePage = () => {
               {
                 <button
                   className='backToCorrespondences'
-                  onClick={() => setSelectedCorrespondence(null)}>
+                  onClick={() => {
+                    setSelectedCorrespondence(null);
+                    setIsSelectedCorrespondence(false);
+                    setMessageText('');
+                  }}>
                   {'<-- Back'}
                 </button>
               }
