@@ -4,6 +4,14 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
 
 /**
  * Represents a user in the application.
+ * - _id: the id of the user (optional field)
+ * - username: the username of the user
+ * - password: the password of the user
+ * - isModerator: boolean indicating if the user is a moderator
+ * - badges: A list of badges the user has earned
+ * - profileIcon:  A string detailing their current profile icon (optional field)
+ * - infractions: A list of infractions the user has sustained
+ * - doNotDisturb: boolean indicating if the user has turned on dnd (optional field)
  */
 export interface User {
   _id?: string;
@@ -17,7 +25,11 @@ export interface User {
 }
 
 /**
- * Represents a mod application.
+ * Interface representing a ModApplication document, which contains:
+ * - _id - The unique identifier for the question. Optional field.
+ * - user - The user who created the application.
+ * - applicationText - The additional imformation provided by the applicant.
+ * - status - The current status of the moderator application.
  */
 export interface ModApplication {
   _id?: string;
