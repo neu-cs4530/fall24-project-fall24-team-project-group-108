@@ -241,6 +241,7 @@ background-color: red;
 .messageDate {
   position: relative;
   display: inline-block;
+  text-decoration: underline;
 }
 
 .messageDate-data-above,
@@ -289,5 +290,5 @@ background-color: red;
 }
 
 .messageDate:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }

@@ -6,9 +6,11 @@ import useQuestion from '../../../../hooks/useQuestion';
 import ProfileHover from '../../accountPage/profileHover';
 
 /**
- * Interface representing the props for the Question component.
+ * Interface representing the props for the Correspondence View component.
  *
- * q - The question object containing details about the question.
+ * correspondence - The correspondence object containing details about the correspondence.
+ * username - The username of the current user
+ * onClickHandler - Function that details what to do when correspondence is selected
  */
 interface CorrespondenceProps {
   correspondence: Correspondence;
@@ -17,11 +19,13 @@ interface CorrespondenceProps {
 }
 
 /**
- * Question component renders the details of a question including its title, tags, author, answers, and views.
- * Clicking on the component triggers the handleAnswer function,
- * and clicking on a tag triggers the clickTag function.
+ * Correspondence component renders the details of a correspondence including its members and most recent activity
+ * Clicking on the component triggers the onClickHandler function,
+ * and clicking on another member's name navigates to their user account page.
  *
- * @param correspondence - The question object containing question details.
+ * @param correspondence - The correspondence object containing correspondence details.
+ * @param username - The username of the current user
+ * @param onClickHandler - A function detailing what to do when the correspondence is clicked
  */
 const CorrespondenceView = ({ correspondence, username, onClickHandler }: CorrespondenceProps) => {
   const navigate = useNavigate();
@@ -68,20 +72,6 @@ const CorrespondenceView = ({ correspondence, username, onClickHandler }: Corres
       </div>
 
       <div className='lastActivity'>
-        {/* <div
-    className='question_author'
-    onClick={e => {
-      e.stopPropagation();
-      handleAuthorClick();
-    }}
-    onMouseEnter={handleHoverEnter}
-    onMouseLeave={() => setIsHovered(false)}>
-    {q.askedBy}
-  </div> */}
-
-        {/* <div className='postTitle'>
-          {correspondence.messages[correspondence.messages.length - 1].messageText}
-        </div> */}
         <div>&nbsp;</div>
         <div className='question_meta'>
           {getMetaData(
