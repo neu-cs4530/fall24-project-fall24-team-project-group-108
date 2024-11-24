@@ -24,6 +24,8 @@ const useMessagePage = () => {
   const [titleText, setTitleText] = useState<string>('All Messages');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
   const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
+  const [isSelectedCorrespondence, setIsSelectedCorrespondence] = useState<boolean>(false);
+  const [selectedCorrespondenceId, setSelectedCorrespondenceId] = useState<string>('');
   const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
     [],
   );
@@ -45,32 +47,42 @@ const useMessagePage = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedCorrespondence) {
+    if (!isSelectedCorrespondence) {
       return;
     }
 
     const getUpdatedCorrespondence = async () => {
-      if (selectedCorrespondence) {
+      if (isSelectedCorrespondence) {
         if (messageText === '' && currentUserTyping.includes(user.username)) {
           const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondence._id || '',
+            selectedCorrespondenceId || '',
             [...updatedUserTyping],
           );
           setSelectedCorrespondence({ ...updatedCorrespondence });
+          setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+          setIsSelectedCorrespondence(true);
         } else if (messageText !== '') {
           const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondence._id || '',
+            selectedCorrespondenceId || '',
             [...updatedUserTyping],
           );
           setSelectedCorrespondence({ ...updatedCorrespondence });
+          setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+          setIsSelectedCorrespondence(true);
         }
       }
     };
 
     getUpdatedCorrespondence();
-  }, [messageText]);
+  }, [
+    messageText,
+    user.username,
+    currentUserTyping,
+    isSelectedCorrespondence,
+    selectedCorrespondenceId,
+  ]);
 
   useEffect(() => {
     /**
@@ -82,16 +94,6 @@ const useMessagePage = () => {
         const userCorrespondences = res.filter(
           correspondence => correspondence.messageMembers.indexOf(user.username) > -1,
         );
-        // console.log(
-        //   userCorrespondences[0].messages[
-        //     userCorrespondences[0].messages.length - 1
-        //   ].messageDateTime.getTime(),
-        // );
-        // userCorrespondences.sort(
-        //   (a, b) =>
-        //     a.messages[a.messages.length - 1].messageDateTime.getTime() -
-        //     b.messages[b.messages.length - 1].messageDateTime.getTime(),
-        // );
         setCorrespondenceList([...userCorrespondences]);
       } catch (error) {
         // Handle error
@@ -107,6 +109,8 @@ const useMessagePage = () => {
       await fetchData();
       if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
+        setSelectedCorrespondenceId(correspondence._id || '');
+        setIsSelectedCorrespondence(true);
         setCurrentUserTyping([...correspondence.userTyping]);
         setSelectedCorrespondenceMessages([...correspondence.messages]);
       }
@@ -144,6 +148,8 @@ const useMessagePage = () => {
       handleMessageViewsUpdate();
     }
     setSelectedCorrespondence(correspondence);
+    setSelectedCorrespondenceId(correspondence._id || '');
+    setIsSelectedCorrespondence(true);
     setCurrentUserTyping([...correspondence.userTyping]);
     setSelectedCorrespondenceMessages([...correspondence.messages]);
   };
@@ -201,6 +207,8 @@ const useMessagePage = () => {
 
       setCorrespondenceList([...updatedCorrespondenceList, updatedCorrespondence]);
       setSelectedCorrespondence({ ...updatedCorrespondence });
+      setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+      setIsSelectedCorrespondence(true);
       setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
       setMessageText('');
       handleMessageViewsUpdate();
@@ -217,8 +225,6 @@ const useMessagePage = () => {
     }
 
     const userUploadedFile = eventTarget.files[0];
-
-    console.log(userUploadedFile.size / 1024);
 
     if (userUploadedFile.size / 1024 > 25) {
       eventTarget.value = '';

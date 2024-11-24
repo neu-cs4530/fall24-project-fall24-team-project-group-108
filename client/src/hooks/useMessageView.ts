@@ -53,17 +53,14 @@ const useMessageView = (message: Message) => {
   const [saveClicked, setSaveClicked] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
   const [messageId] = useState<string>(message._id || '');
-  const [showReadReceipts, setShowReadReceipts] = useState<boolean>(false);
   const [currentMessage, setCurrentMessage] = useState<Message>({ ...message });
   const [currentEmojis, setCurrentEmojis] = useState<{ [key: string]: string }>(
     message.emojiTracker ? { ...message.emojiTracker } : {},
   );
-  const [viewEmojiPicker, setViewEmojiPicker] = useState<boolean>(false);
   const [hasFile] = useState<boolean>(!!currentMessage.fileData && !!currentMessage.fileName);
   const [dropDownSelected, setDropDownSelected] = useState<boolean>(false);
   const [dropDownEmojiSelected, setDropDownEmojiSelected] = useState<boolean>(false);
   const [selectedMessageOptions, setSelectedMessageOptions] = useState<string[]>([]);
-  const [selectedEmojiOption, setSelectedEmojiOption] = useState<string>('');
 
   useEffect(() => {
     const updateMessage = async () => {
@@ -114,7 +111,6 @@ const useMessageView = (message: Message) => {
   }, [socket, messageId, currentEmojis]);
 
   const handleEmojiSelection = (selectedEmoji: EmojiClickData) => {
-    setViewEmojiPicker(false);
     const updatedCurrentEmojis = { ...currentEmojis };
     if (!(user.username in currentEmojis)) {
       updatedCurrentEmojis[user.username] = selectedEmoji.emoji;
@@ -152,12 +148,8 @@ const useMessageView = (message: Message) => {
     if (isDeleted || messageOptions.includes('Delete')) {
       setIsDeleted(true);
       setIsEditing(false);
-      setViewEmojiPicker(false);
-      setShowReadReceipts(false);
     } else {
       setIsEditing(messageOptions.includes('Edit'));
-      setViewEmojiPicker(messageOptions.includes('Select an Emoji'));
-      setShowReadReceipts(messageOptions.includes('Show Read Receipts'));
     }
     setDropDownSelected(false);
   };

@@ -1,6 +1,5 @@
 import './index.css';
 import { useNavigate } from 'react-router-dom';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
@@ -22,7 +21,6 @@ interface MessageProps {
 const MessageView = ({ message }: MessageProps) => {
   const {
     isEditing,
-    setIsEditing,
     editingText,
     setEditingText,
     isCodeStyle,
@@ -30,11 +28,9 @@ const MessageView = ({ message }: MessageProps) => {
     saveClicked,
     setSaveClicked,
     isDeleted,
-    setIsDeleted,
     user,
     currentMessage,
     currentEmojis,
-    handleEmojiSelection,
     hasFile,
     handleDownloadFile,
     dropDownSelected,

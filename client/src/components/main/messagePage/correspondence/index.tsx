@@ -2,8 +2,6 @@ import './index.css';
 import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../../tool';
 import { Correspondence } from '../../../../types';
-import useQuestion from '../../../../hooks/useQuestion';
-import ProfileHover from '../../accountPage/profileHover';
 
 /**
  * Interface representing the props for the Correspondence View component.

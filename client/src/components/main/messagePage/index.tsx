@@ -1,6 +1,4 @@
 import './index.css';
-import EmojiPicker from 'emoji-picker-react';
-import { Dropdown } from 'react-bootstrap';
 import MessageHeader from './header';
 import useMessagePage from '../../../hooks/useMessagePage';
 import useBan from '../../../hooks/useBan';
@@ -26,15 +24,11 @@ const MessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
-    uploadedFile,
-    setUploadedFile,
     user,
     handleUploadedFile,
     uploadedFileErr,
     setSelectedCorrespondence,
   } = useMessagePage();
-
-  console.log(correspondenceList);
 
   return (
     <div className='page-background'>

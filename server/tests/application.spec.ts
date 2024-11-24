@@ -31,8 +31,8 @@ import {
   saveBadge,
   getAllBadges,
   getBadgeUsers,
-  getMessagesByOrder,
-  getCorrespondences,
+  getMessages,
+  getAllCorrespondences,
 } from '../models/application';
 import {
   Answer,
@@ -204,6 +204,7 @@ const message1: Message = {
   messageTo: ['tgwynn'],
   views: [],
   isCodeStyle: false,
+  isDeleted: false,
 };
 
 const message2: Message = {
@@ -214,6 +215,7 @@ const message2: Message = {
   messageTo: ['tgwynn', 'tcobb'],
   views: [],
   isCodeStyle: false,
+  isDeleted: false,
 };
 
 const message3: Message = {
@@ -224,6 +226,7 @@ const message3: Message = {
   messageTo: ['tgwynn', 'tcobb'],
   views: [],
   isCodeStyle: true,
+  isDeleted: false,
 };
 
 const MESSAGES: Message[] = [message1, message2, message3];
@@ -1082,11 +1085,11 @@ describe('application module', () => {
       });
     });
 
-    describe('getMessagesByOrder', () => {
+    describe('getMessages', () => {
       test('get a list of all the messages in MessageModel', async () => {
         mockingoose(MessageModel).toReturn(MESSAGES, 'find');
 
-        const result = await getMessagesByOrder();
+        const result = await getMessages();
 
         expect(result.length).toEqual(3);
         expect(result[0]._id?.toString()).toEqual(MESSAGES[0]._id);
@@ -1096,17 +1099,17 @@ describe('application module', () => {
       test('returns an empty list if there are no messages in the model', async () => {
         mockingoose(MessageModel).toReturn([] as Message[], 'find');
 
-        const result = await getMessagesByOrder();
+        const result = await getMessages();
 
         expect(result.length).toEqual(0);
       });
     });
 
-    describe('getCorrespondencesByOrder', () => {
+    describe('getAllCorrespondences', () => {
       test('get a list of all the correspondences in CorrespondenceModel', async () => {
         mockingoose(CorrespondenceModel).toReturn(CORRESPONDENCES, 'find');
 
-        const result = await getCorrespondences();
+        const result = await getAllCorrespondences();
 
         expect(result.length).toEqual(2);
         expect(result[0]._id?.toString()).toEqual(CORRESPONDENCES[0]._id);
@@ -1115,7 +1118,7 @@ describe('application module', () => {
       test('returns an empty list if there are no corerspondences in the model', async () => {
         mockingoose(CorrespondenceModel).toReturn([] as Correspondence[], 'find');
 
-        const result = await getCorrespondences();
+        const result = await getAllCorrespondences();
 
         expect(result.length).toEqual(0);
       });
