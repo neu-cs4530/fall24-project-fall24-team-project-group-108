@@ -52,7 +52,6 @@ const MessageView = ({ message }: MessageProps) => {
               navigate(`/account/${message.messageBy}`);
             }}>
             {message.messageBy}
-            {message.isCodeStyle ? 'isCodeStyle=true' : 'isCodeStyle=false'}
           </div>
           <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
         </div>
