@@ -31,7 +31,7 @@ import {
   saveBadge,
   getAllBadges,
   getBadgeUsers,
-  getMessages,
+  getAllMessages,
   getAllCorrespondences,
 } from '../models/application';
 import {
@@ -1085,11 +1085,11 @@ describe('application module', () => {
       });
     });
 
-    describe('getMessages', () => {
+    describe('getAllMessages', () => {
       test('get a list of all the messages in MessageModel', async () => {
         mockingoose(MessageModel).toReturn(MESSAGES, 'find');
 
-        const result = await getMessages();
+        const result = await getAllMessages();
 
         expect(result.length).toEqual(3);
         expect(result[0]._id?.toString()).toEqual(MESSAGES[0]._id);
@@ -1099,7 +1099,7 @@ describe('application module', () => {
       test('returns an empty list if there are no messages in the model', async () => {
         mockingoose(MessageModel).toReturn([] as Message[], 'find');
 
-        const result = await getMessages();
+        const result = await getAllMessages();
 
         expect(result.length).toEqual(0);
       });

@@ -538,7 +538,7 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
 //  *
 //  * @returns {Promise<Message[]>} - Promise that resolves to a list of all messages
 //  */
-export const getMessages = async (): Promise<Message[]> => {
+export const getAllMessages = async (): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
 };
@@ -768,7 +768,7 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
     );
     return c;
   } catch (error) {
-    return { error: 'Error when fetching and updating a message' };
+    return { error: 'Error when fetching and updating a correspondence' };
   }
 };
 

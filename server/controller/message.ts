@@ -14,7 +14,7 @@ import {
 } from '../types';
 import {
   fetchAndIncrementMessageViewsById,
-  getMessages,
+  getAllMessages,
   saveMessage,
   addMessageToCorrespondence,
   updateMessageById,
@@ -48,7 +48,7 @@ const messageController = (socket: FakeSOSocket) => {
     }
 
     if (username === undefined) {
-      res.status(400).send('Invalid username requesting question.');
+      res.status(400).send('Invalid username requesting message.');
       return;
     }
 
@@ -123,6 +123,16 @@ const messageController = (socket: FakeSOSocket) => {
 
     const { cid } = req.body;
     const messageInfo: Message = req.body.message;
+
+    if (!ObjectId.isValid(cid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    if (messageInfo === undefined) {
+      res.status(400).send('Invalid messageInfo');
+      return;
+    }
     try {
       const messageFromDb = await saveMessage(messageInfo);
 
@@ -186,6 +196,21 @@ const messageController = (socket: FakeSOSocket) => {
    */
   const updateMessage = async (req: UpdateMessageRequest, res: Response): Promise<void> => {
     const { mid, updatedMessageText, isCodeStyle } = req.body;
+
+    if (!ObjectId.isValid(mid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    if (updatedMessageText === undefined) {
+      res.status(400).send('Invalid updatedMessageText requesting question.');
+      return;
+    }
+
+    if (isCodeStyle === undefined) {
+      res.status(400).send('Invalid isCodeStyle requesting question.');
+      return;
+    }
     try {
       const result = await updateMessageById(mid, updatedMessageText, isCodeStyle);
       if ('error' in result) {
@@ -221,6 +246,16 @@ const messageController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     const { mid, username } = req.body;
+
+    if (!ObjectId.isValid(mid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    if (username === undefined) {
+      res.status(400).send('Invalid username');
+      return;
+    }
     try {
       const result = await updateMessageViewsById(mid, username);
       if ('error' in result) {
@@ -256,6 +291,15 @@ const messageController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     const { mid, emojis } = req.body;
+    if (!ObjectId.isValid(mid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    if (emojis === undefined) {
+      res.status(400).send('Invalid emojis.');
+      return;
+    }
     try {
       const result = await updateMessageEmojisById(mid, emojis);
       if ('error' in result) {
@@ -292,6 +336,15 @@ const messageController = (socket: FakeSOSocket) => {
     res: Response,
   ): Promise<void> => {
     const { mid, isDeleted } = req.body;
+    if (!ObjectId.isValid(mid)) {
+      res.status(400).send('Invalid ID format');
+      return;
+    }
+
+    if (isDeleted === undefined) {
+      res.status(400).send('Invalid isDeleted');
+      return;
+    }
     try {
       const result = await updateMessageIsDeletedById(mid, isDeleted);
       if ('error' in result) {
@@ -316,8 +369,8 @@ const messageController = (socket: FakeSOSocket) => {
   };
 
   // add appropriate HTTP verbs and their endpoints to the router
-  router.get('/getMessage', getMessages);
-  router.get('/getMessageById/:qid', getMessageById);
+  router.get('/getMessage', getAllMessages);
+  router.get('/getMessageById/:mid', getMessageById);
   router.post('/addMessage', addMessage);
   router.post('/updateMessage', updateMessage);
   router.post('/updateMessageViews', updateMessageViews);

@@ -35,12 +35,16 @@ const correspondenceController = (socket: FakeSOSocket) => {
   const getCorrespondences = async (_: FindCorrespondenceRequest, res: Response): Promise<void> => {
     try {
       const clist: Correspondence[] = await getAllCorrespondences();
-      res.json(clist);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(500).send(`Error when fetching correspondences by filter: ${err.message}`);
+      if (clist) {
+        res.json(clist);
       } else {
         res.status(500).send(`Error when fetching correspondences by filter`);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching correspondences: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching correspondences`);
       }
     }
   };
@@ -68,7 +72,11 @@ const correspondenceController = (socket: FakeSOSocket) => {
     try {
       const c = await fetchCorrespondenceById(cid);
 
-      res.json(c);
+      if (c) {
+        res.json(c);
+      } else {
+        res.status(500).send(`Error when fetching correspondence by id`);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching correspondence by id: ${err.message}`);
@@ -134,7 +142,10 @@ const correspondenceController = (socket: FakeSOSocket) => {
     correspondence.messageMembers !== undefined &&
     correspondence.messageMembers.length > 0 &&
     correspondence.views !== undefined &&
-    correspondence.userTyping !== undefined;
+    correspondence.userTyping !== undefined &&
+    correspondence.messageMembers.length > 2 &&
+    correspondence.views.every(element => correspondence.messageMembers.includes(element)) &&
+    correspondence.userTyping.every(element => correspondence.messageMembers.includes(element));
 
   /**
    * Adds a new correspondence to the database. The correspondence is first validated and then saved.
