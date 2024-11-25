@@ -16,12 +16,12 @@ describe('GET /notifications/getAll', () => {
         read: false,
         message: 'Test notification',
         createdAt: new Date(),
-      }
+      },
     ];
 
     // Mock the find and sort chain
     const mockFind = jest.spyOn(NotificationModel, 'find').mockReturnValue({
-      sort: jest.fn().mockResolvedValue(mockNotifications), 
+      sort: jest.fn().mockResolvedValue(mockNotifications),
     } as unknown as mongoose.Query<Notification[], Notification>);
 
     const response = await supertest(app).get('/notifications/getAll').query({

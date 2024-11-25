@@ -1,6 +1,5 @@
 import './index.css';
 import { useNavigate } from 'react-router-dom';
-import { FlareSharp } from '@mui/icons-material';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
