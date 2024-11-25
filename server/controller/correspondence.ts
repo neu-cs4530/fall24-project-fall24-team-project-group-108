@@ -143,7 +143,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
     correspondence.messageMembers.length > 0 &&
     correspondence.views !== undefined &&
     correspondence.userTyping !== undefined &&
-    correspondence.messageMembers.length > 2 &&
+    correspondence.messageMembers.length >= 2 &&
     correspondence.views.every(element => correspondence.messageMembers.includes(element)) &&
     correspondence.userTyping.every(element => correspondence.messageMembers.includes(element));
 

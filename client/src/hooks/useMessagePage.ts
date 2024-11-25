@@ -13,9 +13,24 @@ import { addMessage, updateMessageViewsById } from '../services/messageService';
 /**
  * Custom hook for managing the message page state, filtering, and real-time updates.
  *
- * @returns titleText - The current title of the question page
- * @returns qlist - The list of questions to display
- * @returns setQuestionOrder - Function to set the sorting order of questions (e.g., newest, oldest).
+ * @returns  user - A user object containing the current user's username
+  @returns correspondenceList - A list of all the correspondences the user is involved with
+  @returns titleText - The title of the page
+  @returns selectedCorrespondence - The currently selected correspondence (includes which messages we should display)
+  @returns setSelectedCorrespondence - Function to set selected correspondence
+  @returns handleSetSelectedCorrespondence - Function to handle what to do when the user selects a correspondence
+  @returns messageText - The message text the user can send
+  @returns setMessageText - Function to set the message text the user can send
+  @returns handleSendMessage - Function to handle details of sending message
+  @returns selectedCorrespondenceMessages - A list of messages in the currently selected correspondence
+  @returns handleUpdateCorrespondence - Function that handles when a user wants to add more mebers to a correspondence
+  @returns isCodeStyle - A boolean indicating whether the user is entering a code cell
+  @returns setIsCodeStyle - A function to set whether the user is entering a code cell
+  @returns uploadedFile - A file object that is either null or contains the file the user is trying to send
+  @returns setUploadedFile - A function to set the file object that is either null or contains the file the user is trying to send
+  @returns setUploadedFile - A function to handle when the user uploads a file
+  @returns uploadedFileErr - An error mesage if there is a problem uploading the file.
+  @returns setIsSelectedCorrespondence - A function to set if a correspondence has been selected
  */
 const useMessagePage = () => {
   const { socket, user } = useUserContext();
@@ -29,7 +44,6 @@ const useMessagePage = () => {
   const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
     [],
   );
-  const [toAddText, setToAddText] = useState<string>('');
   const [messageText, setMessageText] = useState<string>('');
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -165,23 +179,14 @@ const useMessagePage = () => {
     new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      // Onload event to handle the reading of the file
       reader.onload = event => {
-        // The result is an ArrayBuffer
         const arrayBuffer = event.target?.result as ArrayBuffer;
         if (arrayBuffer) {
-          // Convert ArrayBuffer to Buffer (in a Node.js environment, you can use Buffer.from)
-          const buffer = Buffer.from(arrayBuffer); // This will work in Node.js
+          const buffer = Buffer.from(arrayBuffer);
           resolve(buffer);
         }
       };
 
-      // On error event to handle read errors
-      // reader.onerror = error => {
-      //   reject('Error reading file');
-      // };
-
-      // Read file as ArrayBuffer
       reader.readAsArrayBuffer(file);
     });
 
@@ -198,6 +203,7 @@ const useMessagePage = () => {
         messageBy: user.username,
         isCodeStyle,
         views: [user.username],
+        isDeleted: false,
       } as Message;
 
       if (uploadedFile) {
@@ -254,8 +260,6 @@ const useMessagePage = () => {
     setMessageText,
     handleSendMessage,
     selectedCorrespondenceMessages,
-    toAddText,
-    setToAddText,
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,

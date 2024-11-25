@@ -23,8 +23,6 @@ const MessageView = ({ message }: MessageProps) => {
     isEditing,
     editingText,
     setEditingText,
-    isCodeStyle,
-    setIsCodeStyle,
     saveClicked,
     setSaveClicked,
     isDeleted,
@@ -59,22 +57,19 @@ const MessageView = ({ message }: MessageProps) => {
             <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
           </div>
           {!isEditing ? (
-            <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>
+            <div className={message.isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>
               {editingText}
             </div>
           ) : (
             <div className='messageTextEdit'>
               <textarea
-                className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
+                className={
+                  message.isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'
+                }
                 placeholder='New Message...'
                 value={editingText}
                 onChange={e => setEditingText(e.target.value)}
               />
-              <button
-                className='messageTextEditCodeStyleButton'
-                onClick={() => setIsCodeStyle(!isCodeStyle)}>
-                {'<Code> Style'}
-              </button>
               <button
                 className='messageTextEditSaveButton'
                 onClick={() => setSaveClicked(!saveClicked)}>
@@ -136,15 +131,8 @@ const MessageView = ({ message }: MessageProps) => {
                   style={{
                     display: 'flex',
                     position: 'absolute',
-                    top: '40px',
-                    left: '0',
-                    listStyle: 'none',
-                    margin: '0',
                     padding: '10px',
                     background: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
                   }}>
                   {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
                     <li
@@ -191,15 +179,8 @@ const MessageView = ({ message }: MessageProps) => {
                   className='dropDownContents'
                   style={{
                     position: 'absolute',
-                    top: '40px',
-                    left: '0',
-                    listStyle: 'none',
-                    margin: '0',
                     padding: '10px',
                     background: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
                   }}>
                   {['Edit', 'Delete'].map((option, index) => (
                     <li
@@ -208,7 +189,6 @@ const MessageView = ({ message }: MessageProps) => {
                         padding: '10px',
                         cursor: 'pointer',
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
                       }}
                       onClick={() => handleMessageOptionSelection(option)}>

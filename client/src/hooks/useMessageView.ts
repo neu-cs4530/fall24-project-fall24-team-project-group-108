@@ -84,10 +84,10 @@ const useMessageView = (message: Message) => {
     // Need to update message by id, passing in new text
     if (isDeleted) {
       updateMessage();
+      setIsCodeStyle(false);
     }
     setIsEditing(false);
     setSaveClicked(false);
-    setIsCodeStyle(false);
   }, [isDeleted, messageId]);
 
   useEffect(() => {
@@ -169,7 +169,6 @@ const useMessageView = (message: Message) => {
   };
 
   const handleEmojiOptionSelection = (emojiSelection: string) => {
-    // setViewEmojiPicker(false);
     const updatedCurrentEmojis = { ...currentEmojis };
     if (!(user.username in currentEmojis)) {
       updatedCurrentEmojis[user.username] = emojiSelection;
