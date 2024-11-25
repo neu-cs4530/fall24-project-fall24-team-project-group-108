@@ -107,6 +107,7 @@ const MessagePage = () => {
                     className='code-style-button'
                     onClick={() => setIsCodeStyle(!isCodeStyle)}>
                     {'<Code> Style'}
+                    {isCodeStyle}
                   </button>
                 }
                 {

@@ -26,6 +26,7 @@ const getMessageById = async (mid: string, username: string): Promise<Message> =
  * @throws Error if there is an issue creating the new message.
  */
 const addMessage = async (cid: string, message: Message): Promise<Correspondence> => {
+  console.log(message);
   const res = await api.post(`${MESSAGE_API_URL}/addMessage`, { cid, message });
 
   if (res.status !== 200) {

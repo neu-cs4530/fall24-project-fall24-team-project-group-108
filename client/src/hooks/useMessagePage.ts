@@ -165,23 +165,14 @@ const useMessagePage = () => {
     new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      // Onload event to handle the reading of the file
       reader.onload = event => {
-        // The result is an ArrayBuffer
         const arrayBuffer = event.target?.result as ArrayBuffer;
         if (arrayBuffer) {
-          // Convert ArrayBuffer to Buffer (in a Node.js environment, you can use Buffer.from)
-          const buffer = Buffer.from(arrayBuffer); // This will work in Node.js
+          const buffer = Buffer.from(arrayBuffer);
           resolve(buffer);
         }
       };
 
-      // On error event to handle read errors
-      // reader.onerror = error => {
-      //   reject('Error reading file');
-      // };
-
-      // Read file as ArrayBuffer
       reader.readAsArrayBuffer(file);
     });
 
@@ -198,6 +189,7 @@ const useMessagePage = () => {
         messageBy: user.username,
         isCodeStyle,
         views: [user.username],
+        isDeleted: false,
       } as Message;
 
       if (uploadedFile) {

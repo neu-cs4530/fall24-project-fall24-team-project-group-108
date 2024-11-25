@@ -29,9 +29,6 @@ const useUpdateCorrespondence = () => {
   const [unselectedUsers, setUnselectedUsers] = useState<string[]>([]);
   const [filteredUnselectedUsers, setFilteredUnselectedUsers] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
-  //   const [titleErr, setTitleErr] = useState<string>('');
-  //   const [textErr, setTextErr] = useState<string>('');
-  //   const [tagErr, setTagErr] = useState<string>('');
 
   useEffect(() => {
     if (!cid) {
@@ -56,28 +53,6 @@ const useUpdateCorrespondence = () => {
     };
     getCurrentCorrespondence();
   }, [cid, user.username]);
-
-  /**
-   * Function to validate the form before submitting the question.
-   *
-   * @returns boolean - True if the form is valid, false otherwise.
-   */
-  // const validateForm = (): boolean => {
-  //   let isValid = true;
-
-  //   const toNamesArray = toNames.split(',').filter(toName => toName.trim() !== '');
-  //   if (toNamesArray.length === 0) {
-  //     setToNamesErr('Need to list at least 1 user to create a correspondence with');
-  //     isValid = false;
-  //   } else if (toNamesArray.length > 9) {
-  //     setToNamesErr('Cannot create correspondence between more than 10 people');
-  //     isValid = false;
-  //   } else {
-  //     setToNamesErr('');
-  //   }
-
-  //   return isValid;
-  // };
 
   const handleUnselectUser = (username: string): void => {
     setSelectedUsers([...selectedUsers.filter(selectedUsername => selectedUsername !== username)]);

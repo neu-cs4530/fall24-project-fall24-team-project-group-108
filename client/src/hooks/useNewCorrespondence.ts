@@ -28,9 +28,6 @@ const useNewCorrespondence = () => {
   const [filteredUnselectedUsers, setFilteredUnselectedUsers] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  //   const [titleErr, setTitleErr] = useState<string>('');
-  //   const [textErr, setTextErr] = useState<string>('');
-  //   const [tagErr, setTagErr] = useState<string>('');
 
   useEffect(() => {
     const getAllUsers = async () => {
@@ -69,10 +66,6 @@ const useNewCorrespondence = () => {
    * @returns title - The current value of the title input.
    */
   const createCorrespondence = async () => {
-    // if (!validateForm()) return;
-
-    // const toNamesArray = toNames.split(',').filter(toName => toName.trim() !== '');
-
     if (selectedUsers.length === 0) {
       setErrorMessage('You need at least one person in order to create a correspondence');
     } else {
