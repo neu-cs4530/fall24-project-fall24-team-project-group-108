@@ -23,8 +23,6 @@ const MessageView = ({ message }: MessageProps) => {
     isEditing,
     editingText,
     setEditingText,
-    isCodeStyle,
-    setIsCodeStyle,
     saveClicked,
     setSaveClicked,
     isDeleted,
