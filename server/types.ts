@@ -365,7 +365,7 @@ export interface Correspondence {
  */
 export interface Notification {
   user: string,
-  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message',
+  type: string,
   caption: string,
   read: boolean,
   createdAt: Date,

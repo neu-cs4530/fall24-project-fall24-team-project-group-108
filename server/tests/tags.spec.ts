@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
+import TagModel from '../models/tags';
+import LeaderboardModel from '../models/leaderboards';
 
 const getTagCountMapSpy: jest.SpyInstance = jest.spyOn(util, 'getTagCountMap');
 
@@ -41,6 +43,25 @@ describe('GET /getTagsWithQuestionNumber', () => {
     getTagCountMapSpy.mockRejectedValueOnce(new Error('Error fetching tags'));
 
     const response = await supertest(app).get('/tag/getTagsWithQuestionNumber');
+
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('GET /getLeaderboard/:tagName', () => {
+  afterEach(async () => {
+    await mongoose.connection.close(); // Ensure the connection is properly closed
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+  });
+
+  it('should return error if the tag is not found', async () => {
+    const mockTagName = 'tagNotFound';
+    jest.spyOn(TagModel, 'findOne').mockResolvedValueOnce(null);
+
+    const response = await supertest(app).get(`/tag/getLeaderboard/${mockTagName}`);
 
     expect(response.status).toBe(500);
   });
