@@ -103,9 +103,7 @@ const useAccountPage = () => {
      */
     const fetchCommentData = async () => {
       try {
-        console.log('fetching Comment Data');
         const res = await getQuestionByCommenter(sentUser);
-        console.log(res);
         setClist(res || []);
       } catch (error) {
         // eslint-disable-next-line no-console

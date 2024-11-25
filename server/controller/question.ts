@@ -96,13 +96,9 @@ const questionController = (socket: FakeSOSocket) => {
     req: FindQuestionByCommenter,
     res: Response,
   ): Promise<void> => {
-    console.log('At server: getQuestionsByCommenter');
     const { commentBy } = req.params;
     try {
-      console.log('Awaiting: filterQuestionsByCommenter');
       const qlist: Question[] = await filterQuestionsByCommenter(commentBy);
-      console.log('Awaiting is Done: filterQuestionsByCommenter');
-      console.log(qlist);
       res.json(qlist);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -112,7 +108,6 @@ const questionController = (socket: FakeSOSocket) => {
       }
     }
   };
-
 
   /**
    * Retrieves a question by its unique ID, and increments the view count for that question.

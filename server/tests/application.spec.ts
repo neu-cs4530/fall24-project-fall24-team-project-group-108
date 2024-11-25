@@ -1152,23 +1152,19 @@ describe('application module', () => {
       });
     });
 
-
     describe('filterQuestionsByCommenter', () => {
-
-
-
       const sampleComment1 = {
         _id: new ObjectId('65e9b58910afe6e94fc6e6dd'),
         text: 'comment1',
         commentBy: 'ansBy4',
-        commentDateTime: new Date('2023-11-16T09:24:00')
+        commentDateTime: new Date('2023-11-16T09:24:00'),
       } as Comment;
 
-      const sampleComment2= {
+      const sampleComment2 = {
         _id: new ObjectId('65e9b58910afe6e94fc6e6de'),
         text: 'comment2',
         commentBy: 'ansBy4',
-        commentDateTime: new Date('2023-11-16T09:24:00')
+        commentDateTime: new Date('2023-11-16T09:24:00'),
       } as Comment;
 
       const sampleQuestion1 = {
@@ -1176,7 +1172,7 @@ describe('application module', () => {
         title: 'Quick question about storage on android',
         text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
         tags: [tag3, tag2],
-        answers: [ans4, {...ans2, comments: [sampleComment1]}],
+        answers: [ans4, { ...ans2, comments: [sampleComment1] }],
         askedBy: 'q_by1',
         askDateTime: new Date('2023-11-16T09:24:00'),
         views: ['question1_user', 'question2_user'],
@@ -1203,10 +1199,9 @@ describe('application module', () => {
       };
 
       test('Gets a list of questions that contain a users comments', async () => {
-
         mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
-        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion3, sampleQuestion1], 'find', 2);
 
         const result = await filterQuestionsByCommenter('ansBy4');
@@ -1216,7 +1211,6 @@ describe('application module', () => {
         expect(result[0]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
       });
       test('Should only return question comments if that is the only place theyve commented', async () => {
-
         mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
         mockingoose(AnswerModel).toReturn([], 'find');
@@ -1229,10 +1223,9 @@ describe('application module', () => {
       });
 
       test('Should only return answer comments if that is the only place theyve commented', async () => {
-
         mockingoose(CommentModel).toReturn([], 'find');
         mockingoose(QuestionModel).toReturn([], 'find', 1);
-        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
 
         const result = await filterQuestionsByCommenter('ansBy4');
@@ -1240,9 +1233,8 @@ describe('application module', () => {
         expect(result.length).toEqual(1);
         expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
       });
-          
-      test('returns an empty list if the user has not commented anywhere', async () => {
 
+      test('returns an empty list if the user has not commented anywhere', async () => {
         mockingoose(CommentModel).toReturn([], 'find');
         mockingoose(QuestionModel).toReturn([], 'find', 1);
         mockingoose(AnswerModel).toReturn([], 'find');
@@ -1254,10 +1246,9 @@ describe('application module', () => {
       });
 
       test('returns an empty list if the AnswerModel call returns an error', async () => {
-
         mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
-        mockingoose(AnswerModel).toReturn({error: 'Error retrieving answer'}, 'find');
+        mockingoose(AnswerModel).toReturn({ error: 'Error retrieving answer' }, 'find');
         mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
 
         const result = await filterQuestionsByAnswerer('ansBy4');
@@ -1266,10 +1257,9 @@ describe('application module', () => {
       });
 
       test('returns an empty list if the Comment Model call returns an error', async () => {
-
-        mockingoose(CommentModel).toReturn({error: 'Error retrieving answer'}, 'find');
+        mockingoose(CommentModel).toReturn({ error: 'Error retrieving answer' }, 'find');
         mockingoose(QuestionModel).toReturn([], 'find', 1);
-        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
         mockingoose(QuestionModel).toReturn([], 'find', 2);
 
         const result = await filterQuestionsByAnswerer('ansBy4');
@@ -1278,10 +1268,9 @@ describe('application module', () => {
       });
 
       test('returns an empty list if the Question Model call returns an error', async () => {
-
         mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
         mockingoose(QuestionModel).toReturn(new Error(''), 'find', 1);
-        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
         mockingoose(QuestionModel).toReturn(new Error(''), 'find', 2);
 
         const result = await filterQuestionsByAnswerer('ansBy4');
@@ -1290,10 +1279,8 @@ describe('application module', () => {
       });
     });
 
-
     describe('filterQuestionsByAnswerer', () => {
       test('Gets a list of questions that are answered by the given user', async () => {
-
         const sampleQuestion1 = {
           _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
           title: 'Quick question about storage on android',
@@ -1345,7 +1332,7 @@ describe('application module', () => {
       });
 
       test('returns an empty list if the AnswerModel call returns an error', async () => {
-        mockingoose(AnswerModel).toReturn({error: 'Error retrieving answers'}, 'find');
+        mockingoose(AnswerModel).toReturn({ error: 'Error retrieving answers' }, 'find');
         mockingoose(QuestionModel).toReturn(QUESTIONS, 'find');
 
         const result = await filterQuestionsByAnswerer('ansBy4');
@@ -1362,9 +1349,6 @@ describe('application module', () => {
         expect(result.length).toEqual(0);
       });
     });
-    
-
-
 
     describe('getAllUsers', () => {
       test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {

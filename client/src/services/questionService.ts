@@ -50,9 +50,7 @@ const getQuestionByAnswerer = async (answeredBy: string = ''): Promise<Question[
  * @throws Error if there is an issue fetching or filtering questions.
  */
 const getQuestionByCommenter = async (commentBy: string = ''): Promise<Question[]> => {
-  console.log('in question Service : getQuestionByCommenter');
   const res = await api.get(`${QUESTION_API_URL}/getQuestionByCommenter/${commentBy}`);
-  console.log(res.data);
   if (res.status !== 200) {
     throw new Error('Error when fetching questions including commenter');
   }

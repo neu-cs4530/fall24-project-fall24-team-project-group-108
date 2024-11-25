@@ -588,7 +588,6 @@ export const filterQuestionsByAnswerer = async (answerer: string): Promise<Quest
   }
 };
 
-
 /**
  * Retrieves questions from the database that were commented on by the given user.
  *
@@ -596,40 +595,21 @@ export const filterQuestionsByAnswerer = async (answerer: string): Promise<Quest
  *
  * @returns {Promise<Question[]>} - Promise that resolves to a list of filtered questions
  */
- export const filterQuestionsByCommenter = async (commenter: string): Promise<Question[]> => {
+export const filterQuestionsByCommenter = async (commenter: string): Promise<Question[]> => {
   try {
-    console.log('At CommentModel');
-    // find all answers from the given user
-    console.log(commenter);
-    // const clist = await CommentModel.find({ commentBy: commenter, isRemoved: false });
     const clist = await CommentModel.find({ commentBy: commenter });
-    console.log(clist);
 
-    // find all questions that are linked to the answers
     const commentIds = clist.map(comment => comment._id);
-    console.log('At QuestionModel');
-    const qCommentsList = await QuestionModel.find({ comments: { $in: commentIds } })
-    console.log(qCommentsList);
-    const alist = await AnswerModel.find({comments:  { $in: commentIds } });
+    const qCommentsList = await QuestionModel.find({ comments: { $in: commentIds } });
+    const alist = await AnswerModel.find({ comments: { $in: commentIds } });
     const answerIds = alist.map(answer => answer._id);
     const qAnswerCommentsList = await QuestionModel.find({ answers: { $in: answerIds } });
-    // const qAnswerCommentsList = await QuestionModel.find({ answers: {comments: { $in: commentIds } }}).populate([
-    //   {
-    //     path: 'answers',
-    //     model: AnswerModel,
-    //     // populate: [
-    //     //   { path: 'comments', model: CommentModel },
-    //     //   { path: 'reports', model: UserReportModel },
-    //     // ],
-    //   },
-    // ]);;
-    console.log(qAnswerCommentsList);
-    // qAnswerCommentsList.filter(comment => !qCommentsList.map(qComment => qComment._id).includes(comment._id));
     const qlist = [...qCommentsList, ...qAnswerCommentsList];
     const qlistIds = qlist.map(q => q._id.toString());
-    const qlistNoDuplicates = qlist.filter((q, idx) => qlistIds.indexOf(q._id.toString()) == idx);
-    console.log(qlistNoDuplicates);
-    qlistNoDuplicates.sort((a, b) => new Date(b.askDateTime).getTime() - new Date(a.askDateTime).getTime());
+    const qlistNoDuplicates = qlist.filter((q, idx) => qlistIds.indexOf(q._id.toString()) === idx);
+    qlistNoDuplicates.sort(
+      (a, b) => new Date(b.askDateTime).getTime() - new Date(a.askDateTime).getTime(),
+    );
 
     return qlistNoDuplicates;
   } catch (error) {
@@ -1067,8 +1047,6 @@ export const processTags = async (tags: Tag[]): Promise<Tag[]> => {
   } catch (error: unknown) {
     // Log the error for debugging purposes
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    // eslint-disable-next-line no-console
-    console.log('An error occurred while adding tags:', errorMessage);
     return [];
   }
 };
