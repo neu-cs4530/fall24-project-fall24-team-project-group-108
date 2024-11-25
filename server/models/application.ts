@@ -1045,8 +1045,6 @@ export const processTags = async (tags: Tag[]): Promise<Tag[]> => {
 
     return processedTags;
   } catch (error: unknown) {
-    // Log the error for debugging purposes
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return [];
   }
 };
