@@ -44,44 +44,64 @@ const MessageView = ({ message }: MessageProps) => {
   const navigate = useNavigate();
 
   return (
-    // <div className='messageText'>
     <div className='messageContainer'>
       <div className='message right_padding'>
-        <div className='messageByContents'>
+        <div className='message-main'>
+          <div className='messageByContents'>
+            <div
+              className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}
+              onClick={e => {
+                e.stopPropagation();
+                navigate(`/account/${message.messageBy}`);
+              }}>
+              {message.messageBy}
+            </div>
+            <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
+          </div>
+          {!isEditing ? (
+            <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>
+              {editingText}
+            </div>
+          ) : (
+            <div className='messageTextEdit'>
+              <textarea
+                className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
+                placeholder='New Message...'
+                value={editingText}
+                onChange={e => setEditingText(e.target.value)}
+              />
+              <button
+                className='messageTextEditCodeStyleButton'
+                onClick={() => setIsCodeStyle(!isCodeStyle)}>
+                {'<Code> Style'}
+              </button>
+              <button
+                className='messageTextEditSaveButton'
+                onClick={() => setSaveClicked(!saveClicked)}>
+                Save
+              </button>
+            </div>
+          )}
           <div
-            className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}
-            onClick={e => {
-              e.stopPropagation();
-              navigate(`/account/${message.messageBy}`);
-            }}>
-            {message.messageBy}
-            {/* <br></br> */}
-            {/* {Object.values(currentEmojis).join('  ')} */}
+            className='messageDate'
+            style={{ color: message.views.includes(user.username) ? 'black' : 'red' }}>
+            {getMetaData(new Date(message.messageDateTime))}
+            <div className='messageDate-data-above'>
+              Read:{' '}
+              {currentMessage.views
+                ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .join(', ')}
+            </div>
+            <div className='messageDate-data-below'>
+              Not Read:{' '}
+              {currentMessage.messageTo
+                .filter(username => !currentMessage.views?.includes(username))
+                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .join(', ')}
+            </div>
           </div>
-          <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
         </div>
-        {!isEditing ? (
-          <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
-        ) : (
-          <div className='messageTextEdit'>
-            <textarea
-              className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
-              placeholder='New Message...'
-              value={editingText}
-              onChange={e => setEditingText(e.target.value)}
-            />
-            <button
-              className='messageTextEditCodeStyleButton'
-              onClick={() => setIsCodeStyle(!isCodeStyle)}>
-              {'<Code> Style'}
-            </button>
-            <button
-              className='messageTextEditSaveButton'
-              onClick={() => setSaveClicked(!saveClicked)}>
-              Save
-            </button>
-          </div>
-        )}
+
         <div className='downloadableFile'>
           {hasFile && !isDeleted ? (
             <div>
@@ -102,7 +122,7 @@ const MessageView = ({ message }: MessageProps) => {
                   padding: '10px',
                   borderRadius: '5px',
                   border: '1px solid #ccc',
-                  background: 'yellow',
+                  background: '#e8e8e8',
                   cursor: 'pointer',
                 }}
                 disabled={isDeleted}>
@@ -129,7 +149,6 @@ const MessageView = ({ message }: MessageProps) => {
                   {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
                     <li
                       key={index}
-                      // onClick={() => handleOptionClick(option)}
                       style={{
                         padding: '10px',
                         cursor: 'pointer',
@@ -139,9 +158,6 @@ const MessageView = ({ message }: MessageProps) => {
                       }}
                       onClick={() => handleEmojiOptionSelection(option)}>
                       {option}
-                      {/* {selectedMessageOptions.includes(option) && (
-                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
-                      )} */}
                     </li>
                   ))}
                 </ul>
@@ -162,7 +178,7 @@ const MessageView = ({ message }: MessageProps) => {
                   padding: '10px',
                   borderRadius: '5px',
                   border: '1px solid #ccc',
-                  background: 'orange',
+                  background: '#e8e8e8',
                   cursor: 'pointer',
                 }}
                 disabled={isDeleted}>
@@ -188,7 +204,6 @@ const MessageView = ({ message }: MessageProps) => {
                   {['Edit', 'Delete'].map((option, index) => (
                     <li
                       key={index}
-                      // onClick={() => handleOptionClick(option)}
                       style={{
                         padding: '10px',
                         cursor: 'pointer',
@@ -207,24 +222,6 @@ const MessageView = ({ message }: MessageProps) => {
               ) : null}
             </div>
           ) : null}
-        </div>
-        <div
-          className='messageDate'
-          style={{ color: message.views.includes(user.username) ? 'black' : 'red' }}>
-          {getMetaData(new Date(message.messageDateTime))}
-          <div className='messageDate-data-above'>
-            Read:{' '}
-            {currentMessage.views
-              ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-              .join(', ')}
-          </div>
-          <div className='messageDate-data-below'>
-            Not Read:{' '}
-            {currentMessage.messageTo
-              .filter(username => !currentMessage.views?.includes(username))
-              .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-              .join(', ')}
-          </div>
         </div>
       </div>
     </div>
