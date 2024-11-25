@@ -5,6 +5,9 @@ import * as util from '../models/application';
 import { Message } from '../types';
 import CorrespondenceModel from '../models/correspondence';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mockingoose = require('mockingoose');
+
 const message1: Message = {
   _id: '65e9b58910afe6e94fc6e6aa',
   messageText: 'What is your favorite smartphone?',

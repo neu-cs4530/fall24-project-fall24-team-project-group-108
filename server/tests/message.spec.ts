@@ -3,6 +3,10 @@ import mongoose from 'mongoose';
 import { app } from '../app';
 import * as util from '../models/application';
 import { Message, Correspondence } from '../types';
+import CorrespondenceModel from '../models/correspondence';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mockingoose = require('mockingoose');
 
 const fetchAndIncrementMessageViewsByIdSpy: jest.SpyInstance = jest.spyOn(
   util,
@@ -140,6 +144,8 @@ describe('POST /updateMessageIsDeleted', () => {
       ...message1,
       isDeleted: true,
     } as Message);
+    mockingoose(CorrespondenceModel).toReturn(correspondence2, 'findOne');
+    CorrespondenceModel.schema.path('messages', Object);
 
     const mockReqBody = { mid: '65e9b58910afe6e94fc6e6aa', isDeleted: true };
 
@@ -196,6 +202,8 @@ describe('POST /updateMessageEmojis', () => {
       ...message1,
       emojiTracker: { ichiro: 'smile', tgwynn: 'thumbs up' },
     } as Message);
+    mockingoose(CorrespondenceModel).toReturn(correspondence2, 'findOne');
+    CorrespondenceModel.schema.path('messages', Object);
 
     const mockReqBody = {
       mid: '65e9b58910afe6e94fc6e6aa',
@@ -339,6 +347,8 @@ describe('POST /updateMessage', () => {
       views: [],
       userTyping: [],
     } as Correspondence);
+    mockingoose(CorrespondenceModel).toReturn(correspondence2, 'findOne');
+    CorrespondenceModel.schema.path('messages', Object);
 
     const mockReqBody = {
       mid: '65e9b58910afe6e94fc6e6aa',
@@ -449,6 +459,8 @@ describe('POST /updateMessageViews', () => {
       ...message1,
       views: ['isuzuki'],
     } as Message);
+    mockingoose(CorrespondenceModel).toReturn(correspondence2, 'findOne');
+    CorrespondenceModel.schema.path('messages', Object);
 
     const mockReqBody = { mid: '65e9b58910afe6e94fc6e6aa', username: 'ichiro' };
 
