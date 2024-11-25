@@ -23,8 +23,6 @@ const MessageView = ({ message }: MessageProps) => {
     isEditing,
     editingText,
     setEditingText,
-    isCodeStyle,
-    setIsCodeStyle,
     saveClicked,
     setSaveClicked,
     isDeleted,
@@ -44,7 +42,6 @@ const MessageView = ({ message }: MessageProps) => {
   const navigate = useNavigate();
 
   return (
-    // <div className='messageText'>
     <div className='messageContainer'>
       <div className='message right_padding'>
         <div className='messageByContents'>
@@ -55,29 +52,27 @@ const MessageView = ({ message }: MessageProps) => {
               navigate(`/account/${message.messageBy}`);
             }}>
             {message.messageBy}
-            {/* <br></br> */}
-            {/* {Object.values(currentEmojis).join('  ')} */}
           </div>
           <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
         </div>
         {!isEditing ? (
-          <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
+          <div className={message.isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>
+            {editingText}
+          </div>
         ) : (
           <div className='messageTextEdit'>
             <textarea
-              className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
+              className={message.isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
               placeholder='New Message...'
               value={editingText}
               onChange={e => setEditingText(e.target.value)}
             />
             <button
-              className='messageTextEditCodeStyleButton'
-              onClick={() => setIsCodeStyle(!isCodeStyle)}>
-              {'<Code> Style'}
-            </button>
-            <button
               className='messageTextEditSaveButton'
-              onClick={() => setSaveClicked(!saveClicked)}>
+              onClick={() => {
+                setSaveClicked(!saveClicked);
+                handleMessageOptionSelection('Edit');
+              }}>
               Save
             </button>
           </div>
@@ -116,20 +111,12 @@ const MessageView = ({ message }: MessageProps) => {
                   style={{
                     display: 'flex',
                     position: 'absolute',
-                    top: '40px',
-                    left: '0',
-                    listStyle: 'none',
-                    margin: '0',
                     padding: '10px',
                     background: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
                   }}>
                   {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
                     <li
                       key={index}
-                      // onClick={() => handleOptionClick(option)}
                       style={{
                         padding: '10px',
                         cursor: 'pointer',
@@ -139,9 +126,6 @@ const MessageView = ({ message }: MessageProps) => {
                       }}
                       onClick={() => handleEmojiOptionSelection(option)}>
                       {option}
-                      {/* {selectedMessageOptions.includes(option) && (
-                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
-                      )} */}
                     </li>
                   ))}
                 </ul>
@@ -175,25 +159,16 @@ const MessageView = ({ message }: MessageProps) => {
                   className='dropDownContents'
                   style={{
                     position: 'absolute',
-                    top: '40px',
-                    left: '0',
-                    listStyle: 'none',
-                    margin: '0',
                     padding: '10px',
                     background: '#fff',
-                    border: '1px solid #ccc',
-                    borderRadius: '5px',
-                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
                   }}>
                   {['Edit', 'Delete'].map((option, index) => (
                     <li
                       key={index}
-                      // onClick={() => handleOptionClick(option)}
                       style={{
                         padding: '10px',
                         cursor: 'pointer',
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
                       }}
                       onClick={() => handleMessageOptionSelection(option)}>

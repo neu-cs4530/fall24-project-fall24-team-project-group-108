@@ -7,30 +7,26 @@ import { addMessage } from '../services/messageService';
 import { getUsers } from '../services/userService';
 
 /**
- * Custom hook to handle new correspondence creation and form validation
- *
- * @returns title - The current value of the title input.
- * @returns text - The current value of the text input.
- * @returns tagNames - The current value of the tags input.
- * @returns titleErr - Error message for the title field, if any.
- * @returns textErr - Error message for the text field, if any.
- * @returns tagErr - Error message for the tag field, if any.
- * @returns postQuestion - Function to validate the form and submit a new question.
+ * Custom hook to handle new correspondence creation
+ * @returns createCorrespondence - A function to handle when the user is creating a correspondence
+ * @returns selectedUsers - A list of
+ * @returns selectedUsers - A list of names the user is considering creating the correspondence with
+ * @returns unselectedUsers - A list of names the user is currently not considering creating the correspondence with
+ * @returns handleUserSelection - A function to handle when a user is chosen for consideration
+ * @returns handleUnselectUser - A function to handle when a user is no longer being chosen for consideration
+ * @returns searchInput - The current user's typed search entry when searching for users
+ * @returns handleSearchInputChange - A function that handles when the user updates the search entry
+ * @returns errorMessage - An error message detailing if something went wrong creating the correspondence
  */
 const useNewCorrespondence = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const [toNames, setToNames] = useState<string>('');
-  const [toNamesErr, setToNamesErr] = useState<string>('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [unselectedUsers, setUnselectedUsers] = useState<string[]>([]);
   const [filteredUnselectedUsers, setFilteredUnselectedUsers] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  //   const [titleErr, setTitleErr] = useState<string>('');
-  //   const [textErr, setTextErr] = useState<string>('');
-  //   const [tagErr, setTagErr] = useState<string>('');
 
   useEffect(() => {
     const getAllUsers = async () => {
@@ -69,10 +65,6 @@ const useNewCorrespondence = () => {
    * @returns title - The current value of the title input.
    */
   const createCorrespondence = async () => {
-    // if (!validateForm()) return;
-
-    // const toNamesArray = toNames.split(',').filter(toName => toName.trim() !== '');
-
     if (selectedUsers.length === 0) {
       setErrorMessage('You need at least one person in order to create a correspondence');
     } else {
@@ -112,17 +104,12 @@ const useNewCorrespondence = () => {
   };
 
   return {
-    toNames,
-    setToNames,
-    toNamesErr,
-    setToNamesErr,
     createCorrespondence,
     handleUserSelection,
     selectedUsers,
     unselectedUsers,
     handleUnselectUser,
     searchInput,
-    setSearchInput,
     handleSearchInputChange,
     filteredUnselectedUsers,
     errorMessage,

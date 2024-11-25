@@ -8,30 +8,26 @@ import {
 import { getUsers } from '../services/userService';
 
 /**
- * Custom hook to handle correspondence updates and form validation
- *
- * @returns title - The current value of the title input.
- * @returns text - The current value of the text input.
- * @returns tagNames - The current value of the tags input.
- * @returns titleErr - Error message for the title field, if any.
- * @returns textErr - Error message for the text field, if any.
- * @returns tagErr - Error message for the tag field, if any.
- * @returns postQuestion - Function to validate the form and submit a new question.
+ * Custom hook to handle adding correspondence members
+ * @returns updateCorrespondence - A function to handle when the user is updating a correspondence
+ * @returns handleUserSelection - A function to handle when a user is chosen for consideration
+ * @returns unselectedUsers - A list of names the user is currently not considering adding to a correspondence
+ * @returns selectedUsers - A list of names the user is considering adding to a correspondence
+ * @returns handleSearchInputChange - A function that handles when the user updates the search entry
+ * @returns searchInput - The current user's typed search entry when searching for users
+ * @returns filteredUnselectedUsers - A filtered list of unselected users
+ * @returns originalSelectedUsers - A list of users who were originally a part of the correspondence
+ * @returns handleUnselectUser - A function to handle when a user is no longer being chosen for consideration
  */
 const useUpdateCorrespondence = () => {
   const { cid } = useParams();
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const [toNames, setToNames] = useState<string>('');
-  const [toNamesErr, setToNamesErr] = useState<string>('');
   const [originalSelectedUsers, setOriginalSelectedUsers] = useState<string[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [unselectedUsers, setUnselectedUsers] = useState<string[]>([]);
   const [filteredUnselectedUsers, setFilteredUnselectedUsers] = useState<string[]>([]);
   const [searchInput, setSearchInput] = useState<string>('');
-  //   const [titleErr, setTitleErr] = useState<string>('');
-  //   const [textErr, setTextErr] = useState<string>('');
-  //   const [tagErr, setTagErr] = useState<string>('');
 
   useEffect(() => {
     if (!cid) {
@@ -56,28 +52,6 @@ const useUpdateCorrespondence = () => {
     };
     getCurrentCorrespondence();
   }, [cid, user.username]);
-
-  /**
-   * Function to validate the form before submitting the question.
-   *
-   * @returns boolean - True if the form is valid, false otherwise.
-   */
-  // const validateForm = (): boolean => {
-  //   let isValid = true;
-
-  //   const toNamesArray = toNames.split(',').filter(toName => toName.trim() !== '');
-  //   if (toNamesArray.length === 0) {
-  //     setToNamesErr('Need to list at least 1 user to create a correspondence with');
-  //     isValid = false;
-  //   } else if (toNamesArray.length > 9) {
-  //     setToNamesErr('Cannot create correspondence between more than 10 people');
-  //     isValid = false;
-  //   } else {
-  //     setToNamesErr('');
-  //   }
-
-  //   return isValid;
-  // };
 
   const handleUnselectUser = (username: string): void => {
     setSelectedUsers([...selectedUsers.filter(selectedUsername => selectedUsername !== username)]);
@@ -119,10 +93,6 @@ const useUpdateCorrespondence = () => {
   };
 
   return {
-    toNames,
-    setToNames,
-    toNamesErr,
-    setToNamesErr,
     updateCorrespondence,
     handleUserSelection,
     unselectedUsers,
