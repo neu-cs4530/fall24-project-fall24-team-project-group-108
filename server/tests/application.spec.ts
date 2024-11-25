@@ -2105,7 +2105,11 @@ describe('application module', () => {
           mockComment,
         );
 
-        expect(result).toMatchObject(expectedNotification);
+        expect(result.caption).toEqual(expectedNotification.caption);
+        expect(result.read).toEqual(expectedNotification.read);
+        expect(result.redirectUrl).toEqual(expectedNotification.redirectUrl);
+        expect(result.type).toEqual(expectedNotification.type);
+        expect(result.user).toEqual(expectedNotification.user);
       });
 
       test('should throw an error if the question is not found', async () => {
