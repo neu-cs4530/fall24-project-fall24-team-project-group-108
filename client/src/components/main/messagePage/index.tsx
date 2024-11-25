@@ -70,7 +70,7 @@ const MessagePage = () => {
                     setIsSelectedCorrespondence(false);
                     setMessageText('');
                   }}>
-                  {'<-- Back'}
+                  &larr; Back
                 </button>
               }
               {

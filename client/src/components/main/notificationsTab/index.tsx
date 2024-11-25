@@ -26,18 +26,13 @@ const NotificationsTab = ({
   toggleDnd,
   dnd,
 }: NotificationsTabProps) => {
-  const {
-    activeTab,
-    handleTabChange,
-    unreadNotifications,
-    readNotifications,
-    handleNotificationClick,
-  } = useNotificationsTab({
-    handleUpdate,
-    initialReadNotifications,
-    initialUnreadNotifications,
-    handleClick,
-  });
+  const { activeTab, handleTabChange, unreadNotifications, readNotifications } =
+    useNotificationsTab({
+      handleUpdate,
+      initialReadNotifications,
+      initialUnreadNotifications,
+      handleClick,
+    });
 
   return (
     <div className='notifications-dropdown'>
@@ -64,15 +59,38 @@ const NotificationsTab = ({
           {unreadNotifications.map(notification => (
             <div className='notification-view' key={notification._id}>
               <li className={notification.read ? 'read' : 'unread'}>
-                <a
-                  href='#'
-                  onClick={e => {
-                    e.preventDefault();
-                    handleNotificationClick(notification);
-                  }}
-                  className='notification-link'>
-                  {notification.caption}
-                </a>
+                {['answer', 'comment'].includes(notification.type) ? (
+                  <span>
+                    <a
+                      href='#'
+                      onClick={e => {
+                        e.preventDefault();
+                        handleClick(`account/${notification.caption.split(' ')[0]}`);
+                      }}
+                      className='notification-link username-link'>
+                      {notification.caption.split(' ')[0]}{' '}
+                    </a>
+                    <a
+                      href='#'
+                      onClick={e => {
+                        e.preventDefault();
+                        handleClick(notification.redirectUrl);
+                      }}
+                      className='notification-link content-link'>
+                      {notification.caption.split(' ').slice(1).join(' ')}
+                    </a>
+                  </span>
+                ) : (
+                  <a
+                    href='#'
+                    onClick={e => {
+                      e.preventDefault();
+                      handleClick(notification.redirectUrl);
+                    }}
+                    className='notification-link'>
+                    {notification.caption}
+                  </a>
+                )}
               </li>
               <p className='notification-metadata'>
                 {getMetaData(new Date(notification.createdAt))}
@@ -91,15 +109,38 @@ const NotificationsTab = ({
           {readNotifications.map(notification => (
             <div className='notification-view' key={notification._id}>
               <li className={notification.read ? 'read' : 'unread'}>
-                <a
-                  href='#'
-                  onClick={e => {
-                    e.preventDefault();
-                    handleClick(notification.redirectUrl);
-                  }}
-                  className='notification-link'>
-                  {notification.caption}
-                </a>
+                {['answer', 'comment'].includes(notification.type) ? (
+                  <span>
+                    <a
+                      href='#'
+                      onClick={e => {
+                        e.preventDefault();
+                        handleClick(`account/${notification.caption.split(' ')[0]}`);
+                      }}
+                      className='notification-link username-link'>
+                      {notification.caption.split(' ')[0]}{' '}
+                    </a>
+                    <a
+                      href='#'
+                      onClick={e => {
+                        e.preventDefault();
+                        handleClick(notification.redirectUrl);
+                      }}
+                      className='notification-link content-link'>
+                      {notification.caption.split(' ').slice(1).join(' ')}
+                    </a>
+                  </span>
+                ) : (
+                  <a
+                    href='#'
+                    onClick={e => {
+                      e.preventDefault();
+                      handleClick(notification.redirectUrl);
+                    }}
+                    className='notification-link'>
+                    {notification.caption}
+                  </a>
+                )}
               </li>
               <p className='notification-metadata'>
                 {getMetaData(new Date(notification.createdAt))}
