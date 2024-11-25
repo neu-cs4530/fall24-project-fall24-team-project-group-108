@@ -91,6 +91,7 @@ const useNewCorrespondence = () => {
         messageTo: [...selectedUsers],
         isCodeStyle: false,
         views: [user.username],
+        isDeleted: false,
       };
       const messageRes = await addMessage(res._id ? res._id : '', initialMessage);
 

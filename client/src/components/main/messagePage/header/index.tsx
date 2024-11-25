@@ -14,7 +14,7 @@ interface MessageHeaderProps {
 }
 
 /**
- * MessageHeader component displays the header section for a list of messages.
+ * MessageHeader component displays the header section for a list of correspondences.
  * It includes the title, a button to create a new correspondence, the number of the correspondences
  *
  * @param titleText - The title text to display in the header.
@@ -25,9 +25,6 @@ const MessageHeader = ({ titleText, ccnt }: MessageHeaderProps) => (
     <div className='space_between right_padding'>
       <div className='bold_title'>{titleText}</div>
       <NewCorrespondenceButton />
-    </div>
-    <div className='space_between right_padding'>
-      <div id='correspondence_count'>{ccnt} correspondences</div>
     </div>
   </div>
 );

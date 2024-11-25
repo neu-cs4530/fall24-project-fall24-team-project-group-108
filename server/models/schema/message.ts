@@ -32,6 +32,7 @@ const messageSchema: Schema = new Schema(
       type: Map,
       of: String,
     },
+    isDeleted: { type: Boolean },
   },
   { collection: 'Message' },
 );

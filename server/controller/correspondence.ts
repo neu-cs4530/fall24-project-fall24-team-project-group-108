@@ -13,7 +13,7 @@ import {
 } from '../types';
 import {
   fetchAndIncrementCorrespondenceViewsById,
-  getCorrespondencesByOrder,
+  getAllCorrespondences,
   saveCorrespondence,
   updateCorrespondenceById,
   updateCorrespondenceUserTypingById,
@@ -25,26 +25,26 @@ const correspondenceController = (socket: FakeSOSocket) => {
   const router = express.Router();
 
   /**
-   * Retrieves a list of correspondence ordered by a specified criterion.
+   * Retrieves a list of all correspondences in the db
    * If there is an error, the HTTP response's status is updated.
    *
-   * @param req The FindCorrespondenceRequest object containing the query parameter `order`
-   * @param res The HTTP response object used to send back the ordered list of questions.
+   * @param res The HTTP response object used to send back list of correspondences
    *
    * @returns A Promise that resolves to void.
    */
-  const getCorrespondencesByFilter = async (
-    req: FindCorrespondenceRequest,
-    res: Response,
-  ): Promise<void> => {
+  const getCorrespondences = async (_: FindCorrespondenceRequest, res: Response): Promise<void> => {
     try {
-      const clist: Correspondence[] = await getCorrespondencesByOrder();
-      res.json(clist);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        res.status(500).send(`Error when fetching correspondences by filter: ${err.message}`);
+      const clist: Correspondence[] = await getAllCorrespondences();
+      if (clist) {
+        res.json(clist);
       } else {
         res.status(500).send(`Error when fetching correspondences by filter`);
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching correspondences: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching correspondences`);
       }
     }
   };
@@ -72,7 +72,11 @@ const correspondenceController = (socket: FakeSOSocket) => {
     try {
       const c = await fetchCorrespondenceById(cid);
 
-      res.json(c);
+      if (c) {
+        res.json(c);
+      } else {
+        res.status(500).send(`Error when fetching correspondence by id`);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         res.status(500).send(`Error when fetching correspondence by id: ${err.message}`);
@@ -112,7 +116,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
       const c = await fetchAndIncrementCorrespondenceViewsById(cid, username);
 
       if (c && !('error' in c)) {
-        // socket.emit('viewsUpdate', c);
         res.json(c);
         return;
       }
@@ -137,13 +140,18 @@ const correspondenceController = (socket: FakeSOSocket) => {
   const isCorrespondenceBodyValid = (correspondence: Correspondence): boolean =>
     correspondence.messages !== undefined &&
     correspondence.messageMembers !== undefined &&
-    correspondence.messageMembers.length > 0;
+    correspondence.messageMembers.length > 0 &&
+    correspondence.views !== undefined &&
+    correspondence.userTyping !== undefined &&
+    correspondence.messageMembers.length > 2 &&
+    correspondence.views.every(element => correspondence.messageMembers.includes(element)) &&
+    correspondence.userTyping.every(element => correspondence.messageMembers.includes(element));
 
   /**
    * Adds a new correspondence to the database. The correspondence is first validated and then saved.
    * If saving the correspondence fails, the HTTP response status is updated.
    *
-   * @param req The AddCorrespondenceRequest object containing the question data.
+   * @param req The AddCorrespondenceRequest object containing the new correspondence data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -172,10 +180,10 @@ const correspondenceController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Adds a new correspondence to the database. The correspondence is first validated and then saved.
+   * Updates the members associated with a given correspondence
    * If saving the correspondence fails, the HTTP response status is updated.
    *
-   * @param req The AddCorrespondenceRequest object containing the question data.
+   * @param req The AddCorrespondenceRequest object containing the correspondence id and updated message members
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -204,9 +212,9 @@ const correspondenceController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Updates a correspondence's userEditing value if someone is typing a message or not
+   * Updates a correspondence's userTyping value with a list of users who are currently typing
    *
-   * @param req The AddCorrespondenceRequest object containing the question data.
+   * @param req The AddCorrespondenceRequest object containing the typing data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -236,7 +244,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
   /**
    * Adds a user to the list of people who have viewed the correspondence
    *
-   * @param req The AddCorrespondenceRequest object containing the question data.
+   * @param req The AddCorrespondenceRequest object containing the correspondence and newly viewed data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
@@ -264,7 +272,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
   };
 
   // add appropriate HTTP verbs and their endpoints to the router
-  router.get('/getCorrespondence', getCorrespondencesByFilter);
+  router.get('/getCorrespondence', getCorrespondences);
   router.get('/getCorrespondenceById/:cid', getCorrespondenceById);
   router.get('/getCorrespondenceByIdWithViews/:cid', getCorrespondenceByIdWithViews);
   router.post('/addCorrespondence', addCorrespondence);

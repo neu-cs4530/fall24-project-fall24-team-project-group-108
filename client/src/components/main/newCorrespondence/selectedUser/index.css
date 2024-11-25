@@ -1,0 +1,23 @@
+.selectedUserContainer {
+    display: flex;
+    flex-direction: row;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 2.5%;
+    /* margin-left: 30%; */
+    /* background-color: white; */
+}
+
+.selectedUsername {
+    margin-left: 40%;
+    width: 10%;
+    color: black;
+    text-align: center;
+}
+
+.removeButton {
+    margin-left: 5%;
+    color: red;
+    text-align: center;
+    margin-right: 40%;
+}

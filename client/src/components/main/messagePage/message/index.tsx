@@ -1,5 +1,5 @@
 import './index.css';
-import EmojiPicker from 'emoji-picker-react';
+import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
@@ -21,7 +21,6 @@ interface MessageProps {
 const MessageView = ({ message }: MessageProps) => {
   const {
     isEditing,
-    setIsEditing,
     editingText,
     setEditingText,
     isCodeStyle,
@@ -29,35 +28,42 @@ const MessageView = ({ message }: MessageProps) => {
     saveClicked,
     setSaveClicked,
     isDeleted,
-    setIsDeleted,
     user,
-    showReadReceipts,
-    setShowReadReceipts,
     currentMessage,
     currentEmojis,
-    handleEmojiSelection,
-    viewEmojiPicker,
-    setViewEmojiPicker,
     hasFile,
     handleDownloadFile,
+    dropDownSelected,
+    setDropDownSelected,
+    selectedMessageOptions,
+    handleMessageOptionSelection,
+    handleEmojiOptionSelection,
+    setDropDownEmojiSelected,
+    dropDownEmojiSelected,
   } = useMessageView(message);
+  const navigate = useNavigate();
 
   return (
+    // <div className='messageText'>
     <div className='messageContainer'>
       <div className='message right_padding'>
-        <div className='messageBy'>{message.messageBy}</div>
-        <button className='readReceipts' onClick={() => setShowReadReceipts(!showReadReceipts)}>
-          Read Receipts
-        </button>
+        <div className='messageByContents'>
+          <div
+            className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}
+            onClick={e => {
+              e.stopPropagation();
+              navigate(`/account/${message.messageBy}`);
+            }}>
+            {message.messageBy}
+            {/* <br></br> */}
+            {/* {Object.values(currentEmojis).join('  ')} */}
+          </div>
+          <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
+        </div>
         {!isEditing ? (
           <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
         ) : (
           <div className='messageTextEdit'>
-            <button
-              className='messageTextEditCodeStyleButton'
-              onClick={() => setIsCodeStyle(!isCodeStyle)}>
-              {'<Code> Style'}
-            </button>
             <textarea
               className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
               placeholder='New Message...'
@@ -65,60 +71,162 @@ const MessageView = ({ message }: MessageProps) => {
               onChange={e => setEditingText(e.target.value)}
             />
             <button
+              className='messageTextEditCodeStyleButton'
+              onClick={() => setIsCodeStyle(!isCodeStyle)}>
+              {'<Code> Style'}
+            </button>
+            <button
               className='messageTextEditSaveButton'
               onClick={() => setSaveClicked(!saveClicked)}>
               Save
             </button>
           </div>
         )}
-        {user.username === message.messageBy ? (
-          <button
-            className='editMessageButton'
-            disabled={isEditing}
-            onClick={() => setIsEditing(!isEditing)}>
-            Edit
-          </button>
-        ) : (
-          <div className='editMessageButton'></div>
-        )}
-        {user.username === message.messageBy ? (
-          <button
-            className='deleteMessageButton'
-            disabled={isDeleted}
-            onClick={() => setIsDeleted(true)}>
-            Delete
-          </button>
-        ) : (
-          <div className='deleteMessageButton'></div>
-        )}
-        <button onClick={() => setViewEmojiPicker(!viewEmojiPicker)}>Select an Emoji</button>
-        <div className='messageDate'>{getMetaData(new Date(message.messageDateTime))}</div>
-      </div>
-      {showReadReceipts ? <div> Read: {currentMessage.views?.join(', ')} </div> : null}
-      {showReadReceipts ? (
-        <div>
-          {' '}
-          Not Read:{' '}
-          {currentMessage.messageTo
-            .filter(username => !currentMessage.views?.includes(username))
-            .join(', ')}{' '}
+        <div className='downloadableFile'>
+          {hasFile && !isDeleted ? (
+            <div>
+              {' '}
+              <button onClick={handleDownloadFile}>{`Download 📎`}</button>{' '}
+            </div>
+          ) : null}
         </div>
-      ) : null}
-      <div style={{ width: '50px', height: '50px' }}>
-        <EmojiPicker
-          open={viewEmojiPicker}
-          reactionsDefaultOpen={true}
-          allowExpandReactions={false}
-          onReactionClick={(selectedEmoji, event) => handleEmojiSelection(selectedEmoji)}
-        />
-      </div>
-      <div> {Object.values(currentEmojis).join(', ')} </div>
-      {hasFile ? (
-        <div>
-          {' '}
-          <button onClick={handleDownloadFile}>{`Download ${currentMessage.fileName}`}</button>{' '}
+        <div className='dropDownEmoji'>
+          {!isDeleted && (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                onClick={() => {
+                  setDropDownEmojiSelected(!dropDownEmojiSelected);
+                  setDropDownSelected(false);
+                }}
+                style={{
+                  padding: '10px',
+                  borderRadius: '5px',
+                  border: '1px solid #ccc',
+                  background: 'yellow',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                Emoji
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownEmojiSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    display: 'flex',
+                    position: 'absolute',
+                    top: '40px',
+                    left: '0',
+                    listStyle: 'none',
+                    margin: '0',
+                    padding: '10px',
+                    background: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}>
+                  {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
+                    <li
+                      key={index}
+                      // onClick={() => handleOptionClick(option)}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => handleEmojiOptionSelection(option)}>
+                      {option}
+                      {/* {selectedMessageOptions.includes(option) && (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
+                      )} */}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )}
         </div>
-      ) : null}
+        <div className='dropDown'>
+          {!isDeleted && message.messageBy === user.username ? (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {/* Dropdown Button */}
+              <button
+                onClick={() => {
+                  setDropDownSelected(!dropDownSelected);
+                  setDropDownEmojiSelected(false);
+                }}
+                style={{
+                  padding: '10px',
+                  borderRadius: '5px',
+                  border: '1px solid #ccc',
+                  background: 'orange',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                &#x22EE;
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    position: 'absolute',
+                    top: '40px',
+                    left: '0',
+                    listStyle: 'none',
+                    margin: '0',
+                    padding: '10px',
+                    background: '#fff',
+                    border: '1px solid #ccc',
+                    borderRadius: '5px',
+                    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}>
+                  {['Edit', 'Delete'].map((option, index) => (
+                    <li
+                      key={index}
+                      // onClick={() => handleOptionClick(option)}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => handleMessageOptionSelection(option)}>
+                      {option}
+                      {selectedMessageOptions.includes(option) && (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+        <div
+          className='messageDate'
+          style={{ color: message.views.includes(user.username) ? 'black' : 'red' }}>
+          {getMetaData(new Date(message.messageDateTime))}
+          <div className='messageDate-data-above'>
+            Read:{' '}
+            {currentMessage.views
+              ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+              .join(', ')}
+          </div>
+          <div className='messageDate-data-below'>
+            Not Read:{' '}
+            {currentMessage.messageTo
+              .filter(username => !currentMessage.views?.includes(username))
+              .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+              .join(', ')}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

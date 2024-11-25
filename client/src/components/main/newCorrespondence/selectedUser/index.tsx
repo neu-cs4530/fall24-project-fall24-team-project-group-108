@@ -19,27 +19,13 @@ interface SelectedUserProps {
  * @param message - The message object containing message details.
  */
 const SelectedUserView = ({ username, onClickHandler, deletion }: SelectedUserProps) => (
-  //   const {
-  //     isEditing,
-  //     setIsEditing,
-  //     editingText,
-  //     setEditingText,
-  //     isCodeStyle,
-  //     setIsCodeStyle,
-  //     saveClicked,
-  //     setSaveClicked,
-  //     isDeleted,
-  //     setIsDeleted,
-  //     user,
-  //     showReadReceipts,
-  //     setShowReadReceipts,
-  //     currentMessage,
-  //     setCurrentMessage,
-  //   } = useMessageView(message);
-
   <div className='selectedUserContainer'>
-    <div> {username} </div>
-    {deletion ? <button onClick={() => onClickHandler(username)}> Remove </button> : null}
+    <div className='selectedUsername'> {username} </div>
+    {deletion ? (
+      <button className='removeButton' onClick={() => onClickHandler(username)}>
+        x
+      </button>
+    ) : null}
   </div>
 );
 export default SelectedUserView;

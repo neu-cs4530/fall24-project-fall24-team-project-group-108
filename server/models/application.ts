@@ -535,23 +535,20 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
   }
 };
 
-//  * Retrieves messages from the database, ordered by the specified criteria.
+//  * Retrieves all messages from the database
 //  *
-//  * @param {OrderType} order - The order type to filter the messages
-//  *
-//  * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
+//  * @returns {Promise<Message[]>} - Promise that resolves to a list of all messages
 //  */
-export const getMessagesByOrder = async (): Promise<Message[]> => {
+export const getAllMessages = async (): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
 };
 /**
- * Retrieves correspondences from the database, ordered by the specified criteria.
+ * Retrieves correspondences from the database
  *
- *
- * @returns {Promise<Correspondence[]>} - Promise that resolves to a list of ordered correspondences
+ * @returns {Promise<Correspondence[]>} - Promise that resolves to a list correspondences
  */
-export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
+export const getAllCorrespondences = async (): Promise<Correspondence[]> => {
   const clist = await CorrespondenceModel.find().populate([
     { path: 'messages', model: MessageModel },
   ]);
@@ -559,7 +556,6 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
 };
 /**
  * Retrieves a list of all users in the db in alphabetical order
- *
  *
  * @returns {Promise<User[]>} - Promise that resolves to a list of users
  */
@@ -731,7 +727,7 @@ export const fetchAndIncrementQuestionViewsById = async (
  * Fetches a message by its ID and increments its view count.
  *
  * @param {string} mid - The ID of the message to fetch.
- * @param {string} username - The username of the user requesting the message.
+ * @param {string} username - The username of the user who is now viewing the message
  *
  * @returns {Promise<MessageResponse | null>} - Promise that resolves to the fetched message
  *          with incremented views, null if the message is not found, or an error message.
@@ -756,7 +752,7 @@ export const fetchAndIncrementMessageViewsById = async (
  * Fetches a correspondence by its ID and increments its view count.
  *
  * @param {string} cid - The ID of the correspondence to fetch.
- * @param {string} username - The username of the user requesting the correspondence.
+ * @param {string} username - The username of the user who is now viewing the correspondence
  *
  * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence
  *          with incremented views, null if the correspondence is not found, or an error message.
@@ -773,7 +769,7 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
     );
     return c;
   } catch (error) {
-    return { error: 'Error when fetching and updating a message' };
+    return { error: 'Error when fetching and updating a correspondence' };
   }
 };
 
@@ -1299,7 +1295,7 @@ export const updateMessageViewsById = async (
  * Updates a message with the updated emojis for the given id.
  *
  * @param {string} mid - The ID of the message to update
- * @param {string} emojis - The username to add to the people who have viewed the message
+ * @param {Map} emojis - A map where each key is a user, and each value is their corresponding emoji reaction for the message
  *
  * @returns Promise<MessageResponse> - The updated message or an error message
  */
@@ -1319,6 +1315,33 @@ export const updateMessageEmojisById = async (
     return result;
   } catch (error) {
     return { error: 'Error when updating messages emojis' };
+  }
+};
+
+/**
+ * Updates a message with the updated isDeleted value for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} isDeleted - A boolean describing whether or not the message is deleted
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageIsDeletedById = async (
+  mid: string,
+  isDeleted: boolean,
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { isDeleted } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating messages isDeleted');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating messages isDeleted' };
   }
 };
 

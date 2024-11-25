@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
 import { Correspondence, Message } from '../types';
 import {
-  getCorrespondencesByOrder,
+  getCorrespondences,
   updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
 } from '../services/correspondenceService';
@@ -24,6 +24,8 @@ const useMessagePage = () => {
   const [titleText, setTitleText] = useState<string>('All Messages');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
   const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
+  const [isSelectedCorrespondence, setIsSelectedCorrespondence] = useState<boolean>(false);
+  const [selectedCorrespondenceId, setSelectedCorrespondenceId] = useState<string>('');
   const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
     [],
   );
@@ -31,6 +33,8 @@ const useMessagePage = () => {
   const [messageText, setMessageText] = useState<string>('');
   const [isCodeStyle, setIsCodeStyle] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
+  const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -43,37 +47,49 @@ const useMessagePage = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedCorrespondence) {
+    if (!isSelectedCorrespondence) {
       return;
     }
 
     const getUpdatedCorrespondence = async () => {
-      if (selectedCorrespondence) {
-        if (messageText === '' && selectedCorrespondence.userTyping.includes(user.username)) {
-          const updatedUserTyping = selectedCorrespondence.userTyping.filter(
-            name => name !== user.username,
-          );
+      if (isSelectedCorrespondence) {
+        if (messageText === '' && currentUserTyping.includes(user.username)) {
+          const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
           const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondence._id || '',
+            selectedCorrespondenceId || '',
             [...updatedUserTyping],
           );
           setSelectedCorrespondence({ ...updatedCorrespondence });
-        } else if (
-          messageText !== '' &&
-          !selectedCorrespondence.userTyping.includes(user.username)
-        ) {
-          const updatedUserTyping = [...selectedCorrespondence.userTyping, user.username];
-          const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondence._id || '',
-            [...updatedUserTyping],
-          );
-          setSelectedCorrespondence({ ...updatedCorrespondence });
+          setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+          setIsSelectedCorrespondence(true);
+        } else if (messageText !== '') {
+          if (!currentUserTyping.includes(user.username)) {
+            const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
+            const updatedCorrespondence = await updateCorrespondenceUserTypingById(
+              selectedCorrespondenceId || '',
+              [...updatedUserTyping],
+            );
+            setSelectedCorrespondence({ ...updatedCorrespondence });
+            setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+            setIsSelectedCorrespondence(true);
+          }
         }
+      } else if (currentUserTyping.includes(user.username)) {
+        const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
+        await updateCorrespondenceUserTypingById(selectedCorrespondenceId || '', [
+          ...updatedUserTyping,
+        ]);
       }
     };
 
     getUpdatedCorrespondence();
-  }, [messageText, selectedCorrespondence, user.username]);
+  }, [
+    messageText,
+    user.username,
+    currentUserTyping,
+    isSelectedCorrespondence,
+    selectedCorrespondenceId,
+  ]);
 
   useEffect(() => {
     /**
@@ -81,11 +97,11 @@ const useMessagePage = () => {
      */
     const fetchData = async () => {
       try {
-        const res = await getCorrespondencesByOrder();
-
-        setCorrespondenceList(
-          res.filter(correspondence => correspondence.messageMembers.indexOf(user.username) > -1),
+        const res = await getCorrespondences();
+        const userCorrespondences = res.filter(
+          correspondence => correspondence.messageMembers.indexOf(user.username) > -1,
         );
+        setCorrespondenceList([...userCorrespondences]);
       } catch (error) {
         // Handle error
       }
@@ -100,6 +116,9 @@ const useMessagePage = () => {
       await fetchData();
       if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
+        setSelectedCorrespondenceId(correspondence._id || '');
+        setIsSelectedCorrespondence(true);
+        setCurrentUserTyping([...correspondence.userTyping]);
         setSelectedCorrespondenceMessages([...correspondence.messages]);
       }
     };
@@ -136,6 +155,9 @@ const useMessagePage = () => {
       handleMessageViewsUpdate();
     }
     setSelectedCorrespondence(correspondence);
+    setSelectedCorrespondenceId(correspondence._id || '');
+    setIsSelectedCorrespondence(true);
+    setCurrentUserTyping([...correspondence.userTyping]);
     setSelectedCorrespondenceMessages([...correspondence.messages]);
   };
 
@@ -192,10 +214,32 @@ const useMessagePage = () => {
 
       setCorrespondenceList([...updatedCorrespondenceList, updatedCorrespondence]);
       setSelectedCorrespondence({ ...updatedCorrespondence });
+      setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+      setIsSelectedCorrespondence(true);
       setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
       setMessageText('');
       handleMessageViewsUpdate();
       setUploadedFile(null);
+      setUploadedFileErr('');
+    } else {
+      setUploadedFileErr("Error: Can't send message with empty text");
+    }
+  };
+
+  const handleUploadedFile = (eventTarget: HTMLInputElement) => {
+    if (!eventTarget.files || eventTarget.files.length === 0) {
+      return;
+    }
+
+    const userUploadedFile = eventTarget.files[0];
+
+    if (userUploadedFile.size / 1024 > 25) {
+      eventTarget.value = '';
+      setUploadedFileErr('Error: File Size Too Large');
+      setUploadedFile(null);
+    } else {
+      setUploadedFileErr('');
+      setUploadedFile(userUploadedFile);
     }
   };
 
@@ -217,6 +261,9 @@ const useMessagePage = () => {
     setIsCodeStyle,
     uploadedFile,
     setUploadedFile,
+    handleUploadedFile,
+    uploadedFileErr,
+    setIsSelectedCorrespondence,
   };
 };
 
