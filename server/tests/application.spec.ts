@@ -47,6 +47,8 @@ import {
   updateMessageEmojisById,
   updateMessageById,
   updateMessageIsDeletedById,
+  filterQuestionsByAnswerer,
+  filterQuestionsByCommenter,
 } from '../models/application';
 import {
   Answer,
@@ -68,6 +70,7 @@ import MessageModel from '../models/message';
 import CorrespondenceModel from '../models/correspondence';
 import ModApplicationModel from '../models/modApplication';
 import UserReportModel from '../models/userReport';
+import CommentModel from '../models/comments';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -130,6 +133,16 @@ const ans3: Answer = {
 const ans4: Answer = {
   _id: new ObjectId('65e9b58910afe6e94fc6e6df'),
   text: 'ans4',
+  ansBy: 'ansBy4',
+  ansDateTime: new Date('2023-11-19T09:24:00'),
+  comments: [],
+  reports: [],
+  isRemoved: false,
+};
+
+const ans5: Answer = {
+  _id: new ObjectId('65e9b58910afe6e94fc6e6df'),
+  text: 'ans5',
   ansBy: 'ansBy4',
   ansDateTime: new Date('2023-11-19T09:24:00'),
   comments: [],
@@ -1138,6 +1151,220 @@ describe('application module', () => {
         expect(result.length).toEqual(0);
       });
     });
+
+
+    describe('filterQuestionsByCommenter', () => {
+
+
+
+      const sampleComment1 = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6dd'),
+        text: 'comment1',
+        commentBy: 'ansBy4',
+        commentDateTime: new Date('2023-11-16T09:24:00')
+      } as Comment;
+
+      const sampleComment2= {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6de'),
+        text: 'comment2',
+        commentBy: 'ansBy4',
+        commentDateTime: new Date('2023-11-16T09:24:00')
+      } as Comment;
+
+      const sampleQuestion1 = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+        title: 'Quick question about storage on android',
+        text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
+        tags: [tag3, tag2],
+        answers: [ans4, {...ans2, comments: [sampleComment1]}],
+        askedBy: 'q_by1',
+        askDateTime: new Date('2023-11-16T09:24:00'),
+        views: ['question1_user', 'question2_user'],
+        upVotes: [],
+        downVotes: [],
+        comments: [],
+        reports: [],
+        isRemoved: false,
+      };
+      const sampleQuestion3 = {
+        _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
+        title: 'Is there a language to write programmes by pictures?',
+        text: 'Does something like that exist?',
+        tags: [],
+        answers: [ans5],
+        askedBy: 'q_by3',
+        askDateTime: new Date('2023-11-19T09:24:00'),
+        views: ['question1_user', 'question2_user', 'question3_user', 'question4_user'],
+        upVotes: [],
+        downVotes: [],
+        comments: [sampleComment2],
+        reports: [],
+        isRemoved: false,
+      };
+
+      test('Gets a list of questions that contain a users comments', async () => {
+
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3, sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(2);
+        expect(result[1]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+        expect(result[0]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+      test('Should only return question comments if that is the only place theyve commented', async () => {
+
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(1);
+        expect(result[0]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+
+      test('Should only return answer comments if that is the only place theyve commented', async () => {
+
+        mockingoose(CommentModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(1);
+        expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+      });
+          
+      test('returns an empty list if the user has not commented anywhere', async () => {
+
+        mockingoose(CommentModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the AnswerModel call returns an error', async () => {
+
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn({error: 'Error retrieving answer'}, 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the Comment Model call returns an error', async () => {
+
+        mockingoose(CommentModel).toReturn({error: 'Error retrieving answer'}, 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the Question Model call returns an error', async () => {
+
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn(new Error(''), 'find', 1);
+        mockingoose(AnswerModel).toReturn([{...ans2, comments: [sampleComment1]}], 'find');
+        mockingoose(QuestionModel).toReturn(new Error(''), 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
+
+    describe('filterQuestionsByAnswerer', () => {
+      test('Gets a list of questions that are answered by the given user', async () => {
+
+        const sampleQuestion1 = {
+          _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+          title: 'Quick question about storage on android',
+          text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
+          tags: [tag3, tag2],
+          answers: [ans4, ans2],
+          askedBy: 'q_by1',
+          askDateTime: new Date('2023-11-16T09:24:00'),
+          views: ['question1_user', 'question2_user'],
+          upVotes: [],
+          downVotes: [],
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+        const sampleQuestion3 = {
+          _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
+          title: 'Is there a language to write programmes by pictures?',
+          text: 'Does something like that exist?',
+          tags: [],
+          answers: [ans5],
+          askedBy: 'q_by3',
+          askDateTime: new Date('2023-11-19T09:24:00'),
+          views: ['question1_user', 'question2_user', 'question3_user', 'question4_user'],
+          upVotes: [],
+          downVotes: [],
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        mockingoose(AnswerModel).toReturn([ans4, ans5], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1, sampleQuestion3], 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(2);
+        expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+        expect(result[1]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+
+      test('returns an empty list if the user has not answered any questions', async () => {
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the AnswerModel call returns an error', async () => {
+        mockingoose(AnswerModel).toReturn({error: 'Error retrieving answers'}, 'find');
+        mockingoose(QuestionModel).toReturn(QUESTIONS, 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the QuestionModel call returns an error', async () => {
+        mockingoose(AnswerModel).toReturn([ans4, ans5], 'find');
+        mockingoose(QuestionModel).toReturn(new Error('error'), 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+    });
+    
+
+
 
     describe('getAllUsers', () => {
       test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
