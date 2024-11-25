@@ -1,5 +1,6 @@
 import './index.css';
 import { useNavigate } from 'react-router-dom';
+import { FlareSharp } from '@mui/icons-material';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
@@ -163,6 +164,7 @@ const MessageView = ({ message }: MessageProps) => {
                   setDropDownEmojiSelected(false);
                 }}
                 style={{
+                  display: 'flex',
                   padding: '10px',
                   borderRadius: '5px',
                   border: '1px solid #ccc',
@@ -178,6 +180,7 @@ const MessageView = ({ message }: MessageProps) => {
                 <ul
                   className='dropDownContents'
                   style={{
+                    display: 'flex',
                     position: 'absolute',
                     padding: '10px',
                     background: '#fff',
@@ -190,6 +193,7 @@ const MessageView = ({ message }: MessageProps) => {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
+                        border: '1px solid black',
                       }}
                       onClick={() => handleMessageOptionSelection(option)}>
                       {option}
