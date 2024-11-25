@@ -36,7 +36,6 @@ const CorrespondenceView = ({ correspondence, username, onClickHandler }: Corres
       }}>
       <div className='postStats'>
         <div>{correspondence.messages.length || 0} messages</div>
-        {/* <div className='postStatsMembers'>Members: </div> */}
       </div>
       <div className='messageMembersContainer'>
         <div className='messageMembersTitle'>

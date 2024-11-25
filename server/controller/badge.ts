@@ -77,8 +77,6 @@ const badgeController = (socket: FakeSOSocket) => {
       const badges: Badge[] = await getAllBadges();
       res.status(200).json(badges);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching badges:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   };

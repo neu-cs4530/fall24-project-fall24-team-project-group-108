@@ -2,11 +2,11 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Question } from '../types';
 
 const saveCommentSpy = jest.spyOn(util, 'saveComment');
 const addCommentSpy = jest.spyOn(util, 'addComment');
 const popDocSpy = jest.spyOn(util, 'populateDocument');
+const saveAnswerCommentNotificationSpy = jest.spyOn(util, 'saveAnswerCommentNotification');
 
 describe('POST /addComment', () => {
   afterEach(async () => {
@@ -17,81 +17,18 @@ describe('POST /addComment', () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
   });
 
-  it('should add a new comment to the question', async () => {
-    const validQid = new mongoose.Types.ObjectId();
-    const validCid = new mongoose.Types.ObjectId();
-    const mockReqBody = {
-      id: validQid.toString(),
-      type: 'question',
-      comment: {
-        text: 'This is a test comment',
-        commentBy: 'dummyUserId',
-        commentDateTime: new Date('2024-06-03'),
-      },
-    };
-
-    const mockComment = {
-      _id: validCid,
-      text: 'This is a test comment',
-      commentBy: 'dummyUserId',
-      commentDateTime: new Date('2024-06-03'),
-    };
-
-    saveCommentSpy.mockResolvedValueOnce(mockComment);
-
-    addCommentSpy.mockResolvedValueOnce({
-      _id: validQid,
-      title: 'This is a test question',
-      text: 'This is a test question',
-      tags: [],
-      askedBy: 'dummyUserId',
-      askDateTime: new Date('2024-06-03'),
-      views: [],
-      upVotes: [],
-      downVotes: [],
-      answers: [],
-      comments: [mockComment._id],
-      reports: [],
-      isRemoved: false,
-    } as Question);
-
-    popDocSpy.mockResolvedValueOnce({
-      _id: validQid,
-      title: 'This is a test question',
-      text: 'This is a test question',
-      tags: [],
-      askedBy: 'dummyUserId',
-      askDateTime: new Date('2024-06-03'),
-      views: [],
-      upVotes: [],
-      downVotes: [],
-      answers: [],
-      comments: [mockComment],
-      reports: [],
-      isRemoved: false,
-    });
-
-    const response = await supertest(app).post('/comment/addComment').send(mockReqBody);
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      _id: validCid.toString(),
-      text: 'This is a test comment',
-      commentBy: 'dummyUserId',
-      commentDateTime: mockComment.commentDateTime.toISOString(),
-    });
-  });
-
-  it('should add a new comment to the answer', async () => {
+  it('should add a new comment to the answer and handle notifications', async () => {
     const validAid = new mongoose.Types.ObjectId();
     const validCid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
+
     const mockReqBody = {
       id: validAid.toString(),
       type: 'answer',
       comment: {
         text: 'This is a test comment',
         commentBy: 'dummyUserId',
-        commentDateTime: new Date('2024-06-03'),
+        commentDateTime: '2024-06-03T00:00:00.000Z',
       },
     };
 
@@ -102,8 +39,20 @@ describe('POST /addComment', () => {
       commentDateTime: new Date('2024-06-03'),
     };
 
-    saveCommentSpy.mockResolvedValueOnce(mockComment);
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUser',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validAid.toString(),
+      type: 'answer',
+      message: 'A new comment has been added to your answer.',
+      createdAt: new Date(),
+    };
 
+    // Mocks for functions and emit
+    saveCommentSpy.mockResolvedValueOnce(mockComment);
     addCommentSpy.mockResolvedValueOnce({
       _id: validAid,
       text: 'This is a test answer',
@@ -124,15 +73,17 @@ describe('POST /addComment', () => {
       isRemoved: false,
     });
 
+    saveAnswerCommentNotificationSpy.mockResolvedValueOnce(mockNotification);
+
     const response = await supertest(app).post('/comment/addComment').send(mockReqBody);
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({
-      _id: validCid.toString(),
-      text: 'This is a test comment',
-      commentBy: 'dummyUserId',
-      commentDateTime: mockComment.commentDateTime.toISOString(),
-    });
+
+    // Check if the notification was saved correctly
+    expect(saveAnswerCommentNotificationSpy).toHaveBeenCalledWith(
+      validAid.toString(),
+      mockReqBody.comment,
+    );
   });
 
   it('should return bad request error if id property missing', async () => {

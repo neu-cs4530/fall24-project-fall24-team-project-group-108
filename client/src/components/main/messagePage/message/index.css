@@ -1,7 +1,13 @@
 .message {
     display: flex;
     flex-direction: row;
-    border: 1px solid black;
+    width: 83%;
+  }
+
+  .message-main {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
   }
 
   .messageBottom {
@@ -13,6 +19,8 @@
     display: flex;
     flex-direction: column;
     border-bottom: 1pt black;
+    height: 90px;
+    margin-top: 10px;
   }
 
   .messageContents {
@@ -70,21 +78,15 @@
   }
 
   .messageBySelf {
-      /* float: center; */
-      /* text-align: right; */
       width: 100%;
       text-align: center;
-    /* vertical-align: middle; */
     margin-right: 2%;
     color: green;
   }
 
   .messageByOther {
-      /* float: right; */
-      /* text-align: right; */
       width: 100%;
       text-align: center;
-    /* vertical-align: middle; */
     margin-right: 2%;
     color: blue;
   }
@@ -98,14 +100,19 @@
   }
 
   .messageText {
+    display: inline-flex;
       float: right;
       text-align: left;
-      width:50%;
+      width:80%;
       margin-left: 2%;
       margin-right: 5%;
       vertical-align: middle;
       font-size: 18px;
       font-family: 'verdana';
+      background-color: #f0f0f0; 
+      border-radius: 15px; 
+      padding: 10px; 
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .downloadableFile {
@@ -121,18 +128,22 @@
   .messageTextCodeStyle {
       float: right;
       text-align: left;
-      width: 50%;
+      width: 100%;
       margin-left: 2%;
       margin-right: 5%;
       font-family: Consolas,"courier new";
       color: crimson;
       vertical-align: middle;
+      background-color: #f0f0f0; 
+      border-radius: 15px; 
+      padding: 10px; 
+      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   }
 
   .messageTextEdit {
       display: flex;
       flex-direction: row;
-      width: 50%;
+      width: 100%;
       margin-left: 2%;
       margin-right: 5%;
 }
@@ -169,11 +180,14 @@
 
 .messageDate {
     float: right;
-    text-align: right;
+    text-align: left;
     width: 15%;
     margin-left: 0%;
-    text-align: center;
-vertical-align: middle;
+    vertical-align: middle;
+    text-decoration: none;
+    width: 100%;
+    margin-left: 30px;
+    color: gray !important;
 }
 
 .messageDateUnread {
@@ -184,6 +198,7 @@ vertical-align: middle;
     text-align: center;
 vertical-align: middle;
 background-color: red;
+text-decoration: none;
 }
 
 .editMessageButton {
@@ -228,25 +243,21 @@ background-color: red;
 
 .dropDownButton {
     padding: '10px';
-    borderRadius: '5px';
+    border-radius: '5px';
     border: '1px solid #ccc';
     background: '#fff';
     cursor: 'pointer';
 }
 
-.dropDownContents {
-    z-index: 1000;
-}
-
 .messageDate {
   position: relative;
   display: inline-block;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .messageDate-data-above,
 .messageDate-data-below {
-  visibility: hidden; /* Initially hidden */
+  visibility: hidden;
   background-color: gray;
   color: white;
   text-align: center;
