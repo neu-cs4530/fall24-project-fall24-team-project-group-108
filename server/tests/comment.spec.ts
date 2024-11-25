@@ -2,12 +2,11 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
-import { Question } from '../types';
 
 const saveCommentSpy = jest.spyOn(util, 'saveComment');
 const addCommentSpy = jest.spyOn(util, 'addComment');
 const popDocSpy = jest.spyOn(util, 'populateDocument');
-const saveAnswerCommentNotificationSpy =  jest.spyOn(util, 'saveAnswerCommentNotification');
+const saveAnswerCommentNotificationSpy = jest.spyOn(util, 'saveAnswerCommentNotification');
 
 describe('POST /addComment', () => {
   afterEach(async () => {
@@ -17,7 +16,6 @@ describe('POST /addComment', () => {
   afterAll(async () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
   });
-  
 
   it('should add a new comment to the answer and handle notifications', async () => {
     const validAid = new mongoose.Types.ObjectId();
@@ -82,9 +80,11 @@ describe('POST /addComment', () => {
     expect(response.status).toBe(200);
 
     // Check if the notification was saved correctly
-    expect(saveAnswerCommentNotificationSpy).toHaveBeenCalledWith(validAid.toString(), mockReqBody.comment);
+    expect(saveAnswerCommentNotificationSpy).toHaveBeenCalledWith(
+      validAid.toString(),
+      mockReqBody.comment,
+    );
   });
-
 
   it('should return bad request error if id property missing', async () => {
     const mockReqBody = {

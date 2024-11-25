@@ -246,7 +246,9 @@ describe('GET /getBadgeDetails', () => {
 
   it('should return a 404 error if the badge details are not found for the username', async () => {
     const mockUsername = 'userNotFound';
-    jest.spyOn(util, 'getBadgeCategoryAndTierByUsername').mockResolvedValue({ error: 'User not found' });
+    jest
+      .spyOn(util, 'getBadgeCategoryAndTierByUsername')
+      .mockResolvedValue({ error: 'User not found' });
 
     const response = await supertest(app).get(`/badge/getBadgeDetails?username=${mockUsername}`);
 
@@ -256,7 +258,9 @@ describe('GET /getBadgeDetails', () => {
 
   it('should return a 500 error if there is an internal error while fetching badge details', async () => {
     const mockUsername = 'user1';
-    jest.spyOn(util, 'getBadgeCategoryAndTierByUsername').mockRejectedValue(new Error('Internal server error'));
+    jest
+      .spyOn(util, 'getBadgeCategoryAndTierByUsername')
+      .mockRejectedValue(new Error('Internal server error'));
 
     const response = await supertest(app).get(`/badge/getBadgeDetails?username=${mockUsername}`);
 
@@ -264,4 +268,3 @@ describe('GET /getBadgeDetails', () => {
     expect(response.text).toBe('Error retrieving badge details: Internal server error');
   });
 });
-

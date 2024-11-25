@@ -1,5 +1,4 @@
 import './index.css';
-import React, { useState } from 'react';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useBadgePage, { BadgeCategory, BadgeTier } from '../../../../hooks/useBadgePage';
 import { Badge } from '../../../../types';
@@ -12,9 +11,6 @@ interface ProfileHoverProps {
 
 const ProfileHover = ({ user, iconData, badges }: ProfileHoverProps) => {
   const { getBadgeIcon } = useBadgePage();
-
-  const maxX = window.innerWidth - 200;
-  const maxY = window.innerHeight - 200;
 
   const renderProfilePicture = () => {
     if (iconData?.category && iconData?.tier) {

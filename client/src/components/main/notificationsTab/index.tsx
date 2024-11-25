@@ -26,18 +26,13 @@ const NotificationsTab = ({
   toggleDnd,
   dnd,
 }: NotificationsTabProps) => {
-  const {
-    activeTab,
-    handleTabChange,
-    unreadNotifications,
-    readNotifications,
-    handleNotificationClick,
-  } = useNotificationsTab({
-    handleUpdate,
-    initialReadNotifications,
-    initialUnreadNotifications,
-    handleClick,
-  });
+  const { activeTab, handleTabChange, unreadNotifications, readNotifications } =
+    useNotificationsTab({
+      handleUpdate,
+      initialReadNotifications,
+      initialUnreadNotifications,
+      handleClick,
+    });
 
   return (
     <div className='notifications-dropdown'>

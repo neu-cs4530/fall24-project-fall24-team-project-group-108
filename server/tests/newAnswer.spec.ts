@@ -4,10 +4,6 @@ import { ObjectId } from 'mongodb';
 import { app } from '../app';
 import * as util from '../models/application';
 
-const socket = {
-  emit: jest.fn(),
-};
-
 const saveAnswerSpy = jest.spyOn(util, 'saveAnswer');
 const addAnswerToQuestionSpy = jest.spyOn(util, 'addAnswerToQuestion');
 const popDocSpy = jest.spyOn(util, 'populateDocument');
@@ -28,64 +24,64 @@ describe('POST /addAnswer', () => {
     const validNotifId = new mongoose.Types.ObjectId();
 
     const mockReqBody = {
-        qid: validQid,
-        ans: {
-            text: 'This is a test answer',
-            ansBy: 'dummyUserId',
-            ansDateTime: new Date('2024-06-03'),
-            reports: [],
-            isRemoved: false,
-        },
-    };
-
-    const mockAnswer = {
-        _id: validAid,
+      qid: validQid,
+      ans: {
         text: 'This is a test answer',
         ansBy: 'dummyUserId',
         ansDateTime: new Date('2024-06-03'),
-        comments: [],
         reports: [],
         isRemoved: false,
+      },
+    };
+
+    const mockAnswer = {
+      _id: validAid,
+      text: 'This is a test answer',
+      ansBy: 'dummyUserId',
+      ansDateTime: new Date('2024-06-03'),
+      comments: [],
+      reports: [],
+      isRemoved: false,
     };
 
     const mockNotification = {
-        _id: validNotifId,
-        user: 'dummyUser',
-        caption: 'caption',
-        redirectUrl: 'url',
-        read: false,
-        qid: validQid.toString(),
-        type: "question",
-        message: 'A new answer has been added to your question.',
-        createdAt: new Date(),
+      _id: validNotifId,
+      user: 'dummyUser',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'question',
+      message: 'A new answer has been added to your question.',
+      createdAt: new Date(),
     };
 
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
 
     addAnswerToQuestionSpy.mockResolvedValueOnce({
-        _id: validQid,
-        title: 'This is a test question',
-        text: 'This is a test question',
-        tags: [],
-        askedBy: 'dummyUserId',
-        askDateTime: new Date('2024-06-03'),
-        views: [],
-        upVotes: [],
-        downVotes: [],
-        answers: [mockAnswer._id],
-        comments: [],
-        reports: [],
-        isRemoved: false,
+      _id: validQid,
+      title: 'This is a test question',
+      text: 'This is a test question',
+      tags: [],
+      askedBy: 'dummyUserId',
+      askDateTime: new Date('2024-06-03'),
+      views: [],
+      upVotes: [],
+      downVotes: [],
+      answers: [mockAnswer._id],
+      comments: [],
+      reports: [],
+      isRemoved: false,
     });
 
     popDocSpy.mockResolvedValueOnce({
-        _id: validAid,
-        text: 'This is a test answer',
-        ansBy: 'dummyUserId',
-        ansDateTime: new Date('2024-06-03'),
-        comments: [],
-        reports: [],
-        isRemoved: false,
+      _id: validAid,
+      text: 'This is a test answer',
+      ansBy: 'dummyUserId',
+      ansDateTime: new Date('2024-06-03'),
+      comments: [],
+      reports: [],
+      isRemoved: false,
     });
 
     saveAnswerNotificationSpy.mockResolvedValueOnce(mockNotification);
@@ -94,25 +90,20 @@ describe('POST /addAnswer', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-        _id: validAid.toString(),
-        text: 'This is a test answer',
-        ansBy: 'dummyUserId',
-        ansDateTime: mockAnswer.ansDateTime.toISOString(),
-        comments: [],
-        reports: [],
-        isRemoved: false,
+      _id: validAid.toString(),
+      text: 'This is a test answer',
+      ansBy: 'dummyUserId',
+      ansDateTime: mockAnswer.ansDateTime.toISOString(),
+      comments: [],
+      reports: [],
+      isRemoved: false,
     });
 
-    expect(saveAnswerNotificationSpy).toHaveBeenCalledWith(
-      validQid.toString(), 
-      {
-          ...mockReqBody.ans,
-          ansDateTime: mockReqBody.ans.ansDateTime.toISOString(),
-      }
-  );
-}
-);
-
+    expect(saveAnswerNotificationSpy).toHaveBeenCalledWith(validQid.toString(), {
+      ...mockReqBody.ans,
+      ansDateTime: mockReqBody.ans.ansDateTime.toISOString(),
+    });
+  });
 
   it('should return bad request error if answer text property is missing', async () => {
     const mockReqBody = {

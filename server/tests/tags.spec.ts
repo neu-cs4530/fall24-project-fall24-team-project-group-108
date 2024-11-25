@@ -3,7 +3,6 @@ import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
 import TagModel from '../models/tags';
-import LeaderboardModel from '../models/leaderboards';
 
 const getTagCountMapSpy: jest.SpyInstance = jest.spyOn(util, 'getTagCountMap');
 
