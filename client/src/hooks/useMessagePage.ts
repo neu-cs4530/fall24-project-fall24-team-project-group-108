@@ -84,7 +84,6 @@ const useMessagePage = () => {
      * @param correspondence - The updated correspondence object.
      */
     const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
-      console.log('In socket');
       if (selectedCorrespondence?._id && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
         setCurrentUserTyping([...correspondence.userTyping]);
