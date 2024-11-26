@@ -42,7 +42,7 @@ import {
   saveCorrespondence,
   addMessageToCorrespondence,
   updateCorrespondenceById,
-  updateCorrespondenceUserTypingById,
+  updateCorrespondenceUserTypingByIdNames,
   updateCorrespondenceViewsById,
   updateMessageViewsById,
   updateMessageEmojisById,
@@ -1578,32 +1578,35 @@ describe('application module', () => {
       });
     });
 
-    describe('updateCorrespondenceUserTypingById', () => {
-      test('updateCorrespondenceUserTypingById should return the updated correspondence with the given userTyping value', async () => {
+    describe('updateCorrespondenceUserTypingByIdNames', () => {
+      test('updateCorrespondenceUserTypingByIdNames should return the updated correspondence with the given username to push', async () => {
         mockingoose(CorrespondenceModel).toReturn(
-          { ...correspondence2, userTyping: ['isuzuki', 'tgwynn', 'hwagner', 'bruth'] },
+          { ...correspondence2, userTyping: ['isuzuki'] },
           'findOneAndUpdate',
         );
         CorrespondenceModel.schema.path('messages', Object);
 
-        const result = (await updateCorrespondenceUserTypingById(correspondence2._id, [
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          correspondence2._id,
           'isuzuki',
-          'tgwynn',
-          'hwagner',
-          'bruth',
-        ])) as Correspondence;
+          true,
+        )) as Correspondence;
 
         expect(result.views).toEqual(correspondence2.views);
         expect(result._id?.toString()).toEqual(correspondence2._id);
         expect(result.messages).toEqual(correspondence2.messages);
         expect(result.messageMembers).toEqual(correspondence2.messageMembers);
-        expect(result.userTyping).toEqual(['isuzuki', 'tgwynn', 'hwagner', 'bruth']);
+        expect(result.userTyping).toEqual(['isuzuki']);
       });
 
       test('updateCorrespondenceById should return null if id does not exist', async () => {
         mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
-        const result = (await updateCorrespondenceUserTypingById('incorrect_cid', ['isuzuki'])) as {
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          'incorrect_cid',
+          'isuzuki',
+          true,
+        )) as {
           error: string;
         };
 
@@ -1613,9 +1616,11 @@ describe('application module', () => {
       test('updateCorrespondenceById should return an object with error if findOneAndUpdate throws an error', async () => {
         mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
-        const result = (await updateCorrespondenceUserTypingById(correspondence2._id, [
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          correspondence2._id,
           'isuzuki',
-        ])) as {
+          true,
+        )) as {
           error: string;
         };
 

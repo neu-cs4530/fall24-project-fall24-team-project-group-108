@@ -39,7 +39,7 @@ const MessagePage = () => {
         <div id='horizontal-div'>
           {!selectedCorrespondence ? (
             <div id='correspondence_list' className='correspondence_list'>
-              {correspondenceList.length > 1 &&
+              {correspondenceList.length >= 1 &&
                 correspondenceList
                   .sort(
                     (a, b) =>
