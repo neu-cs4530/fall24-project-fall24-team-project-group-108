@@ -373,9 +373,7 @@ async function userCreate(
     password === '' ||
     isModerator === null ||
     badges == null ||
-    infractions == null ||
-    profileIcon == null ||
-    doNotDisturb == null
+    infractions == null
   )
     throw new Error('Invalid User Format');
   const userDetail: User = {

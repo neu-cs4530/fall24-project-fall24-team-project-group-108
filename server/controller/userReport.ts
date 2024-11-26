@@ -148,15 +148,15 @@ const userReportController = (socket: FakeSOSocket) => {
       const resolved = await updateReportStatus(reportedPost, postId, type, isRemoved);
       // create the notification in the db
       if (reportedPost.reports.length > 0) {
-        reportedPost.reports.map(async (report: UserReport) => {
-          const savedNotification = await reportResolvedNotification(report, qid, isRemoved);
-
-          if ('error' in savedNotification) {
-            throw new Error(savedNotification.error as string);
-          }
-
-          socket.emit('notificationUpdate', savedNotification);
-        });
+        await Promise.all(
+          reportedPost.reports.map(async (report: UserReport) => {
+            const savedNotification = await reportResolvedNotification(report, qid, isRemoved);
+            if ('error' in savedNotification) {
+              throw new Error(savedNotification.error as string);
+            }
+            socket.emit('notificationUpdate', savedNotification);
+          }),
+        );
       }
       if (isRemoved === true) {
         socket.emit('removePostUpdate', {
