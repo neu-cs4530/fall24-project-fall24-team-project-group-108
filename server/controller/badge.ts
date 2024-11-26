@@ -96,7 +96,6 @@ const badgeController = (socket: FakeSOSocket) => {
       res.status(200).json(badges);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error fetching badges:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -116,7 +115,6 @@ const badgeController = (socket: FakeSOSocket) => {
       res.status(200).json(users);
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error fetching users:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   };

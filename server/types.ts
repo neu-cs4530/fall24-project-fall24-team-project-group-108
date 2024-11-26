@@ -420,6 +420,17 @@ export interface FindQuestionByAswerer extends Request {
 }
 
 /**
+ * Interface for the request query to find questions with a comment by the given user
+ * - commentBy - The username of the user whose comments we are looking for
+ */
+export interface FindQuestionByCommenter extends Request {
+  params: {
+    commentBy: string;
+  };
+}
+
+
+/**
  * Interface for the request parameters when finding a question by its ID.
  * - qid - The unique identifier of the question.
  */

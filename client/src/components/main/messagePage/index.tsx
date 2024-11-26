@@ -43,8 +43,12 @@ const MessagePage = () => {
                 correspondenceList
                   .sort(
                     (a, b) =>
-                      new Date(b.messages[b.messages.length - 1].messageDateTime).getTime() -
-                      new Date(a.messages[a.messages.length - 1].messageDateTime).getTime(),
+                      (b.messages.length > 0
+                        ? new Date(b.messages[b.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()) -
+                      (a.messages.length > 0
+                        ? new Date(a.messages[a.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()),
                   )
                   .map((correspondence, idx) => (
                     <CorrespondenceView
