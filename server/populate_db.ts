@@ -53,6 +53,7 @@ import {
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserReportModel from './models/userReport';
+import BadgeModel from './models/badges';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
 const userArgs = process.argv.slice(2);
@@ -66,6 +67,124 @@ mongoose.connect(mongoDB);
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+/**
+ * Creates badge data.
+ */
+const badgesData = [
+  {
+    name: "Helper",
+    description: "Answer 5 questions.",
+    category: "answers",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Guide",
+    description: "Answer 15 questions.",
+    category: "answers",
+    targetValue: 15,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Sage",
+    description: "Answer 25 questions.",
+    category: "answers",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Curious",
+    description: "Ask 5 questions.",
+    category: "questions",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Inquirer",
+    description: "Ask 10 questions.",
+    category: "questions",
+    targetValue: 15,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Investigator",
+    description: "Ask 25 questions.",
+    category: "questions",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Observer",
+    description: "Leave 5 comments.",
+    category: "comments",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Commentator",
+    description: "Leave 10 comments.",
+    category: "comments",
+    targetValue: 10,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Debater",
+    description: "Leave 20 comments.",
+    category: "comments",
+    targetValue: 20,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Voter",
+    description: "Cast 5 votes",
+    category: "votes",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Critic",
+    description: "Cast 10 votes",
+    category: "votes",
+    targetValue: 10,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Curator",
+    description: "Cast 25 votes",
+    category: "votes",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  }
+];
+
+/**
+ * Creates new Badge documents in the database.
+ *
+ * @param badges An array of badge data to be inserted.
+ * @returns A Promise that resolves once all badges have been created.
+ * @throws An error if the badge creation fails.
+ */
+async function badgeCreate(badges: { name: string, description: string, category: string, targetValue: number, tier: string }[]): Promise<void> {
+  for (const badge of badges) {
+    if (badge.name === '' || badge.description === '' || badge.category === '' || badge.targetValue < 1 || !badge.tier) {
+      throw new Error('Invalid Badge Format');
+    }
+    await BadgeModel.create(badge);
+  }
+}
 
 /**
  * Creates a new Tag document in the database.
@@ -379,6 +498,8 @@ const populate = async () => {
       [r6],
       false,
     );
+
+    await badgeCreate(badgesData);
 
     console.log('Database populated');
   } catch (err) {
