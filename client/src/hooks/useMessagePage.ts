@@ -195,6 +195,7 @@ const useMessagePage = () => {
       setUploadedFile(null);
       setPendingMessageSend(false);
       setUploadedFileErr('');
+      await updateCorrespondenceUserTypingByIdNames(cid || '', user.username, false);
     } else {
       setUploadedFileErr("Error: Can't send message with empty text");
     }
