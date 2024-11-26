@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 import Tags from '../models/tags';
 import QuestionModel from '../models/questions';
@@ -47,6 +48,8 @@ import {
   updateMessageEmojisById,
   updateMessageById,
   updateMessageIsDeletedById,
+  reportResolvedNotification,
+  saveModApplicationNotification,
 } from '../models/application';
 import {
   Answer,
@@ -68,6 +71,7 @@ import MessageModel from '../models/message';
 import CorrespondenceModel from '../models/correspondence';
 import ModApplicationModel from '../models/modApplication';
 import UserReportModel from '../models/userReport';
+import NotificationModel from '../models/notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mockingoose = require('mockingoose');
@@ -566,6 +570,202 @@ describe('application module', () => {
         });
       });
     });
+
+    describe('saveModApplicationNotification', () => {
+      beforeEach(() => {
+        mockingoose.resetAll();
+        jest.clearAllMocks();
+      });
+
+      it('should create and save a notification when a new application is accepted', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption:
+            'Your application to become a moderator was accepted! Please log out and log back in to unlock moderator privileges!',
+          read: false,
+          redirectUrl: `/`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', true);
+
+        // Verify the result
+        expect(result).toMatchObject({
+          user: expectedNotification.user,
+          type: expectedNotification.type,
+          caption: expectedNotification.caption,
+          read: expectedNotification.read,
+          redirectUrl: expectedNotification.redirectUrl,
+        });
+
+        // Verify createdAt is a recent date
+        expect(result.createdAt).toBeInstanceOf(Date);
+        expect(Date.now() - result.createdAt.getTime()).toBeLessThan(1000);
+      });
+
+      it('should create and save a notification when a new application is rejected', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption: 'Your application to become a moderator was rejected, you can always reapply!',
+          read: false,
+          redirectUrl: `modApplication`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', false);
+
+        // Verify the result
+        expect(result).toMatchObject({
+          user: expectedNotification.user,
+          type: expectedNotification.type,
+          caption: expectedNotification.caption,
+          read: expectedNotification.read,
+          redirectUrl: expectedNotification.redirectUrl,
+        });
+
+        // Verify createdAt is a recent date
+        expect(result.createdAt).toBeInstanceOf(Date);
+        expect(Date.now() - result.createdAt.getTime()).toBeLessThan(1000);
+      });
+
+      it('should create notification with correct redirect URL when accepted', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption:
+            'Your application to become a moderator was accepted! Please log out and log back in to unlock moderator privileges!',
+          read: false,
+          redirectUrl: `/`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', true);
+
+        // Verify the redirect URL format
+        expect(result.redirectUrl).toBe('/');
+      });
+
+      it('should create notification with correct redirect URL when rejected', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption: 'Your application to become a moderator was rejected, you can always reapply!',
+          read: false,
+          redirectUrl: `modApplication`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', false);
+
+        // Verify the redirect URL format
+        expect(result.redirectUrl).toBe('modApplication');
+      });
+
+      it('should create notification with correct caption format when accepted', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption:
+            'Your application to become a moderator was accepted! Please log out and log back in to unlock moderator privileges!',
+          read: false,
+          redirectUrl: `/`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', true);
+
+        // Verify the caption format
+        expect(result.caption).toBe(
+          'Your application to become a moderator was accepted! Please log out and log back in to unlock moderator privileges!',
+        );
+      });
+
+      it('should create notification with correct caption format when rejected', async () => {
+        const expectedNotification = {
+          user: 'user1',
+          type: 'application',
+          caption: 'Your application to become a moderator was rejected, you can always reapply!',
+          read: false,
+          redirectUrl: `modApplication`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveModApplicationNotification('user1', false);
+
+        // Verify the caption format
+        expect(result.caption).toBe(
+          'Your application to become a moderator was rejected, you can always reapply!',
+        );
+      });
+    });
   });
 
   describe('User model', () => {
@@ -1027,6 +1227,176 @@ describe('application module', () => {
       const result = (await fetchUnresolvedReports('answer')) as unknown as UserReport[];
 
       expect(result.length).toEqual(2);
+    });
+
+    describe('reportResolvedNotification', () => {
+      beforeEach(() => {
+        mockingoose.resetAll();
+        jest.clearAllMocks();
+      });
+
+      it('should create and save a notification when a new report is dismissed', async () => {
+        const r4: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af79'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'dismissed',
+        };
+
+        const mockQuestionId = new Types.ObjectId();
+
+        const expectedNotification = {
+          user: 'user1',
+          type: 'report',
+          caption:
+            'Your report was dismissed by a moderator, the reported post was not taken down.',
+          read: false,
+          redirectUrl: `/question/${mockQuestionId}`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await reportResolvedNotification(r4, mockQuestionId.toString(), false);
+
+        // Verify the result
+        expect(result).toMatchObject({
+          user: expectedNotification.user,
+          type: expectedNotification.type,
+          caption: expectedNotification.caption,
+          read: expectedNotification.read,
+          redirectUrl: expectedNotification.redirectUrl,
+        });
+
+        // Verify createdAt is a recent date
+        expect(result.createdAt).toBeInstanceOf(Date);
+        expect(Date.now() - result.createdAt.getTime()).toBeLessThan(1000);
+      });
+
+      it('should create and save a notification when a new report is removed', async () => {
+        const r4: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af79'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'removed',
+        };
+
+        const mockQuestionId = new Types.ObjectId();
+
+        const expectedNotification = {
+          user: 'user1',
+          type: 'report',
+          caption: 'Your report was accepted by a moderator, and the post is now removed!',
+          read: false,
+          redirectUrl: `home`,
+        };
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await reportResolvedNotification(r4, mockQuestionId.toString(), true);
+
+        // Verify the result
+        expect(result).toMatchObject({
+          user: expectedNotification.user,
+          type: expectedNotification.type,
+          caption: expectedNotification.caption,
+          read: expectedNotification.read,
+          redirectUrl: expectedNotification.redirectUrl,
+        });
+
+        // Verify createdAt is a recent date
+        expect(result.createdAt).toBeInstanceOf(Date);
+        expect(Date.now() - result.createdAt.getTime()).toBeLessThan(1000);
+      });
+
+      it('should create notification with correct redirect URL on dismiss', async () => {
+        const r4: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af79'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'dismissed',
+        };
+        const mockQuestionId = new Types.ObjectId('507f1f77bcf86cd799439011');
+
+        const result = await reportResolvedNotification(r4, mockQuestionId.toString(), false);
+
+        // Verify the redirect URL format
+        expect(result.redirectUrl).toBe('/question/507f1f77bcf86cd799439011');
+      });
+
+      it('should create notification with correct redirect URL on removed', async () => {
+        const r4: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af79'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'removed',
+        };
+        const mockQuestionId = new Types.ObjectId('507f1f77bcf86cd799439011');
+
+        const result = await reportResolvedNotification(r4, mockQuestionId.toString(), true);
+
+        // Verify the redirect URL format
+        expect(result.redirectUrl).toBe('home');
+      });
+
+      it('should create notification with correct caption format when dismissed', async () => {
+        const r4: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af79'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'dismissed',
+        };
+        const mockQuestionId = new Types.ObjectId('507f1f77bcf86cd799439011');
+
+        const result = await reportResolvedNotification(r4, mockQuestionId.toString(), false);
+
+        // Verify the caption format
+        expect(result.caption).toBe(
+          'Your report was dismissed by a moderator, the reported post was not taken down.',
+        );
+      });
+
+      it('should create notification with correct caption format when removed', async () => {
+        const r5: UserReport = {
+          _id: new ObjectId('65e9b786ff0e893116b2af78'),
+          text: R3_TEXT,
+          reportBy: 'user1',
+          reportDateTime: new Date(),
+          status: 'dismissed',
+        };
+        const mockQuestionId = new Types.ObjectId('507f1f77bcf86cd799439011');
+
+        const result = await reportResolvedNotification(r5, mockQuestionId.toString(), true);
+
+        // Verify the caption format
+        expect(result.caption).toBe(
+          'Your report was accepted by a moderator, and the post is now removed!',
+        );
+      });
     });
   });
 

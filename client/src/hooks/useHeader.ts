@@ -10,6 +10,9 @@ import useUserContext from './useUserContext';
  * @returns setVal - function to update the value of the input.
  * @returns handleInputChange - function to handle changes in the input field.
  * @returns handleKeyDown - function to handle 'Enter' key press and trigger the search.
+ * @returns user - the current user.
+ * @returns goToProfile - function to handle a user going to their profile.
+ * @returns logOut - function to handle a user logging out.
  */
 const useHeader = () => {
   const navigate = useNavigate();
@@ -36,6 +39,15 @@ const useHeader = () => {
   };
 
   /**
+   * Function to navigate to the user profile.
+   *
+   * @param e - the event object.
+   */
+  const logOut = () => {
+    navigate(`/`);
+  };
+
+  /**
    * Function to handle 'Enter' key press and trigger the search.
    *
    * @param e - the event object.
@@ -58,6 +70,7 @@ const useHeader = () => {
     handleKeyDown,
     user,
     goToProfile,
+    logOut,
   };
 };
 

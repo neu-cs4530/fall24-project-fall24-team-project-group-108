@@ -1,3 +1,4 @@
+import { Button } from '@mui/material';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOffTwoTone';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -17,7 +18,7 @@ interface HeaderProps {
  * when they press Enter.
  */
 const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps) => {
-  const { val, handleInputChange, handleKeyDown, user, goToProfile } = useHeader();
+  const { val, handleInputChange, handleKeyDown, user, goToProfile, logOut } = useHeader();
 
   let notificationIcon;
 
@@ -83,6 +84,9 @@ const Header = ({ toggleNotifications, newNotification, dndStatus }: HeaderProps
             },
           }}
         />
+        <Button onClick={logOut} sx={{ whiteSpace: 'nowrap' }}>
+          Sign Out
+        </Button>
       </div>
     </div>
   );

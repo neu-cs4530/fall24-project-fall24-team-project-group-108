@@ -33,6 +33,10 @@ const AnswerPage = () => {
     return null;
   }
 
+  if (question.isRemoved === true) {
+    navigate('/home');
+  }
+
   /**
    * Function to handle navigation to the "Report" page.
    */
