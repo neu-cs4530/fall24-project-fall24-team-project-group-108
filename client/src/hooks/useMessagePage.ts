@@ -84,6 +84,7 @@ const useMessagePage = () => {
      * @param correspondence - The updated correspondence object.
      */
     const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
+      console.log('In socket');
       if (selectedCorrespondence?._id && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
         setCurrentUserTyping([...correspondence.userTyping]);
@@ -195,6 +196,7 @@ const useMessagePage = () => {
       setUploadedFile(null);
       setPendingMessageSend(false);
       setUploadedFileErr('');
+      await updateCorrespondenceUserTypingByIdNames(cid || '', user.username, false);
     } else {
       setUploadedFileErr("Error: Can't send message with empty text");
     }
