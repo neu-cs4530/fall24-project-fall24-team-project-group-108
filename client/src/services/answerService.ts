@@ -28,8 +28,8 @@ const addAnswer = async (qid: string, ans: Answer): Promise<Answer> => {
  * @param endorsed - Whether that question is endorsed or not.
  * @throws Error if there is an issue endorsing the answer.
  */
-const endorseAnswer = async (qid: string, aid: string, endorsed: boolean) => {
-  const data = { qid, aid, endorsed };
+const endorseAnswer = async (aid: string, endorsed: boolean) => {
+  const data = { aid, endorsed };
   const res = await api.patch(`${ANSWER_API_URL}/endorseAnswer`, data);
   if (res.status !== 200) {
     throw new Error('Error while endorsing the answer');

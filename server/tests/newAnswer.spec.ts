@@ -39,6 +39,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     };
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
 
@@ -187,6 +188,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     };
 
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
@@ -216,6 +218,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockQuestion = {

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import './index.css';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { FaCheck } from 'react-icons/fa';
 import useUserContext from '../../../hooks/useUserContext';
 import useAnswerEndorsement from '../../../hooks/useAnswerEndorsement';
 import { Answer } from '../../../types';
@@ -35,36 +37,34 @@ const AnswerEndorsement = ({ answer, questionID }: AnswerEndorsementProps) => {
           setIsQuestionAuthor(true);
         }
       } catch (error) {
-        // Handle error
+        setIsQuestionAuthor(false);
       }
     };
 
     checkIfQuestionAuthor();
   }, [questionID, user.username]);
 
-  // Toggles endorsement and updates parent state
   const handleEndorsementClick = async () => {
     try {
       if (answer._id) {
-        await endorseAnswer(questionID, answer._id, !endorse);
+        await endorseAnswer(answer._id, !endorse);
         setEndorsed(!endorse);
       }
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Error toggling endorsement: ${(error as Error).message}`);
+      setEndorsed(endorse);
     }
   };
 
   return (
     <div className='endorsement'>
       {isQuestionAuthor && (
-        <button className='toggle-button' onClick={handleEndorsementClick}>
+        <button className='bluebtn' onClick={handleEndorsementClick}>
           {endorse ? 'Unendorse Answer' : 'Endorse Answer'}
         </button>
       )}
       {endorse && (
         <div className='endorsed-marker'>
-          <p>This answer is endorsed.</p>
+          <FaCheck className='checkmark-icon' /> {}
         </div>
       )}
     </div>

@@ -3,11 +3,10 @@ import { Answer } from '../types';
 import useUserContext from './useUserContext';
 
 /**
- * Custom hook to handle
+ * Custom hook to handle endorsing an answer.
  *
- * @param
- *
- * @returns
+ * @returns endorse - Whether the answer is currently endorsed
+ * @returns setEndorsed - Function to update the endorsement status
  */
 
 const useAnswerEndorsement = ({ answer }: { answer: Answer }) => {

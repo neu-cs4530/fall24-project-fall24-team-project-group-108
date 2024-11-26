@@ -98,7 +98,6 @@ const answerController = (socket: FakeSOSocket) => {
     try {
       const { aid, endorsed } = req.body;
 
-      // Find and update the endorsement status of the answer in the database
       const updatedAnswer = await endorseAnswer(aid, endorsed);
 
       if ('error' in updatedAnswer) {

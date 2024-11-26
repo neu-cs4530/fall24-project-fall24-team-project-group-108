@@ -36,7 +36,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
-  endorsed: { type: Boolean, default: false },
+  endorsed: boolean
   reports: UserReport[];
   isRemoved: boolean;
 }

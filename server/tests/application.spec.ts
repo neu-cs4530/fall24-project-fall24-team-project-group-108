@@ -76,6 +76,7 @@ const ans1: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const ans2: Answer = {
@@ -86,6 +87,7 @@ const ans2: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const ans3: Answer = {
@@ -96,6 +98,7 @@ const ans3: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const ans4: Answer = {
@@ -106,6 +109,7 @@ const ans4: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const QUESTIONS: Question[] = [
@@ -246,6 +250,7 @@ const reportedAns1: Answer = {
   comments: [],
   reports: [r1, r2],
   isRemoved: false,
+  endorsed: false,
 };
 
 const reportedAns2: Answer = {
@@ -256,6 +261,7 @@ const reportedAns2: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const QUESTIONSREPORTED: Question[] = [
@@ -557,6 +563,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
         const ansID = ansInfraction._id?.toString() as string;
         mockingoose(UserModel).toReturn({ ...user1, infractions: [ansID] }, 'findOneAndUpdate');
@@ -743,6 +750,7 @@ describe('application module', () => {
         comments: [],
         reports: [r3],
         isRemoved: false,
+        endorsed: false,
       };
 
       test('should update report on removed question', async () => {
@@ -1400,6 +1408,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
 
         const result = (await saveAnswer(mockAnswer)) as Answer;
