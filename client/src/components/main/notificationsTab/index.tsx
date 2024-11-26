@@ -93,7 +93,7 @@ const NotificationsTab = ({
                     href='#'
                     onClick={e => {
                       e.preventDefault();
-                      handleClick(notification.redirectUrl);
+                      handleNotificationClick(notification, notification.redirectUrl);
                     }}
                     className='notification-link'>
                     {notification.caption}
