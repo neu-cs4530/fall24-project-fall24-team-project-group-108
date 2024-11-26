@@ -5,6 +5,7 @@ import EditAccountModal from './editModal';
 import BadgesTab from './badgesTab';
 import QuestionsTab from './questionsTab';
 import AnswersTab from './answersTab';
+import CommentsTab from './commentsTab';
 
 /**
  * AccountPage component that displays the full content of a given user account with subtabs for
@@ -17,6 +18,7 @@ const AccountPage = () => {
     userLoggedIn,
     alist,
     qlist,
+    clist,
     handleAuthorClick,
     handleChange,
     badgeList,
@@ -52,6 +54,7 @@ const AccountPage = () => {
             <Tab label='Badges' />
             <Tab label='Questions' />
             <Tab label='Answers' />
+            <Tab label='Comments' />
           </Tabs>
         </div>
         <div className='profileTabs'>
@@ -75,6 +78,8 @@ const AccountPage = () => {
             (userLoggedIn ? QuestionsTab('You', qlist) : QuestionsTab(sentUser as string, qlist))}
           {value === 2 &&
             (userLoggedIn ? AnswersTab('You', alist) : AnswersTab(sentUser as string, alist))}
+          {value === 3 &&
+            (userLoggedIn ? CommentsTab('you', clist) : CommentsTab(sentUser as string, clist))}
         </div>
       </div>
 

@@ -79,7 +79,6 @@ const badgeProgressController = (socket: FakeSOSocket) => {
       res.status(200).json({ count });
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error fetching progress:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   };
