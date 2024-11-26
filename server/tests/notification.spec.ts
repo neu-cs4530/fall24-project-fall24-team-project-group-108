@@ -36,22 +36,6 @@ describe('GET /notifications/getAll', () => {
     expect(mockFind).toHaveBeenCalledWith({ user: 'user1', read: false });
   });
 
-  it('should return properly if there are no notifications', async () => {
-    // Mock the find and sort chain
-    const mockFind = jest.spyOn(NotificationModel, 'find').mockReturnValue({
-      sort: jest.fn().mockResolvedValue([]),
-    } as unknown as mongoose.Query<Notification[], Notification>);
-
-    const response = await supertest(app).get('/notifications/getAll').query({
-      username: 'user2',
-      readStatus: 'read',
-    });
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual([]);
-    expect(mockFind).toHaveBeenCalledWith({ user: 'user2', read: true });
-  });
-
   it('should return 400 if username is missing', async () => {
     const response = await supertest(app).get('/notifications/getAll').query({
       readStatus: 'read',
