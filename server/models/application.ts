@@ -589,6 +589,35 @@ export const filterQuestionsByAnswerer = async (answerer: string): Promise<Quest
 };
 
 /**
+ * Retrieves questions from the database that were commented on by the given user.
+ *
+ * @param string commenter - The commenter to filter the questions by
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of filtered questions
+ */
+export const filterQuestionsByCommenter = async (commenter: string): Promise<Question[]> => {
+  try {
+    const clist = await CommentModel.find({ commentBy: commenter });
+
+    const commentIds = clist.map(comment => comment._id);
+    const qCommentsList = await QuestionModel.find({ comments: { $in: commentIds } });
+    const alist = await AnswerModel.find({ comments: { $in: commentIds } });
+    const answerIds = alist.map(answer => answer._id);
+    const qAnswerCommentsList = await QuestionModel.find({ answers: { $in: answerIds } });
+    const qlist = [...qCommentsList, ...qAnswerCommentsList];
+    const qlistIds = qlist.map(q => q._id.toString());
+    const qlistNoDuplicates = qlist.filter((q, idx) => qlistIds.indexOf(q._id.toString()) === idx);
+    qlistNoDuplicates.sort(
+      (a, b) => new Date(b.askDateTime).getTime() - new Date(a.askDateTime).getTime(),
+    );
+
+    return qlistNoDuplicates;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
  * Filters a list of questions by the user who asked them.
  *
  * @param qlist The array of Question objects to be filtered.
@@ -1016,10 +1045,6 @@ export const processTags = async (tags: Tag[]): Promise<Tag[]> => {
 
     return processedTags;
   } catch (error: unknown) {
-    // Log the error for debugging purposes
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    // eslint-disable-next-line no-console
-    console.log('An error occurred while adding tags:', errorMessage);
     return [];
   }
 };
@@ -1214,18 +1239,31 @@ export const updateCorrespondenceById = async (
  * Updates a correspondence for the given id.
  *
  * @param {string} cid - The ID of the correspondence to update
- * @param {string[]} userTyping - A list of usernames who are typing
+ * @param {string} username - A username to add or remove to the userTyping list
+ * @param {boolean} push - A boolean representing if we should add (push) or pull from the dataset
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
-export const updateCorrespondenceUserTypingById = async (
+export const updateCorrespondenceUserTypingByIdNames = async (
   cid: string,
-  userTyping: string[],
+  username: string,
+  push: boolean,
 ): Promise<CorrespondenceResponse> => {
   try {
+    if (push) {
+      const result = await CorrespondenceModel.findOneAndUpdate(
+        { _id: cid },
+        { $addToSet: { userTyping: username } },
+        { new: true },
+      ).populate([{ path: 'messages', model: MessageModel }]);
+      if (result === null) {
+        throw new Error('Error when updating correspondence');
+      }
+      return result;
+    }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $set: { userTyping } },
+      { $pull: { userTyping: username } },
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {

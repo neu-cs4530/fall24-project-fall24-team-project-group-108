@@ -241,17 +241,18 @@ export interface Question {
 }
 
 
-
 /**
  * Interface for the request body when updating a correspondence's userTyping value.
  * - body - The correspondence ID and the new contents of the correspondence
  *  - cid - the unique identifier of the correspondence
- *  - userTyping - the username who is typing or null if no one is typing
+ *  - username - The name of the user who will be added or removed to the userTyping array of the correspondence
+ *  - push - A boolean determining if the user should be added (pushed) to the userTyping array or not
  */
- export interface UpdateCorrespondenceUserTypingRequest extends Request {
+ export interface UpdateCorrespondenceUserTypingRequestNames extends Request {
   body: {
     cid: string;
-    userTyping: string[];
+    username: string;
+    push: boolean
   };
 }
 
@@ -365,7 +366,7 @@ export interface Correspondence {
  */
 export interface Notification {
   user: string,
-  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message' | 'application' | 'report',
+  type: string,
   caption: string,
   read: boolean,
   createdAt: Date,
@@ -417,6 +418,17 @@ export interface FindQuestionByAswerer extends Request {
     answeredBy: string;
   };
 }
+
+/**
+ * Interface for the request query to find questions with a comment by the given user
+ * - commentBy - The username of the user whose comments we are looking for
+ */
+export interface FindQuestionByCommenter extends Request {
+  params: {
+    commentBy: string;
+  };
+}
+
 
 /**
  * Interface for the request parameters when finding a question by its ID.

@@ -9,6 +9,7 @@ import {
   FakeSOSocket,
   FindQuestionByAswerer,
   UpdateTagsRequest,
+  FindQuestionByCommenter,
 } from '../types';
 import {
   addVoteToQuestion,
@@ -21,6 +22,7 @@ import {
   saveQuestion,
   filterQuestionsByAnswerer,
   updateTagAnswers,
+  filterQuestionsByCommenter,
 } from '../models/application';
 
 const questionController = (socket: FakeSOSocket) => {
@@ -78,6 +80,31 @@ const questionController = (socket: FakeSOSocket) => {
         res.status(500).send(`Error when fetching questions by answerer: ${err.message}`);
       } else {
         res.status(500).send(`Error when fetching questions by answerer`);
+      }
+    }
+  };
+
+  /**
+   * Retrieves a list of questions filtered by a user who commented on the question or one of its answers
+   *
+   * @param req The FindQuestionByCommenter object containing the query parameter 'commentBy'.
+   * @param res The HTTP response object used to send back the filtered list of questions.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getQuestionsByCommenter = async (
+    req: FindQuestionByCommenter,
+    res: Response,
+  ): Promise<void> => {
+    const { commentBy } = req.params;
+    try {
+      const qlist: Question[] = await filterQuestionsByCommenter(commentBy);
+      res.json(qlist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching questions by commenter: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching questions by commenter`);
       }
     }
   };
@@ -284,6 +311,7 @@ const questionController = (socket: FakeSOSocket) => {
   router.get('/getQuestion', getQuestionsByFilter);
   router.get('/getQuestionById/:qid', getQuestionById);
   router.get('/getQuestionByAnswerer/:answeredBy', getQuestionsByAnswerer);
+  router.get('/getQuestionByCommenter/:commentBy', getQuestionsByCommenter);
   router.post('/addQuestion', addQuestion);
   router.post('/upvoteQuestion', upvoteQuestion);
   router.post('/downvoteQuestion', downvoteQuestion);

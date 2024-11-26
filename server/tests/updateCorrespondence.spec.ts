@@ -135,7 +135,7 @@ describe('POST /updateCorrespondenceViews', () => {
   });
 });
 
-describe('POST /updateCorrespondenceUserTyping', () => {
+describe('POST /updateCorrespondenceUserTypingNames', () => {
   afterEach(async () => {
     await mongoose.connection.close(); // Ensure the connection is properly closed
   });
@@ -144,17 +144,17 @@ describe('POST /updateCorrespondenceUserTyping', () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
   });
 
-  it('should update a given correspondences userTyping', async () => {
+  it('should update a given correspondences userTyping when given a name to add', async () => {
     // jest.spyOn(util, 'processTags').mockResolvedValue([tag1, tag2] as Tag[]);
     jest
-      .spyOn(util, 'updateCorrespondenceUserTypingById')
+      .spyOn(util, 'updateCorrespondenceUserTypingByIdNames')
       .mockResolvedValueOnce({ ...correspondence1, userTyping: ['ichiro'] });
     // jest.spyOn(util, 'populateDocument').mockResolvedValueOnce(mockQuestion as Question);
 
     // Making the request
     const response = await supertest(app)
-      .post('/correspondence/updateCorrespondenceUserTyping')
-      .send({ cid: correspondence1._id, userTyping: ['ichiro'] });
+      .post('/correspondence/updateCorrespondenceUserTypingNames')
+      .send({ cid: correspondence1._id, username: 'ichiro', push: true });
     const responseCorrespondence = response.body as Correspondence;
 
     // Asserting the response
@@ -168,14 +168,38 @@ describe('POST /updateCorrespondenceUserTyping', () => {
     expect(responseCorrespondence.userTyping).toEqual(['ichiro']);
   });
 
-  it('should return error 500 if updateCorrespondenceUserTypingById throws an error', async () => {
+  it('should update a given correspondences userTyping when given a name to add', async () => {
+    // jest.spyOn(util, 'processTags').mockResolvedValue([tag1, tag2] as Tag[]);
     jest
-      .spyOn(util, 'updateCorrespondenceUserTypingById')
+      .spyOn(util, 'updateCorrespondenceUserTypingByIdNames')
+      .mockResolvedValueOnce({ ...correspondence1, userTyping: [] });
+    // jest.spyOn(util, 'populateDocument').mockResolvedValueOnce(mockQuestion as Question);
+
+    // Making the request
+    const response = await supertest(app)
+      .post('/correspondence/updateCorrespondenceUserTypingNames')
+      .send({ cid: correspondence1._id, username: 'ichiro', push: false });
+    const responseCorrespondence = response.body as Correspondence;
+
+    // Asserting the response
+    expect(response.status).toBe(200);
+    expect(responseCorrespondence._id).toEqual(correspondence1._id);
+    expect(responseCorrespondence.messages.map(message => message._id || '')).toEqual(
+      correspondence1.messages.map(message => message._id || ''),
+    );
+    expect(responseCorrespondence.messageMembers).toEqual(correspondence1.messageMembers);
+    expect(responseCorrespondence.views).toEqual(correspondence1.views);
+    expect(responseCorrespondence.userTyping).toEqual([]);
+  });
+
+  it('should return error 500 if updateCorrespondenceUserTypingNamesById throws an error', async () => {
+    jest
+      .spyOn(util, 'updateCorrespondenceUserTypingByIdNames')
       .mockRejectedValueOnce(new Error('Error when updating correspondence'));
 
     const response = await supertest(app)
-      .post('/correspondence/updateCorrespondenceUserTyping')
-      .send({ cid: correspondence1._id, userTyping: ['ichiro'] });
+      .post('/correspondence/updateCorrespondenceUserTypingNames')
+      .send({ cid: correspondence1._id, username: 'ichiro', push: false });
 
     expect(response.status).toBe(500);
   });

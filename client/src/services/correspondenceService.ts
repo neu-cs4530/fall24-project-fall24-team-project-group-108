@@ -77,14 +77,16 @@ const updateCorrespondenceMembersById = async (
  * @param updatedUserTyping - A list of users who are currently typing on the correspondence
  * @throws Error if there is an issue updating the new correspondence.
  */
-const updateCorrespondenceUserTypingById = async (
+const updateCorrespondenceUserTypingByIdNames = async (
   cid: string,
-  userTyping: string[],
+  username: string,
+  push: boolean,
 ): Promise<Correspondence> => {
   const updatedCId = cid.split('&')[0];
-  const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondenceUserTyping`, {
+  const res = await api.post(`${CORRESPONDENCE_API_URL}/updateCorrespondenceUserTypingNames`, {
     cid: updatedCId,
-    userTyping,
+    username,
+    push,
   });
 
   if (res.status !== 200) {
@@ -115,6 +117,6 @@ export {
   getCorrespondenceById,
   addCorrespondence,
   updateCorrespondenceMembersById,
-  updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
+  updateCorrespondenceUserTypingByIdNames,
 };

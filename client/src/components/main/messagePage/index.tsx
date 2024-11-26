@@ -28,7 +28,8 @@ const MessagePage = () => {
     handleUploadedFile,
     uploadedFileErr,
     setSelectedCorrespondence,
-    setIsSelectedCorrespondence,
+    pendingMessageSend,
+    getUpdatedCorrespondence,
   } = useMessagePage();
 
   return (
@@ -38,12 +39,16 @@ const MessagePage = () => {
         <div id='horizontal-div'>
           {!selectedCorrespondence ? (
             <div id='correspondence_list' className='correspondence_list'>
-              {correspondenceList.length > 1 &&
+              {correspondenceList.length >= 1 &&
                 correspondenceList
                   .sort(
                     (a, b) =>
-                      new Date(b.messages[b.messages.length - 1].messageDateTime).getTime() -
-                      new Date(a.messages[a.messages.length - 1].messageDateTime).getTime(),
+                      (b.messages.length > 0
+                        ? new Date(b.messages[b.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()) -
+                      (a.messages.length > 0
+                        ? new Date(a.messages[a.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()),
                   )
                   .map((correspondence, idx) => (
                     <CorrespondenceView
@@ -63,10 +68,9 @@ const MessagePage = () => {
                   className='backToCorrespondences'
                   onClick={() => {
                     setSelectedCorrespondence(null);
-                    setIsSelectedCorrespondence(false);
                     setMessageText('');
                   }}>
-                  {'<-- Back'}
+                  &larr; Back
                 </button>
               }
               {
@@ -90,15 +94,22 @@ const MessagePage = () => {
               {selectedCorrespondence.userTyping.length > 0 ? (
                 // <pre>
                 <div id='user-typing' className='user-typing'>
-                  {selectedCorrespondence.userTyping.join(',')} is typing...
+                  Typing: {selectedCorrespondence.userTyping.join(', ')}
                 </div>
-              ) : null}
+              ) : (
+                <div id='user-typing' className='user-typing' style={{ color: 'white' }}>
+                  {' _ '}
+                </div>
+              )}
               <div id='selected_correspondence_bottom' className='selected_correspondence_bottom'>
                 {
                   <textarea
                     placeholder='New Message...'
                     value={messageText}
-                    onChange={e => setMessageText(e.target.value)}
+                    onChange={e => {
+                      setMessageText(e.target.value);
+                      getUpdatedCorrespondence(e.target.value);
+                    }}
                     className={isCodeStyle ? 'message-textarea-code' : 'message-textarea'}
                   />
                 }
@@ -111,7 +122,10 @@ const MessagePage = () => {
                   </button>
                 }
                 {
-                  <button className='send-message-button' onClick={handleSendMessage}>
+                  <button
+                    className='send-message-button'
+                    onClick={handleSendMessage}
+                    disabled={pendingMessageSend}>
                     Send Message
                   </button>
                 }

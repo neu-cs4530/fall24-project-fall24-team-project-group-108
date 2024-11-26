@@ -8,17 +8,17 @@ import {
   AddCorrespondenceRequest,
   UpdateCorrespondenceRequest,
   FakeSOSocket,
-  UpdateCorrespondenceUserTypingRequest,
   UpdateCorrespondenceViewsRequest,
+  UpdateCorrespondenceUserTypingRequestNames,
 } from '../types';
 import {
   fetchAndIncrementCorrespondenceViewsById,
   getAllCorrespondences,
   saveCorrespondence,
   updateCorrespondenceById,
-  updateCorrespondenceUserTypingById,
   updateCorrespondenceViewsById,
   fetchCorrespondenceById,
+  updateCorrespondenceUserTypingByIdNames,
 } from '../models/application';
 
 const correspondenceController = (socket: FakeSOSocket) => {
@@ -167,7 +167,6 @@ const correspondenceController = (socket: FakeSOSocket) => {
       if ('error' in result) {
         throw new Error(result.error);
       }
-
       socket.emit('correspondenceUpdate', result);
       res.json(result);
     } catch (err: unknown) {
@@ -212,20 +211,20 @@ const correspondenceController = (socket: FakeSOSocket) => {
   };
 
   /**
-   * Updates a correspondence's userTyping value with a list of users who are currently typing
+   * Updates a correspondence's userTyping value with a user to add or remove from the list
    *
-   * @param req The AddCorrespondenceRequest object containing the typing data.
+   * @param req The UpdateCorrespondenceUserTypingRequestNames object containing the typing data.
    * @param res The HTTP response object used to send back the result of the operation.
    *
    * @returns A Promise that resolves to void.
    */
-  const updateCorrespondenceUserTyping = async (
-    req: UpdateCorrespondenceUserTypingRequest,
+  const updateCorrespondenceUserTypingNames = async (
+    req: UpdateCorrespondenceUserTypingRequestNames,
     res: Response,
   ): Promise<void> => {
-    const { cid, userTyping } = req.body;
+    const { cid, username, push } = req.body;
     try {
-      const result = await updateCorrespondenceUserTypingById(cid, userTyping);
+      const result = await updateCorrespondenceUserTypingByIdNames(cid, username, push);
       if ('error' in result) {
         throw new Error(result.error);
       }
@@ -277,7 +276,7 @@ const correspondenceController = (socket: FakeSOSocket) => {
   router.get('/getCorrespondenceByIdWithViews/:cid', getCorrespondenceByIdWithViews);
   router.post('/addCorrespondence', addCorrespondence);
   router.post('/updateCorrespondence', updateCorrespondence);
-  router.post('/updateCorrespondenceUserTyping', updateCorrespondenceUserTyping);
+  router.post('/updateCorrespondenceUserTypingNames', updateCorrespondenceUserTypingNames);
   router.post('/updateCorrespondenceViews', updateCorrespondenceViews);
 
   return router;

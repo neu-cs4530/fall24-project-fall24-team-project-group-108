@@ -3,12 +3,17 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useUserContext from './useUserContext';
 import { Answer, Badge, Question } from '../types';
-import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
+import {
+  getQuestionByAnswerer,
+  getQuestionByCommenter,
+  getQuestionsByFilter,
+} from '../services/questionService';
 import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../services/badgeService';
 import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
 import QuestionsTab from '../components/main/accountPage/questionsTab';
 import AnswersTab from '../components/main/accountPage/answersTab';
 import BadgesTab from '../components/main/accountPage/badgesTab';
+import CommentsTab from '../components/main/accountPage/commentsTab';
 
 export interface ProfileIconDetails {
   category: BadgeCategory | null;
@@ -42,6 +47,7 @@ const useAccountPage = () => {
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
   const [alist, setAlist] = useState<Question[]>([]);
+  const [clist, setClist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [currentDetails, setCurrentDetails] = useState<ProfileIconDetails | null>(null);
@@ -93,6 +99,19 @@ const useAccountPage = () => {
     };
 
     /**
+     * Function to fetch comments based on the filter and update the comment list.
+     */
+    const fetchCommentData = async () => {
+      try {
+        const res = await getQuestionByCommenter(sentUser);
+        setClist(res || []);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+      }
+    };
+
+    /**
      * Function to fetch all badges obtained by the user.
      */
     const fetchUserBadges = async () => {
@@ -124,6 +143,7 @@ const useAccountPage = () => {
 
     fetchQuestionData();
     fetchAnswerData();
+    fetchCommentData();
     fetchUserBadges();
     fetchProfileIconDetails();
 
@@ -183,6 +203,8 @@ const useAccountPage = () => {
             navigate={navigate}
           />
         );
+      case 3:
+        return CommentsTab(userDisplay, clist);
       default:
         return null;
     }
@@ -194,6 +216,7 @@ const useAccountPage = () => {
     userLoggedIn,
     alist,
     qlist,
+    clist,
     handleAuthorClick,
     handleChange,
     badgeList,

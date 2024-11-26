@@ -5,7 +5,7 @@ import useUserContext from './useUserContext';
 import { Correspondence, Message } from '../types';
 import {
   getCorrespondences,
-  updateCorrespondenceUserTypingById,
+  updateCorrespondenceUserTypingByIdNames,
   updateCorrespondenceViewsById,
 } from '../services/correspondenceService';
 import { addMessage, updateMessageViewsById } from '../services/messageService';
@@ -39,7 +39,6 @@ const useMessagePage = () => {
   const [titleText, setTitleText] = useState<string>('All Messages');
   const [correspondenceList, setCorrespondenceList] = useState<Correspondence[]>([]);
   const [selectedCorrespondence, setSelectedCorrespondence] = useState<Correspondence | null>(null);
-  const [isSelectedCorrespondence, setIsSelectedCorrespondence] = useState<boolean>(false);
   const [selectedCorrespondenceId, setSelectedCorrespondenceId] = useState<string>('');
   const [selectedCorrespondenceMessages, setSelectedCorrespondenceMessages] = useState<Message[]>(
     [],
@@ -49,6 +48,7 @@ const useMessagePage = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
   const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
+  const [pendingMessageSend, setPendingMessageSend] = useState<boolean>(false);
 
   const handleUpdateCorrespondence = () => {
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
@@ -59,51 +59,6 @@ const useMessagePage = () => {
 
     setTitleText(pageTitle);
   }, []);
-
-  useEffect(() => {
-    if (!isSelectedCorrespondence) {
-      return;
-    }
-
-    const getUpdatedCorrespondence = async () => {
-      if (isSelectedCorrespondence) {
-        if (messageText === '' && currentUserTyping.includes(user.username)) {
-          const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
-          const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-            selectedCorrespondenceId || '',
-            [...updatedUserTyping],
-          );
-          setSelectedCorrespondence({ ...updatedCorrespondence });
-          setSelectedCorrespondenceId(updatedCorrespondence._id || '');
-          setIsSelectedCorrespondence(true);
-        } else if (messageText !== '') {
-          if (!currentUserTyping.includes(user.username)) {
-            const updatedUserTyping = [...new Set([...currentUserTyping, user.username])];
-            const updatedCorrespondence = await updateCorrespondenceUserTypingById(
-              selectedCorrespondenceId || '',
-              [...updatedUserTyping],
-            );
-            setSelectedCorrespondence({ ...updatedCorrespondence });
-            setSelectedCorrespondenceId(updatedCorrespondence._id || '');
-            setIsSelectedCorrespondence(true);
-          }
-        }
-      } else if (currentUserTyping.includes(user.username)) {
-        const updatedUserTyping = currentUserTyping.filter(name => name !== user.username);
-        await updateCorrespondenceUserTypingById(selectedCorrespondenceId || '', [
-          ...updatedUserTyping,
-        ]);
-      }
-    };
-
-    getUpdatedCorrespondence();
-  }, [
-    messageText,
-    user.username,
-    currentUserTyping,
-    isSelectedCorrespondence,
-    selectedCorrespondenceId,
-  ]);
 
   useEffect(() => {
     /**
@@ -121,23 +76,22 @@ const useMessagePage = () => {
       }
     };
 
+    fetchData();
+
     /**
      * Function to handle message/corresponcence updates from the socket.
      *
      * @param correspondence - The updated correspondence object.
      */
     const handleCorrespondenceUpdate = async (correspondence: Correspondence) => {
-      await fetchData();
-      if (selectedCorrespondence && selectedCorrespondence._id === correspondence._id) {
+      if (selectedCorrespondence?._id && selectedCorrespondence._id === correspondence._id) {
         setSelectedCorrespondence({ ...correspondence });
-        setSelectedCorrespondenceId(correspondence._id || '');
-        setIsSelectedCorrespondence(true);
         setCurrentUserTyping([...correspondence.userTyping]);
         setSelectedCorrespondenceMessages([...correspondence.messages]);
+      } else if (correspondence.messageMembers.includes(user.username)) {
+        setCorrespondenceList(previousList => [{ ...correspondence }, ...previousList]);
       }
     };
-
-    fetchData();
 
     socket.on('correspondenceUpdate', handleCorrespondenceUpdate);
 
@@ -170,9 +124,21 @@ const useMessagePage = () => {
     }
     setSelectedCorrespondence(correspondence);
     setSelectedCorrespondenceId(correspondence._id || '');
-    setIsSelectedCorrespondence(true);
     setCurrentUserTyping([...correspondence.userTyping]);
     setSelectedCorrespondenceMessages([...correspondence.messages]);
+  };
+
+  const getUpdatedCorrespondence = async (newMessageText: string) => {
+    if (newMessageText.length > 1) {
+      return;
+    }
+    if (selectedCorrespondence) {
+      await updateCorrespondenceUserTypingByIdNames(
+        selectedCorrespondenceId || '',
+        user.username,
+        newMessageText !== '',
+      );
+    }
   };
 
   const convertUploadedFileToBuffer = async (file: File): Promise<Buffer> =>
@@ -212,6 +178,8 @@ const useMessagePage = () => {
         const fileDataArray = Array.from(fileData);
         message = { ...message, fileName, fileData: fileDataArray };
       }
+      setPendingMessageSend(true);
+      setUploadedFileErr('Pending Message Send');
       const updatedCorrespondence = await addMessage(cid || '', message);
 
       const updatedCorrespondenceList = correspondenceList.filter(
@@ -221,12 +189,13 @@ const useMessagePage = () => {
       setCorrespondenceList([...updatedCorrespondenceList, updatedCorrespondence]);
       setSelectedCorrespondence({ ...updatedCorrespondence });
       setSelectedCorrespondenceId(updatedCorrespondence._id || '');
-      setIsSelectedCorrespondence(true);
-      setSelectedCorrespondenceMessages([...updatedCorrespondence.messages, message]);
+      setSelectedCorrespondenceMessages([...updatedCorrespondence.messages]);
       setMessageText('');
       handleMessageViewsUpdate();
       setUploadedFile(null);
+      setPendingMessageSend(false);
       setUploadedFileErr('');
+      await updateCorrespondenceUserTypingByIdNames(cid || '', user.username, false);
     } else {
       setUploadedFileErr("Error: Can't send message with empty text");
     }
@@ -267,7 +236,9 @@ const useMessagePage = () => {
     setUploadedFile,
     handleUploadedFile,
     uploadedFileErr,
-    setIsSelectedCorrespondence,
+    pendingMessageSend,
+    currentUserTyping,
+    getUpdatedCorrespondence,
   };
 };
 

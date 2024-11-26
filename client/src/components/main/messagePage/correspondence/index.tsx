@@ -36,7 +36,6 @@ const CorrespondenceView = ({ correspondence, username, onClickHandler }: Corres
       }}>
       <div className='postStats'>
         <div>{correspondence.messages.length || 0} messages</div>
-        {/* <div className='postStatsMembers'>Members: </div> */}
       </div>
       <div className='messageMembersContainer'>
         <div className='messageMembersTitle'>
@@ -65,16 +64,22 @@ const CorrespondenceView = ({ correspondence, username, onClickHandler }: Corres
           <br></br>
         </div>
         <div className='postTitle'>
-          {correspondence.messages[correspondence.messages.length - 1].messageText}
+          {correspondence.messages.length > 0
+            ? correspondence.messages[correspondence.messages.length - 1].messageText
+            : ''}
         </div>
       </div>
 
       <div className='lastActivity'>
         <div>&nbsp;</div>
         <div className='question_meta'>
-          {getMetaData(
-            new Date(correspondence.messages[correspondence.messages.length - 1].messageDateTime),
-          )}
+          {correspondence.messages.length > 0
+            ? getMetaData(
+                new Date(
+                  correspondence.messages[correspondence.messages.length - 1].messageDateTime,
+                ),
+              )
+            : getMetaData(new Date())}
         </div>
       </div>
     </div>

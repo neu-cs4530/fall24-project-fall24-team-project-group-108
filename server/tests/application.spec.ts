@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
 import Tags from '../models/tags';
 import QuestionModel from '../models/questions';
 import {
@@ -42,12 +43,19 @@ import {
   saveCorrespondence,
   addMessageToCorrespondence,
   updateCorrespondenceById,
-  updateCorrespondenceUserTypingById,
+  updateCorrespondenceUserTypingByIdNames,
   updateCorrespondenceViewsById,
   updateMessageViewsById,
   updateMessageEmojisById,
   updateMessageById,
   updateMessageIsDeletedById,
+  reportResolvedNotification,
+  saveModApplicationNotification,
+  filterQuestionsByAnswerer,
+  filterQuestionsByCommenter,
+  saveAnswerCommentNotification,
+  saveQuestionCommentNotification,
+  saveAnswerNotification,
   reportResolvedNotification,
   saveModApplicationNotification,
 } from '../models/application';
@@ -71,6 +79,7 @@ import MessageModel from '../models/message';
 import CorrespondenceModel from '../models/correspondence';
 import ModApplicationModel from '../models/modApplication';
 import UserReportModel from '../models/userReport';
+import CommentModel from '../models/comments';
 import NotificationModel from '../models/notifications';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -134,6 +143,16 @@ const ans3: Answer = {
 const ans4: Answer = {
   _id: new ObjectId('65e9b58910afe6e94fc6e6df'),
   text: 'ans4',
+  ansBy: 'ansBy4',
+  ansDateTime: new Date('2023-11-19T09:24:00'),
+  comments: [],
+  reports: [],
+  isRemoved: false,
+};
+
+const ans5: Answer = {
+  _id: new ObjectId('65e9b58910afe6e94fc6e6df'),
+  text: 'ans5',
   ansBy: 'ansBy4',
   ansDateTime: new Date('2023-11-19T09:24:00'),
   comments: [],
@@ -1509,6 +1528,204 @@ describe('application module', () => {
       });
     });
 
+    describe('filterQuestionsByCommenter', () => {
+      const sampleComment1 = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6dd'),
+        text: 'comment1',
+        commentBy: 'ansBy4',
+        commentDateTime: new Date('2023-11-16T09:24:00'),
+      } as Comment;
+
+      const sampleComment2 = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6de'),
+        text: 'comment2',
+        commentBy: 'ansBy4',
+        commentDateTime: new Date('2023-11-16T09:24:00'),
+      } as Comment;
+
+      const sampleQuestion1 = {
+        _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+        title: 'Quick question about storage on android',
+        text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
+        tags: [tag3, tag2],
+        answers: [ans4, { ...ans2, comments: [sampleComment1] }],
+        askedBy: 'q_by1',
+        askDateTime: new Date('2023-11-16T09:24:00'),
+        views: ['question1_user', 'question2_user'],
+        upVotes: [],
+        downVotes: [],
+        comments: [],
+        reports: [],
+        isRemoved: false,
+      };
+      const sampleQuestion3 = {
+        _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
+        title: 'Is there a language to write programmes by pictures?',
+        text: 'Does something like that exist?',
+        tags: [],
+        answers: [ans5],
+        askedBy: 'q_by3',
+        askDateTime: new Date('2023-11-19T09:24:00'),
+        views: ['question1_user', 'question2_user', 'question3_user', 'question4_user'],
+        upVotes: [],
+        downVotes: [],
+        comments: [sampleComment2],
+        reports: [],
+        isRemoved: false,
+      };
+
+      test('Gets a list of questions that contain a users comments', async () => {
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3, sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(2);
+        expect(result[1]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+        expect(result[0]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+      test('Should only return question comments if that is the only place theyve commented', async () => {
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(1);
+        expect(result[0]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+
+      test('Should only return answer comments if that is the only place theyve commented', async () => {
+        mockingoose(CommentModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(1);
+        expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+      });
+
+      test('returns an empty list if the user has not commented anywhere', async () => {
+        mockingoose(CommentModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 2);
+
+        const result = await filterQuestionsByCommenter('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the AnswerModel call returns an error', async () => {
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion3], 'find', 1);
+        mockingoose(AnswerModel).toReturn({ error: 'Error retrieving answer' }, 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1], 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the Comment Model call returns an error', async () => {
+        mockingoose(CommentModel).toReturn({ error: 'Error retrieving answer' }, 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 1);
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the Question Model call returns an error', async () => {
+        mockingoose(CommentModel).toReturn([sampleComment1, sampleComment2], 'find');
+        mockingoose(QuestionModel).toReturn(new Error(''), 'find', 1);
+        mockingoose(AnswerModel).toReturn([{ ...ans2, comments: [sampleComment1] }], 'find');
+        mockingoose(QuestionModel).toReturn(new Error(''), 'find', 2);
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
+    describe('filterQuestionsByAnswerer', () => {
+      test('Gets a list of questions that are answered by the given user', async () => {
+        const sampleQuestion1 = {
+          _id: new ObjectId('65e9b58910afe6e94fc6e6dc'),
+          title: 'Quick question about storage on android',
+          text: 'I would like to know the best way to go about storing an array on an android phone so that even when the app/activity ended the data remains',
+          tags: [tag3, tag2],
+          answers: [ans4, ans2],
+          askedBy: 'q_by1',
+          askDateTime: new Date('2023-11-16T09:24:00'),
+          views: ['question1_user', 'question2_user'],
+          upVotes: [],
+          downVotes: [],
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+        const sampleQuestion3 = {
+          _id: new ObjectId('65e9b9b44c052f0a08ecade0'),
+          title: 'Is there a language to write programmes by pictures?',
+          text: 'Does something like that exist?',
+          tags: [],
+          answers: [ans5],
+          askedBy: 'q_by3',
+          askDateTime: new Date('2023-11-19T09:24:00'),
+          views: ['question1_user', 'question2_user', 'question3_user', 'question4_user'],
+          upVotes: [],
+          downVotes: [],
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        mockingoose(AnswerModel).toReturn([ans4, ans5], 'find');
+        mockingoose(QuestionModel).toReturn([sampleQuestion1, sampleQuestion3], 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(2);
+        expect(result[0]._id?.toString()).toEqual('65e9b58910afe6e94fc6e6dc');
+        expect(result[1]._id?.toString()).toEqual('65e9b9b44c052f0a08ecade0');
+      });
+
+      test('returns an empty list if the user has not answered any questions', async () => {
+        mockingoose(AnswerModel).toReturn([], 'find');
+        mockingoose(QuestionModel).toReturn([], 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the AnswerModel call returns an error', async () => {
+        mockingoose(AnswerModel).toReturn({ error: 'Error retrieving answers' }, 'find');
+        mockingoose(QuestionModel).toReturn(QUESTIONS, 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+
+      test('returns an empty list if the QuestionModel call returns an error', async () => {
+        mockingoose(AnswerModel).toReturn([ans4, ans5], 'find');
+        mockingoose(QuestionModel).toReturn(new Error('error'), 'find');
+
+        const result = await filterQuestionsByAnswerer('ansBy4');
+
+        expect(result.length).toEqual(0);
+      });
+    });
+
     describe('getAllUsers', () => {
       test('get a list of all the users in UserModel, sorted by username alphabetically', async () => {
         mockingoose(UserModel).toReturn(USERS, 'find');
@@ -1732,32 +1949,35 @@ describe('application module', () => {
       });
     });
 
-    describe('updateCorrespondenceUserTypingById', () => {
-      test('updateCorrespondenceUserTypingById should return the updated correspondence with the given userTyping value', async () => {
+    describe('updateCorrespondenceUserTypingByIdNames', () => {
+      test('updateCorrespondenceUserTypingByIdNames should return the updated correspondence with the given username to push', async () => {
         mockingoose(CorrespondenceModel).toReturn(
-          { ...correspondence2, userTyping: ['isuzuki', 'tgwynn', 'hwagner', 'bruth'] },
+          { ...correspondence2, userTyping: ['isuzuki'] },
           'findOneAndUpdate',
         );
         CorrespondenceModel.schema.path('messages', Object);
 
-        const result = (await updateCorrespondenceUserTypingById(correspondence2._id, [
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          correspondence2._id,
           'isuzuki',
-          'tgwynn',
-          'hwagner',
-          'bruth',
-        ])) as Correspondence;
+          true,
+        )) as Correspondence;
 
         expect(result.views).toEqual(correspondence2.views);
         expect(result._id?.toString()).toEqual(correspondence2._id);
         expect(result.messages).toEqual(correspondence2.messages);
         expect(result.messageMembers).toEqual(correspondence2.messageMembers);
-        expect(result.userTyping).toEqual(['isuzuki', 'tgwynn', 'hwagner', 'bruth']);
+        expect(result.userTyping).toEqual(['isuzuki']);
       });
 
       test('updateCorrespondenceById should return null if id does not exist', async () => {
         mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
-        const result = (await updateCorrespondenceUserTypingById('incorrect_cid', ['isuzuki'])) as {
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          'incorrect_cid',
+          'isuzuki',
+          true,
+        )) as {
           error: string;
         };
 
@@ -1767,9 +1987,11 @@ describe('application module', () => {
       test('updateCorrespondenceById should return an object with error if findOneAndUpdate throws an error', async () => {
         mockingoose(CorrespondenceModel).toReturn(new Error('error'), 'findOneAndUpdate');
 
-        const result = (await updateCorrespondenceUserTypingById(correspondence2._id, [
+        const result = (await updateCorrespondenceUserTypingByIdNames(
+          correspondence2._id,
           'isuzuki',
-        ])) as {
+          true,
+        )) as {
           error: string;
         };
 
@@ -2438,6 +2660,92 @@ describe('application module', () => {
         expect(result).toEqual({ error: 'Error when adding downvote to question' });
       });
     });
+
+    describe('saveQuestionCommentNotification', () => {
+      test('should create and save a notification for a valid question and comment', async () => {
+        const mockQuestionId = new ObjectId('64b3b8a59c9055c8db6e8823');
+        const mockQuestion = {
+          _id: mockQuestionId,
+          askedBy: 'questionAuthor',
+        };
+
+        const mockComment = {
+          commentBy: 'dummyUser',
+          text: 'This is a test comment',
+          commentDateTime: new Date(),
+        };
+
+        const expectedNotification = {
+          user: 'questionAuthor',
+          type: 'comment',
+          caption: 'dummyUser commented on your question',
+          read: false,
+          createdAt: new Date(),
+          redirectUrl: `/question/64b3b8a59c9055c8db6e8823`,
+        };
+
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(NotificationModel).toReturn(expectedNotification, 'create');
+
+        const result = await saveQuestionCommentNotification(
+          mockQuestionId.toString(),
+          mockComment,
+        );
+
+        expect(result.caption).toEqual(expectedNotification.caption);
+        expect(result.read).toEqual(expectedNotification.read);
+        expect(result.redirectUrl).toEqual(expectedNotification.redirectUrl);
+        expect(result.type).toEqual(expectedNotification.type);
+        expect(result.user).toEqual(expectedNotification.user);
+      });
+
+      test('should throw an error if the question is not found', async () => {
+        const invalidQuestionId = new ObjectId('64b3b8a59c9055c8db6e9999'); // Invalid question ID
+        const mockComment = {
+          commentBy: 'dummyUser',
+          text: 'This is a test comment',
+          commentDateTime: new Date(),
+        };
+
+        // Mocking database call to return null (question not found)
+        mockingoose(QuestionModel).toReturn(null, 'findById');
+
+        try {
+          await saveQuestionCommentNotification(invalidQuestionId.toString(), mockComment);
+        } catch (err) {
+          expect(err).toBeInstanceOf(Error);
+        }
+      });
+
+      test('should throw an error if there is an issue creating the notification', async () => {
+        const mockQuestionId = new ObjectId('64b3b8a59c9055c8db6e8823');
+        const mockQuestion = {
+          _id: mockQuestionId,
+          askedBy: 'questionAuthor',
+        };
+
+        const mockComment = {
+          commentBy: 'dummyUser',
+          text: 'This is a test comment',
+          commentDateTime: new Date(),
+        };
+
+        // Mocking database call to return the question
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findById');
+
+        // Mocking NotificationModel.create to simulate an error
+        mockingoose(NotificationModel).toReturn(
+          { error: 'Notification creation failed' },
+          'create',
+        );
+
+        try {
+          await saveQuestionCommentNotification(mockQuestionId.toString(), mockComment);
+        } catch (err) {
+          expect(err).toBeInstanceOf(Error);
+        }
+      });
+    });
   });
 
   describe('Message model', () => {
@@ -2574,6 +2882,249 @@ describe('application module', () => {
           expect(err).toBeInstanceOf(Error);
           if (err instanceof Error) expect(err.message).toBe('Invalid answer');
         }
+      });
+    });
+
+    describe('saveAnswerCommentNotification', () => {
+      const mockAnswerId = '64b3b8a59c9055c8db6e8823';
+      const mockComment = {
+        commentBy: 'dummyUser',
+        text: 'This is a test comment',
+        commentDateTime: new Date(),
+      };
+
+      beforeEach(() => {
+        jest.clearAllMocks();
+      });
+
+      test('should create and save a notification for a valid answer and comment', async () => {
+        const mockAnswer = {
+          _id: new ObjectId(mockAnswerId),
+          ansBy: 'answerAuthor',
+        };
+        const mockQuestion = {
+          _id: new ObjectId('64b3b8a59c9055c8db6e8823'),
+          answers: [new ObjectId(mockAnswerId)],
+        };
+        const mockNotification = {
+          user: 'answerAuthor',
+          type: 'comment',
+          caption: 'dummyUser commented on your answer',
+          read: false,
+          createdAt: new Date(),
+          redirectUrl: '/question/64b3b8a59c9055c8db6e8823',
+        };
+
+        mockingoose(AnswerModel).toReturn(mockAnswer, 'findOne');
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(NotificationModel).toReturn(mockNotification, 'create');
+
+        const result = await saveAnswerCommentNotification(mockAnswerId, mockComment);
+
+        expect(result).toMatchObject({
+          user: mockNotification.user,
+          type: mockNotification.type,
+          caption: mockNotification.caption,
+          read: mockNotification.read,
+          redirectUrl: mockNotification.redirectUrl,
+        });
+      });
+
+      test('should throw an error if answer is not found', async () => {
+        mockingoose(AnswerModel).toReturn(null, 'findById');
+
+        try {
+          await saveAnswerCommentNotification(mockAnswerId, mockComment);
+        } catch (err) {
+          expect(err).toBeInstanceOf(Error);
+        }
+      });
+
+      test('should throw an error if question is not found for the answer', async () => {
+        const mockAnswer = {
+          _id: mockAnswerId,
+          ansBy: 'answerAuthor',
+        };
+
+        mockingoose(AnswerModel).toReturn(mockAnswer, 'findById');
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        try {
+          await saveAnswerCommentNotification(mockAnswerId, mockComment);
+        } catch (err) {
+          expect(err).toBeInstanceOf(Error);
+        }
+      });
+
+      test('should throw an error if notification creation fails', async () => {
+        const mockAnswer = {
+          _id: mockAnswerId,
+          ansBy: 'answerAuthor',
+        };
+        const mockQuestion = {
+          _id: new ObjectId('64b3b8a59c9055c8db6e8823'),
+          answers: [new ObjectId(mockAnswerId)],
+        };
+
+        mockingoose(AnswerModel).toReturn(mockAnswer, 'findById');
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+        mockingoose(NotificationModel).toReturn(
+          { error: 'Notification creation failed' },
+          'create',
+        );
+
+        try {
+          await saveAnswerCommentNotification(mockAnswerId, mockComment);
+        } catch (err) {
+          expect(err).toBeInstanceOf(Error);
+        }
+      });
+    });
+
+    describe('saveAnswerNotification', () => {
+      beforeEach(() => {
+        mockingoose.resetAll();
+        jest.clearAllMocks();
+      });
+
+      it('should create and save a notification when a new answer is posted', async () => {
+        // Setup mock data
+        const mockQuestionId = new Types.ObjectId();
+        const mockQuestion = {
+          _id: mockQuestionId,
+          askedBy: 'questionAuthor',
+          title: 'Test Question',
+        };
+
+        const mockAnswer: Answer = {
+          ansBy: 'answerAuthor',
+          text: 'This is a test answer',
+          ansDateTime: new Date(),
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        const expectedNotification = {
+          user: 'questionAuthor',
+          type: 'answer',
+          caption: 'answerAuthor answered your question',
+          read: false,
+          redirectUrl: `/question/${mockQuestionId.toString()}`,
+        };
+
+        // Mock QuestionModel.findById().exec()
+        mockingoose(QuestionModel).toReturn(
+          (query: { op: string; _conditions: { _id: { toString: () => string } } }) => {
+            if (
+              query.op === 'findOne' &&
+              query._conditions._id.toString() === mockQuestionId.toString()
+            ) {
+              return mockQuestion;
+            }
+            return null;
+          },
+          'findOne',
+        );
+
+        // Mock NotificationModel.create()
+        mockingoose(NotificationModel).toReturn(
+          () => ({
+            ...expectedNotification,
+            _id: new Types.ObjectId(),
+            createdAt: new Date(),
+            __v: 0,
+          }),
+          'save',
+        );
+
+        // Execute the function
+        const result = await saveAnswerNotification(mockQuestionId.toString(), mockAnswer);
+
+        // Verify the result
+        expect(result).toMatchObject({
+          user: expectedNotification.user,
+          type: expectedNotification.type,
+          caption: expectedNotification.caption,
+          read: expectedNotification.read,
+          redirectUrl: expectedNotification.redirectUrl,
+        });
+
+        // Verify createdAt is a recent date
+        expect(result.createdAt).toBeInstanceOf(Date);
+        expect(Date.now() - result.createdAt.getTime()).toBeLessThan(1000);
+      });
+
+      it('should throw an error when question is not found', async () => {
+        const nonExistentId = new Types.ObjectId();
+        const mockAnswer: Answer = {
+          ansBy: 'answerAuthor',
+          text: 'This is a test answer',
+          ansDateTime: new Date(),
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        // Mock QuestionModel to return null
+        mockingoose(QuestionModel).toReturn(null, 'findOne');
+
+        // Verify error is thrown
+        await expect(saveAnswerNotification(nonExistentId.toString(), mockAnswer)).rejects.toThrow(
+          'Question not found',
+        );
+      });
+
+      it('should create notification with correct redirect URL', async () => {
+        const mockQuestionId = new Types.ObjectId('507f1f77bcf86cd799439011');
+        const mockQuestion = {
+          _id: mockQuestionId,
+          askedBy: 'questionAuthor',
+          title: 'Test Question',
+        };
+
+        const mockAnswer: Answer = {
+          ansBy: 'answerAuthor',
+          text: 'This is a test answer',
+          ansDateTime: new Date(),
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        // Mock the database calls
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+
+        const result = await saveAnswerNotification(mockQuestionId.toString(), mockAnswer);
+
+        // Verify the redirect URL format
+        expect(result.redirectUrl).toBe('/question/507f1f77bcf86cd799439011');
+      });
+
+      it('should create notification with correct caption format', async () => {
+        const mockQuestionId = new Types.ObjectId();
+        const mockQuestion = {
+          _id: mockQuestionId,
+          askedBy: 'questionAuthor',
+          title: 'Test Question',
+        };
+
+        const mockAnswer: Answer = {
+          ansBy: 'testUser123',
+          text: 'This is a test answer',
+          ansDateTime: new Date(),
+          comments: [],
+          reports: [],
+          isRemoved: false,
+        };
+
+        // Mock the database calls
+        mockingoose(QuestionModel).toReturn(mockQuestion, 'findOne');
+
+        const result = await saveAnswerNotification(mockQuestionId.toString(), mockAnswer);
+
+        // Verify the caption format
+        expect(result.caption).toBe('testUser123 answered your question');
       });
     });
   });
