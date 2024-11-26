@@ -1214,18 +1214,31 @@ export const updateCorrespondenceById = async (
  * Updates a correspondence for the given id.
  *
  * @param {string} cid - The ID of the correspondence to update
- * @param {string[]} userTyping - A list of usernames who are typing
+ * @param {string} username - A username to add or remove to the userTyping list
+ * @param {boolean} push - A boolean representing if we should add (push) or pull from the dataset
  *
  * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
  */
-export const updateCorrespondenceUserTypingById = async (
+export const updateCorrespondenceUserTypingByIdNames = async (
   cid: string,
-  userTyping: string[],
+  username: string,
+  push: boolean,
 ): Promise<CorrespondenceResponse> => {
   try {
+    if (push) {
+      const result = await CorrespondenceModel.findOneAndUpdate(
+        { _id: cid },
+        { $addToSet: { userTyping: username } },
+        { new: true },
+      ).populate([{ path: 'messages', model: MessageModel }]);
+      if (result === null) {
+        throw new Error('Error when updating correspondence');
+      }
+      return result;
+    }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $set: { userTyping } },
+      { $pull: { userTyping: username } },
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {

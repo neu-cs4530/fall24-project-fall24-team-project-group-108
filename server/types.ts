@@ -241,17 +241,18 @@ export interface Question {
 }
 
 
-
 /**
  * Interface for the request body when updating a correspondence's userTyping value.
  * - body - The correspondence ID and the new contents of the correspondence
  *  - cid - the unique identifier of the correspondence
- *  - userTyping - the username who is typing or null if no one is typing
+ *  - username - The name of the user who will be added or removed to the userTyping array of the correspondence
+ *  - push - A boolean determining if the user should be added (pushed) to the userTyping array or not
  */
- export interface UpdateCorrespondenceUserTypingRequest extends Request {
+ export interface UpdateCorrespondenceUserTypingRequestNames extends Request {
   body: {
     cid: string;
-    userTyping: string[];
+    username: string;
+    push: boolean
   };
 }
 
