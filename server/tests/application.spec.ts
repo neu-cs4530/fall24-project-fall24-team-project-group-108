@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Types } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { Types } from 'mongoose';
 import Tags from '../models/tags';
 import QuestionModel from '../models/questions';
 import {
@@ -49,8 +48,6 @@ import {
   updateMessageEmojisById,
   updateMessageById,
   updateMessageIsDeletedById,
-  reportResolvedNotification,
-  saveModApplicationNotification,
   filterQuestionsByAnswerer,
   filterQuestionsByCommenter,
   saveAnswerCommentNotification,
