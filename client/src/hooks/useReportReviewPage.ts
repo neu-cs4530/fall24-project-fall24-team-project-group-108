@@ -7,7 +7,6 @@ import { getUnresolvedReport, resolveReport } from '../services/reportService';
  * Custom hook for managing the reportReviewPage, navigation, and real-time updates.
  *
  * @returns allReports - All Questions/Answers that have a report on them, sorted by number of reports.
- * @returns numReports - The total number of unresolved Questions/Answers with reports.
  * @returns err - Error message to display to mod.
  * @returns reportsVisible - Current value of report visibility, true renders reports list, false does not.
  * @returns handleApplicationDecision - Function to handle the acceptance or rejection of an application.
@@ -15,7 +14,6 @@ import { getUnresolvedReport, resolveReport } from '../services/reportService';
  *
  */
 const useReportReviewPage = () => {
-  const [numReports, setNumReports] = useState<number>(0);
   const [qReports, setQReports] = useState<Question[]>([]);
   const [ansReports, setAnsReports] = useState<{ answer: Answer; qid: string }[]>([]);
   const [allReports, setAllReports] = useState<(Question | { answer: Answer; qid: string })[]>([]);
@@ -59,8 +57,6 @@ const useReportReviewPage = () => {
           return lenReportB - lenReportA;
         });
         setAllReports(mergedReports);
-        const reportedQAns = mergedReports.length;
-        setNumReports(reportedQAns);
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching reports:', error);
@@ -90,7 +86,6 @@ const useReportReviewPage = () => {
         } else if (reportType === 'answer') {
           setAnsReports(prev => prev.filter(r => r.answer._id !== postId));
         }
-        setNumReports(prev => prev - 1);
       }
     } catch (error) {
       const { _id: postId } = reportedPost;
@@ -149,7 +144,6 @@ const useReportReviewPage = () => {
 
   return {
     allReports,
-    numReports,
     err,
     reportsVisible,
     handleReportDecision,

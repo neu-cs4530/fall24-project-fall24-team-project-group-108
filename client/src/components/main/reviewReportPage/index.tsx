@@ -13,14 +13,14 @@ import useBan from '../../../hooks/useBan';
 const ReviewReportsPage = () => {
   useModNavigationPrivileges();
   useBan();
-  const { numReports, allReports, err, reportsVisible, handleReportDecision, handleReportVisible } =
+  const { allReports, err, reportsVisible, handleReportDecision, handleReportVisible } =
     useReportReviewPage();
   const navigate = useNavigate();
 
   if (!allReports.length) {
     return (
       <>
-        <ReviewReportHeader reportCount={numReports} />
+        <ReviewReportHeader reportCount={allReports.length} />
         <div className='container'>
           <h2>You are all caught up! No reports left.</h2>;
         </div>
@@ -30,7 +30,7 @@ const ReviewReportsPage = () => {
 
   return (
     <>
-      <ReviewReportHeader reportCount={numReports} />
+      <ReviewReportHeader reportCount={allReports.length} />
       {allReports.map(reportedObject => {
         const isQ = 'askedBy' in reportedObject;
         const reportedText = isQ ? 'Reported Question' : 'Reported Answer';

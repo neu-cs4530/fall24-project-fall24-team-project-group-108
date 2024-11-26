@@ -20,7 +20,6 @@ const AnswerPage = () => {
   const {
     questionID,
     question,
-    numAnswers,
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,
@@ -36,6 +35,8 @@ const AnswerPage = () => {
   if (question.isRemoved === true) {
     navigate('/home');
   }
+
+  const numAnswers = question.answers.filter(a => a.isRemoved === false).length;
 
   /**
    * Function to handle navigation to the "Report" page.
