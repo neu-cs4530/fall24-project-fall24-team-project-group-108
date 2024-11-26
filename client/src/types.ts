@@ -71,7 +71,7 @@ export interface Comment {
 /**
  * Interface represents a report.
  *
- * text - The text of the comment.
+ * text - The text of the report.
  * reportBy - Username of the author of the report.
  * reportDateTime - Time at which the comment was created.
  * status - Current status of the report.
