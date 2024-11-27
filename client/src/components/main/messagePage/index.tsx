@@ -27,9 +27,9 @@ const MessagePage = () => {
     user,
     handleUploadedFile,
     uploadedFileErr,
-    setSelectedCorrespondence,
     pendingMessageSend,
     getUpdatedCorrespondence,
+    handleBackButton,
   } = useMessagePage();
 
   return (
@@ -67,8 +67,7 @@ const MessagePage = () => {
                 <button
                   className='backToCorrespondences'
                   onClick={() => {
-                    setSelectedCorrespondence(null);
-                    setMessageText('');
+                    handleBackButton();
                   }}>
                   &larr; Back
                 </button>
@@ -140,7 +139,6 @@ const MessagePage = () => {
                 <input
                   type='file'
                   accept='.pdf,.jpg,.jpeg'
-                  // value={uploadedFile ? uploadedFile.name : 'No file chosen'}
                   onChange={event => (event.target.files ? handleUploadedFile(event.target) : null)}
                 />
               </div>

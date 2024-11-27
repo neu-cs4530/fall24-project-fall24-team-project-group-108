@@ -53,6 +53,10 @@ const useUpdateCorrespondence = () => {
     getCurrentCorrespondence();
   }, [cid, user.username]);
 
+  /**
+   * Handles when the user decides to unselect someone they were considering for the correspondence
+   * @param username - The username they are no longer considering
+   */
   const handleUnselectUser = (username: string): void => {
     setSelectedUsers([...selectedUsers.filter(selectedUsername => selectedUsername !== username)]);
     const newUnselectedUsers = [...unselectedUsers, username].sort((name1, name2) =>
@@ -75,6 +79,10 @@ const useUpdateCorrespondence = () => {
     }
   };
 
+  /**
+   * Handles when the user decides to select someone they are considering for the correspondence
+   * @param username - The username they are considering
+   */
   const handleUserSelection = (username: string) => {
     setSelectedUsers([...selectedUsers, username]);
     const newUnselectedUsers = [
@@ -85,6 +93,10 @@ const useUpdateCorrespondence = () => {
     setFilteredUnselectedUsers(newUnselectedUsers);
   };
 
+  /**
+   * Handles when there is a search bar update to find a list of potential users
+   * @param currentInput The current text in the search bar
+   */
   const handleSearchInputChange = (currentInput: string) => {
     setSearchInput(currentInput);
     setFilteredUnselectedUsers(
