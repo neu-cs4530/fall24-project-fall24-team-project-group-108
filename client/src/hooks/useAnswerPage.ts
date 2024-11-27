@@ -14,13 +14,15 @@ import { resolveReport } from '../services/reportService';
  * @returns question - The current question object with its answers, comments, and votes.
  * @returns handleNewComment - Function to handle the submission of a new comment to a question or answer.
  * @returns handleNewAnswer - Function to navigate to the "New Answer" page
+ * @returns handleReportDecision - Handles a question/answer being dismissed/removed.
+ * @returns wasQReported - Determines if user already reported the question.
+ * @returns wasAnsReported - Determines if user already reported the answer.
  */
 const useAnswerPage = () => {
   const { qid } = useParams();
   const navigate = useNavigate();
 
   const { user, socket } = useUserContext();
-  const [numAnswers, setNumAnswers] = useState<number>(0);
   const [questionID, setQuestionID] = useState<string>(qid || '');
   const [question, setQuestion] = useState<Question | null>(null);
 
@@ -107,9 +109,6 @@ const useAnswerPage = () => {
       try {
         const res = await getQuestionById(questionID, user.username);
         setQuestion(res || null);
-        if (res && res.answers) {
-          setNumAnswers(res.answers.filter(ans => !ans.isRemoved).length);
-        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Error fetching question:', error);
@@ -293,7 +292,6 @@ const useAnswerPage = () => {
   return {
     questionID,
     question,
-    numAnswers,
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,

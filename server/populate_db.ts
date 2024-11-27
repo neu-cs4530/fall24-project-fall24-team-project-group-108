@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Comment, Question, Tag, UserReport } from './types';
+import { Answer, Badge, Comment, Question, Tag, User, UserReport } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -53,6 +53,7 @@ import {
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserReportModel from './models/userReport';
+import UserModel from './models/users';
 import BadgeModel from './models/badges';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
@@ -347,6 +348,47 @@ async function questionCreate(
 }
 
 /**
+ * Creates an original User document in the database.
+ *
+ * @param username Name of the user.
+ * @param password Password to login created by the user.
+ * @param isModerator The current state of the user's moderator status.
+ * @param badges The badges obtained by the user.
+ * @param infractions A list of answer/question id's that were removed by moderators
+ * @param doNotDisturb Whether or not the user is on dnd.
+ * @returns A Promise that resolves to the created User document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function userCreate(
+  username: string,
+  password: string,
+  isModerator: boolean,
+  badges: Badge[],
+  infractions: string[],
+  profileIcon?: string,
+  doNotDisturb?: false,
+): Promise<User> {
+  if (
+    username === '' ||
+    password === '' ||
+    isModerator === null ||
+    badges == null ||
+    infractions == null
+  )
+    throw new Error('Invalid User Format');
+  const userDetail: User = {
+    username: username,
+    password: password,
+    isModerator: isModerator,
+    badges: badges,
+    infractions: infractions,
+    profileIcon: profileIcon,
+    doNotDisturb: doNotDisturb,
+  };
+  return await UserModel.create(userDetail);
+}
+
+/**
  * Populates the database with predefined data.
  * Logs the status of the operation to the console.
  */
@@ -398,6 +440,20 @@ const populate = async () => {
     const c10 = await commentCreate(C10_TEXT, 'abhi3241', new Date('2023-02-10T11:24:30'));
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
+
+    await userCreate('hamkalo', 'Password1!', false, [], []);
+    await userCreate('azad', 'Password1!', false, [], []);
+    await userCreate('abaya', 'Password1!', false, [], []);
+    await userCreate('alia', 'Password1!', false, [], []);
+    await userCreate('sana', 'Password1!', false, [], []);
+    await userCreate('abhi3241', 'Password1!', false, [], []);
+    await userCreate('mackson3332', 'Password1!', false, [], []);
+    await userCreate('ihba001', 'Password1!', false, [], []);
+    await userCreate('Joji John', 'Password1!', false, [], []);
+    await userCreate('saltyPeter', 'Password1!', false, [], []);
+    await userCreate('monkeyABC', 'Password1!', false, [], []);
+    await userCreate('elephantCDE', 'Password1!', false, [], []);
+    await userCreate('Moderator', 'Password1!', true, [], []);
 
     const a1 = await answerCreate(
       A1_TXT,

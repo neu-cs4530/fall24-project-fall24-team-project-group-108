@@ -27,7 +27,7 @@ export interface User {
 /**
  * Interface representing a ModApplication document, which contains:
  * - _id - The unique identifier for the question. Optional field.
- * - user - The user who created the application.
+ * - username - The user who created the application.
  * - applicationText - The additional imformation provided by the applicant.
  * - status - The current status of the moderator application.
  */
@@ -71,7 +71,7 @@ export interface Comment {
 /**
  * Interface represents a report.
  *
- * text - The text of the comment.
+ * text - The text of the report.
  * reportBy - Username of the author of the report.
  * reportDateTime - Time at which the comment was created.
  * status - Current status of the report.
