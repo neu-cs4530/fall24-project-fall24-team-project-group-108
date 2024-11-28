@@ -29,3 +29,17 @@
   font-size: 15px;
   margin-top: 5%
 }
+
+.progress-bar-container {
+  width: 100%;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 15px;
+  background-color: green;
+  transition: width 0.2s ease;
+}

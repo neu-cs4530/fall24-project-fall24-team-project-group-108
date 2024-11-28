@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { EmojiClickData } from 'emoji-picker-react';
 import useUserContext from './useUserContext';
 import { Message } from '../types';
 import {
@@ -103,29 +102,6 @@ const useMessageView = (message: Message) => {
   }, [socket, messageId, currentEmojis]);
 
   /**
-   * Handles when a user reacts to a message with an emoji
-   * @param selectedEmoji The selected emoji reaction
-   */
-  const handleEmojiSelection = (selectedEmoji: EmojiClickData) => {
-    const updatedCurrentEmojis = { ...currentEmojis };
-    if (!(user.username in currentEmojis)) {
-      updatedCurrentEmojis[user.username] = selectedEmoji.emoji;
-      setCurrentEmojis({ ...updatedCurrentEmojis });
-    } else if (currentEmojis[user.username] === selectedEmoji.emoji) {
-      delete updatedCurrentEmojis[user.username];
-      setCurrentEmojis({ ...updatedCurrentEmojis });
-    } else {
-      updatedCurrentEmojis[user.username] = selectedEmoji.emoji;
-      setCurrentEmojis({ ...updatedCurrentEmojis });
-    }
-    const updateEmojisDb = async (mid: string, updatedEmojis: { [key: string]: string }) => {
-      const updatedMessage = await updateMessageEmojisById(mid, { ...updatedEmojis });
-      setCurrentMessage({ ...updatedMessage });
-    };
-    updateEmojisDb(currentMessage._id || '', updatedCurrentEmojis);
-  };
-
-  /**
    * Handles when the user wants to download a previously sent file
    */
   const handleDownloadFile = () => {
@@ -214,7 +190,6 @@ const useMessageView = (message: Message) => {
     currentMessage,
     setCurrentMessage,
     currentEmojis,
-    handleEmojiSelection,
     hasFile,
     handleDownloadFile,
     dropDownSelected,
