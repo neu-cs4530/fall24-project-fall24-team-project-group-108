@@ -252,7 +252,7 @@ text-decoration: none;
 .messageDate {
   position: relative;
   display: inline-block;
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .messageDate-data-above,
@@ -271,16 +271,17 @@ text-decoration: none;
 }
 
 .messageDate-data-above {
-  bottom: 100%; /* Position above the element */
-  margin-bottom: 1px; /* Small spacing */
-  margin-left: 16px;
+  bottom: 50%;
+  margin-bottom: 1px;
+  margin-left: 60%;
   float: right;
+  height: 100%;
 }
 
 .messageDate-data-below {
-  top: 100%; /* Position below the element */
-  margin-top: 1px; /* Small spacing */
-  margin-left: 16px;
+  top: 50%;
+  margin-top: 1px;
+  margin-left: 60%;
   float: right;
 }
 

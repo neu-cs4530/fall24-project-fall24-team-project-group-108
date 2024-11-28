@@ -42,7 +42,7 @@ const CorrespondenceView = ({ correspondence, username, onClickHandler }: Corres
           {'Message Members:'}
           <br></br>
         </div>
-        <div className='question_tags'>
+        <div className='correspondence_members'>
           {correspondence.messageMembers
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((memberName, idx) => (

@@ -9,14 +9,6 @@ import {
 } from '../services/messageService';
 
 /**
- * Custom hook for managing the message page state, filtering, and real-time updates.
- *
- * @returns titleText - The current title of the question page
- * @returns qlist - The list of questions to display
- * @returns setQuestionOrder - Function to set the sorting order of questions (e.g., newest, oldest).
- */
-
-/**
  * Custom hook for managing the message view state, ui interactions, and real-time updates
  * @param message - The original contents of the message to start with
  * @returns isEditing - A boolean determing if the message is currently being edited
@@ -110,6 +102,10 @@ const useMessageView = (message: Message) => {
     };
   }, [socket, messageId, currentEmojis]);
 
+  /**
+   * Handles when a user reacts to a message with an emoji
+   * @param selectedEmoji The selected emoji reaction
+   */
   const handleEmojiSelection = (selectedEmoji: EmojiClickData) => {
     const updatedCurrentEmojis = { ...currentEmojis };
     if (!(user.username in currentEmojis)) {
@@ -129,6 +125,9 @@ const useMessageView = (message: Message) => {
     updateEmojisDb(currentMessage._id || '', updatedCurrentEmojis);
   };
 
+  /**
+   * Handles when the user wants to download a previously sent file
+   */
   const handleDownloadFile = () => {
     if (currentMessage.fileData) {
       const bufferData = new Uint8Array(currentMessage.fileData);
@@ -144,6 +143,10 @@ const useMessageView = (message: Message) => {
     }
   };
 
+  /**
+   * Handles which message objects the user has chosen
+   * @param messageOptions A list of message options the user has chosen
+   */
   const handleMessageOptions = (messageOptions: string[]) => {
     if (isDeleted || messageOptions.includes('Delete')) {
       setIsDeleted(true);
@@ -154,6 +157,11 @@ const useMessageView = (message: Message) => {
     setDropDownSelected(false);
   };
 
+  /**
+   *
+   * Handles when the user selects a message
+   * @param messageSelection The message option the user has selected
+   */
   const handleMessageOptionSelection = (messageSelection: string) => {
     if (selectedMessageOptions.includes(messageSelection)) {
       const updatedSelectionList = selectedMessageOptions.filter(
@@ -168,6 +176,10 @@ const useMessageView = (message: Message) => {
     }
   };
 
+  /**
+   * Handles when a user reacts to a message with an emoji
+   * @param emojiSelection The selected emoji string
+   */
   const handleEmojiOptionSelection = (emojiSelection: string) => {
     const updatedCurrentEmojis = { ...currentEmojis };
     if (!(user.username in currentEmojis)) {

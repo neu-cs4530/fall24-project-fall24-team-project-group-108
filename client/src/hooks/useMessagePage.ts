@@ -89,7 +89,12 @@ const useMessagePage = () => {
         setCurrentUserTyping([...correspondence.userTyping]);
         setSelectedCorrespondenceMessages([...correspondence.messages]);
       } else if (correspondence.messageMembers.includes(user.username)) {
-        setCorrespondenceList(previousList => [{ ...correspondence }, ...previousList]);
+        if (correspondence.messages.length > 0) {
+          setCorrespondenceList(previousList => [
+            { ...correspondence },
+            ...previousList.filter(c => c._id !== correspondence._id),
+          ]);
+        }
       }
     };
 
@@ -100,6 +105,9 @@ const useMessagePage = () => {
     };
   }, [socket, selectedCorrespondence, user]);
 
+  /**
+   * Handles when the user has viewed one of the messages, updating the db accordingly.
+   */
   const handleMessageViewsUpdate = async (): Promise<void> => {
     if (selectedCorrespondence) {
       const unreadMessages = selectedCorrespondence.messages.filter(
@@ -112,6 +120,10 @@ const useMessagePage = () => {
     }
   };
 
+  /**
+   * Handles when a user selets a correspondence and wants to see its messages
+   * @param correspondence The correspondence the user has selected
+   */
   const handleSelectCorrespondence = async (correspondence: Correspondence): Promise<void> => {
     if (selectedCorrespondence) {
       // Update views for currently selected correspondence and all messages within
@@ -128,6 +140,10 @@ const useMessagePage = () => {
     setSelectedCorrespondenceMessages([...correspondence.messages]);
   };
 
+  /**
+   * Updates the userTyping value after a text input
+   * @param newMessageText The new text the user has just entered
+   */
   const getUpdatedCorrespondence = async (newMessageText: string) => {
     if (newMessageText.length > 1) {
       return;
@@ -141,6 +157,10 @@ const useMessagePage = () => {
     }
   };
 
+  /**
+   * Converts an uploaded file to a buffer object
+   * @param file A file object to convert
+   */
   const convertUploadedFileToBuffer = async (file: File): Promise<Buffer> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -156,6 +176,9 @@ const useMessagePage = () => {
       reader.readAsArrayBuffer(file);
     });
 
+  /**
+   * Handles when the users sends a message, adding the message to the db and to the attached correspondence in the db
+   */
   const handleSendMessage = async (): Promise<void> => {
     if (messageText !== '') {
       const cid = selectedCorrespondence?._id;
@@ -201,6 +224,25 @@ const useMessagePage = () => {
     }
   };
 
+  /**
+   * Function to handle when the user selectes the back button to go back to the list of correspondences
+   */
+  const handleBackButton = async () => {
+    await updateCorrespondenceUserTypingByIdNames(
+      selectedCorrespondence?._id || '',
+      user.username,
+      false,
+    );
+    setSelectedCorrespondence(null);
+    setMessageText('');
+  };
+
+  /**
+   * Handles when a user uploads a file, providing error messages if the file is too large
+   *
+   * @param eventTarget The file the user has uploaded
+   * @returns void
+   */
   const handleUploadedFile = (eventTarget: HTMLInputElement) => {
     if (!eventTarget.files || eventTarget.files.length === 0) {
       return;
@@ -239,6 +281,7 @@ const useMessagePage = () => {
     pendingMessageSend,
     currentUserTyping,
     getUpdatedCorrespondence,
+    handleBackButton,
   };
 };
 

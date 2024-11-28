@@ -1225,6 +1225,7 @@ export const updateCorrespondenceById = async (
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
       { $set: { messageMembers: [...updatedMessageMembers] } },
+      { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when updating correspondence');
