@@ -53,13 +53,12 @@ const NotificationsTab = ({
           Read
         </button>
       </div>
-
       {activeTab === 'unread' && unreadNotifications.length > 0 && (
         <div className='notifications'>
           {unreadNotifications.map(notification => (
             <div className='notification-view' key={notification._id}>
               <li className={notification.read ? 'read' : 'unread'}>
-                {['answer', 'comment'].includes(notification.type) ? (
+                {['answer', 'comment', 'message'].includes(notification.type) ? (
                   <span>
                     <a
                       href='#'
@@ -109,7 +108,7 @@ const NotificationsTab = ({
           {readNotifications.map(notification => (
             <div className='notification-view' key={notification._id}>
               <li className={notification.read ? 'read' : 'unread'}>
-                {['answer', 'comment'].includes(notification.type) ? (
+                {['answer', 'comment', 'message'].includes(notification.type) ? (
                   <span>
                     <a
                       href='#'
