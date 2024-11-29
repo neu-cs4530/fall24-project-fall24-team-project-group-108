@@ -1,9 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useUserContext from './useUserContext';
-import { Badge, Question } from '../types';
-import { getQuestionByAnswerer, getQuestionsByFilter } from '../services/questionService';
-import { fetchBadgesByUser } from '../services/badgeService';
+import { Answer, Badge, Question } from '../types';
+import {
+  getQuestionByAnswerer,
+  getQuestionByCommenter,
+  getQuestionsByFilter,
+} from '../services/questionService';
+import { fetchBadgesByUser, getBadgeDetailsByUsername } from '../services/badgeService';
+import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
+import QuestionsTab from '../components/main/accountPage/questionsTab';
+import AnswersTab from '../components/main/accountPage/answersTab';
+import BadgesTab from '../components/main/accountPage/badgesTab';
+import CommentsTab from '../components/main/accountPage/commentsTab';
+
+export interface ProfileIconDetails {
+  category: BadgeCategory | null;
+  tier: BadgeTier | null;
+}
 
 /**
  * Custom hook for managing the state and logic of an account page.
@@ -17,15 +32,25 @@ import { fetchBadgesByUser } from '../services/badgeService';
  * @returns handleChange - a function to handle tab switching.
  * @returns badgeList - the list of badges acquired by the user.
  * @returns navigate - a useNavigate to switch routes.
+ * @returns setEditModalOpen - setter to adjust modal display.
+ * @returns editModalOpen - state to track if the modal is displayed.
+ * @returns user - the user logged in.
+ * @returns profileIconDetails - details of the user's profile icon.
+ * @returns renderProfilePicture - function to render the profile icon.
+ * @returns renderTabContent - function to display profile tabs.
  */
 const useAccountPage = () => {
+  const { getBadgeIcon } = useBadgePage();
   const { sentUser } = useParams();
-  const { user } = useUserContext();
+  const { user, socket } = useUserContext();
   const [value, setValue] = useState(0);
   const navigate = useNavigate();
   const [qlist, setQlist] = useState<Question[]>([]);
   const [alist, setAlist] = useState<Question[]>([]);
+  const [clist, setClist] = useState<Question[]>([]);
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
+  const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+  const [currentDetails, setCurrentDetails] = useState<ProfileIconDetails | null>(null);
 
   // determine if the profile being viewed is for the currently logged in user
   let userLoggedIn: boolean;
@@ -54,9 +79,8 @@ const useAccountPage = () => {
       try {
         const res = await getQuestionsByFilter('newest', '', sentUser);
         setQlist(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -67,9 +91,20 @@ const useAccountPage = () => {
       try {
         const res = await getQuestionByAnswerer(sentUser);
         setAlist(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
+      }
+    };
+
+    /**
+     * Function to fetch comments based on the filter and update the comment list.
+     */
+    const fetchCommentData = async () => {
+      try {
+        const res = await getQuestionByCommenter(sentUser);
+        setClist(res || []);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -80,16 +115,94 @@ const useAccountPage = () => {
       try {
         const res = await fetchBadgesByUser(sentUser as string);
         setBadgeList(res || []);
+      } catch (e) {
+        throw new Error('Error fetching data');
+      }
+    };
+
+    /**
+     * Function to fetch details about the user's profile icon.
+     */
+    const fetchProfileIconDetails = async () => {
+      try {
+        const details = await getBadgeDetailsByUsername(sentUser as string);
+        setCurrentDetails({
+          category: (details.category as BadgeCategory) || 'Unknown Category',
+          tier: (details.tier as BadgeTier) || 'Unknown Tier',
+        });
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+        setCurrentDetails(null);
       }
     };
 
     fetchQuestionData();
     fetchAnswerData();
+    fetchCommentData();
     fetchUserBadges();
-  }, [user, sentUser]);
+    fetchProfileIconDetails();
+
+    /**
+     * Function to handle removing a post.
+     *
+     * @param qid - The unique id of the question.
+     * @param updatedPost - The updated post.
+     */
+    const handleRemovePostUpdate = ({
+      qid: id,
+      updatedPost,
+    }: {
+      qid: string;
+      updatedPost: Question | Answer;
+    }) => {
+      setQlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+      setAlist(prevQuestions => prevQuestions.filter(q => q.isRemoved === true));
+    };
+
+    socket.on('removePostUpdate', handleRemovePostUpdate);
+
+    return () => {
+      socket.off('removePostUpdate', handleRemovePostUpdate);
+    };
+  }, [user, sentUser, socket]);
+
+  /**
+   * Renders the profile picture of a user.
+   * @returns Their profile icon or the default icon.
+   */
+  const renderProfilePicture = (details: ProfileIconDetails) => {
+    if (details?.category && details?.tier) {
+      return getBadgeIcon(details.category as BadgeCategory, details.tier as BadgeTier);
+    }
+
+    return <AccountCircleIcon sx={{ fontSize: 100 }} />;
+  };
+
+  /**
+   * Renders content for tabs in user account.
+   */
+  const renderTabContent = () => {
+    const userDisplay = userLoggedIn ? 'you' : (sentUser as string);
+
+    switch (value) {
+      case 0:
+        return QuestionsTab(userDisplay, qlist);
+      case 1:
+        return AnswersTab(userDisplay, alist);
+      case 2:
+        return (
+          <BadgesTab
+            user={userDisplay}
+            handleClick={handleAuthorClick}
+            userBadges={badgeList}
+            navigate={navigate}
+          />
+        );
+      case 3:
+        return CommentsTab(userDisplay, clist);
+      default:
+        return null;
+    }
+  };
 
   return {
     sentUser,
@@ -97,10 +210,18 @@ const useAccountPage = () => {
     userLoggedIn,
     alist,
     qlist,
+    clist,
     handleAuthorClick,
     handleChange,
     badgeList,
     navigate,
+    setEditModalOpen,
+    editModalOpen,
+    user,
+    currentDetails,
+    renderProfilePicture,
+    renderTabContent,
+    setCurrentDetails,
   };
 };
 

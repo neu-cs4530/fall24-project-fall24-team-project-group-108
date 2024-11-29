@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { NavigateFunction } from 'react-router-dom';
-import { Card } from '@mui/material';
 import BadgeHover from '../components/main/badgePage/badgeHover';
 import { Badge } from '../types';
-import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
+import useBadgePage, { BadgeCategory, BadgeTier, iconMap } from './useBadgePage';
 
 /**
  * Custom hook for managing the badge tab's state, navigation, and real-time updates.
@@ -12,7 +11,13 @@ import useBadgePage, { BadgeCategory, BadgeTier } from './useBadgePage';
  */
 const useBadgesTab = () => {
   const [hoveredBadge, setHoveredBadge] = useState<string | null>(null);
-  const { getBadgeIcon, handleCardClick } = useBadgePage();
+  const { handleCardClick } = useBadgePage();
+
+  const getBadgeIcon = (badgeType: BadgeCategory, tier: BadgeTier) => {
+    const iconPath = iconMap[badgeType][tier];
+
+    return <img src={iconPath} alt={`Badge`} style={{ width: '75px', height: '102px' }} />;
+  };
 
   // reusable component for rendering a badge category section
   const BadgeCategorySection = ({
@@ -25,13 +30,14 @@ const useBadgesTab = () => {
     navigate: NavigateFunction;
   }) => (
     <>
-      <h3 className='badge-category'>{title}:</h3>
-      <div className='badge-grid'>
-        {badges.length === 0 ? (
-          <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
-        ) : (
-          badges.map(badge => (
-            <Card
+      <div className='badge-category'>{title.toUpperCase()}:</div>
+
+      {badges.length === 0 ? (
+        <p className='no-badges-message'>No {title.toLowerCase()} badges earned</p>
+      ) : (
+        <div className='badge_grid'>
+          {badges.map(badge => (
+            <div
               key={badge.name}
               className='badge-item'
               onMouseEnter={() => setHoveredBadge(badge.name)}
@@ -47,10 +53,10 @@ const useBadgesTab = () => {
                   icon={getBadgeIcon(badge.category as BadgeCategory, badge.tier as BadgeTier)}
                 />
               )}
-            </Card>
-          ))
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 

@@ -1,6 +1,5 @@
 import './index.css';
 import { NavLink } from 'react-router-dom';
-import useUserContext from '../../../hooks/useUserContext';
 import useModStatus from '../../../hooks/useModStatus';
 
 /**
@@ -9,19 +8,15 @@ import useModStatus from '../../../hooks/useModStatus';
  * triggers corresponding functions when the menu items are clicked.
  */
 const SideBarNav = () => {
-  const { user } = useUserContext();
   const { moderatorStatus } = useModStatus();
 
   return (
     <>
-      {' '}
       <div id='sideBarNav' className='sideBarNav'>
-        <NavLink
-          to={`/account/${user.username}`}
-          id='menu_profile'
-          className={({ isActive }) => `menu_button ${isActive ? 'menu_selected' : ''}`}>
-          My Profile
-        </NavLink>
+        <div className='site-title'>
+          <img src='/codescout.png' alt='Logo' style={{ width: '60px', height: '60px' }}></img>
+          <div className='title'> codescout</div>
+        </div>
         <NavLink
           to='/home'
           id='menu_questions'

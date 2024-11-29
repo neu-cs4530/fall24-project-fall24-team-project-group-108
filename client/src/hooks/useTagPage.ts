@@ -40,8 +40,7 @@ const useTagPage = () => {
         const res = await getTagsWithQuestionNumber();
         setTlist(res || []);
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log(e);
+        throw new Error('Error fetching data');
       }
     };
 

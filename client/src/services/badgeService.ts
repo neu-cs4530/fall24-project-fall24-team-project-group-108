@@ -44,4 +44,23 @@ export const fetchEarnedUsers = async (badgeName: string): Promise<string[]> => 
   return res.data;
 };
 
+/**
+ * Fetches the badge category and tier for a user based on their profile icon.
+ *
+ * @param username - The username of the user.
+ *
+ * @returns An object containing the badge category and tier.
+ */
+export const getBadgeDetailsByUsername = async (
+  username: string,
+): Promise<{ category?: string; tier?: string; error?: string }> => {
+  const res = await api.get(`${BADGE_API_URL}/getBadgeDetails`, {
+    params: { username },
+  });
+  if (res.status !== 200) {
+    throw new Error('Error while fetching badge details');
+  }
+  return res.data;
+};
+
 export default getAllBadges;

@@ -7,6 +7,7 @@ import { ModApplication, User } from '../types';
 const addModApplicationSpy = jest.spyOn(util, 'addModApplication');
 const fetchModApplicationsSpy = jest.spyOn(util, 'fetchModApplications');
 const updateAppStatusSpy = jest.spyOn(util, 'updateAppStatus');
+const saveModApplicationNotificationSpy = jest.spyOn(util, 'saveModApplicationNotification');
 
 const simplifyApplication = (a: ModApplication) => ({
   ...a,
@@ -269,6 +270,8 @@ describe('POST /updateAppStatus', () => {
   it('should accept the application', async () => {
     const validAppId = new mongoose.Types.ObjectId();
     const validUId = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
+    const validQid = new mongoose.Types.ObjectId();
 
     const mockReqBody = {
       id: validAppId,
@@ -292,6 +295,19 @@ describe('POST /updateAppStatus', () => {
       status: 'accepted',
     };
 
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'user1',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'application',
+      message: 'application',
+      createdAt: new Date(),
+    };
+
+    saveModApplicationNotificationSpy.mockResolvedValueOnce(mockNotification);
     updateAppStatusSpy.mockResolvedValueOnce(mockModApplicaton);
 
     const response = await supertest(app)
@@ -308,6 +324,62 @@ describe('POST /updateAppStatus', () => {
   });
 
   it('should reject the application', async () => {
+    const validAppId = new mongoose.Types.ObjectId();
+    const validUId = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
+    const validQid = new mongoose.Types.ObjectId();
+
+    const mockReqBody = {
+      id: validAppId,
+      username: 'user1',
+      accepted: false,
+    };
+
+    const mockUser: User = {
+      _id: validUId,
+      username: 'user1',
+      password: 'Password1!',
+      isModerator: false,
+      infractions: [],
+      badges: [],
+    };
+
+    const mockModApplicaton: ModApplication = {
+      _id: validAppId,
+      user: mockUser,
+      applicationText: 'hi',
+      status: 'rejected',
+    };
+
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'user1',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'application',
+      message: 'application',
+      createdAt: new Date(),
+    };
+
+    saveModApplicationNotificationSpy.mockResolvedValueOnce(mockNotification);
+    updateAppStatusSpy.mockResolvedValueOnce(mockModApplicaton);
+
+    const response = await supertest(app)
+      .post('/modApplication/updateModApplicationStatus')
+      .send(mockReqBody);
+
+    expect(response.status).toBe(200);
+    const fixedModApplication = {
+      ...mockModApplicaton,
+      _id: validAppId.toString(),
+      user: { ...mockUser, _id: validUId.toString() },
+    };
+    expect(response.body).toEqual(fixedModApplication);
+  });
+
+  it('should return an error if there was an error saving notification', async () => {
     const validAppId = new mongoose.Types.ObjectId();
     const validUId = new mongoose.Types.ObjectId();
 
@@ -333,19 +405,14 @@ describe('POST /updateAppStatus', () => {
       status: 'rejected',
     };
 
+    saveModApplicationNotificationSpy.mockRejectedValueOnce(new Error('error'));
     updateAppStatusSpy.mockResolvedValueOnce(mockModApplicaton);
 
     const response = await supertest(app)
       .post('/modApplication/updateModApplicationStatus')
       .send(mockReqBody);
 
-    expect(response.status).toBe(200);
-    const fixedModApplication = {
-      ...mockModApplicaton,
-      _id: validAppId.toString(),
-      user: { ...mockUser, _id: validUId.toString() },
-    };
-    expect(response.body).toEqual(fixedModApplication);
+    expect(response.status).toBe(500);
   });
 
   it('should return an error if the mongo operation returns an Error', async () => {

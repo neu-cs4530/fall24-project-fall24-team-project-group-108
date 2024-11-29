@@ -42,6 +42,22 @@ const getQuestionByAnswerer = async (answeredBy: string = ''): Promise<Question[
 };
 
 /**
+ * Function to get questions by filter.
+ *
+ * @param order - The order in which to fetch questions. Default is 'newest'.
+ * @param search - The search term to filter questions. Default is an empty string.
+ * @param askedBy - The user to filter questions by. Default is an empty string.
+ * @throws Error if there is an issue fetching or filtering questions.
+ */
+const getQuestionByCommenter = async (commentBy: string = ''): Promise<Question[]> => {
+  const res = await api.get(`${QUESTION_API_URL}/getQuestionByCommenter/${commentBy}`);
+  if (res.status !== 200) {
+    throw new Error('Error when fetching questions including commenter');
+  }
+  return res.data;
+};
+
+/**
  * Function to get a question by its ID.
  *
  * @param qid - The ID of the question to retrieve.
@@ -126,5 +142,6 @@ export {
   upvoteQuestion,
   downvoteQuestion,
   getQuestionByAnswerer,
+  getQuestionByCommenter,
   updateTagProgress,
 };

@@ -1,8 +1,31 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_SERVER_URL || 'http://localhost:8000',
-  withCredentials: true,
-});
+/**
+ * Function to handle successful responses
+ */
+const handleRes = (res: AxiosResponse) => res;
+
+/**
+ * Function to handle errors
+ */
+const handleErr = (err: AxiosError) => Promise.reject(err);
+
+const api = axios.create({ withCredentials: true });
+
+/**
+ * Add a request interceptor to the Axios instance.
+ */
+api.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => config,
+  (error: AxiosError) => handleErr(error),
+);
+
+/**
+ * Add a response interceptor to the Axios instance.
+ */
+api.interceptors.response.use(
+  (response: AxiosResponse) => handleRes(response),
+  (error: AxiosError) => handleErr(error),
+);
 
 export default api;

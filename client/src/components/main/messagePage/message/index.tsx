@@ -1,4 +1,5 @@
 import './index.css';
+import { useNavigate } from 'react-router-dom';
 import { getMetaData } from '../../../../tool';
 import { Message } from '../../../../types';
 import useMessageView from '../../../../hooks/useMessageView';
@@ -20,71 +21,192 @@ interface MessageProps {
 const MessageView = ({ message }: MessageProps) => {
   const {
     isEditing,
-    setIsEditing,
     editingText,
     setEditingText,
-    isCodeStyle,
-    setIsCodeStyle,
     saveClicked,
     setSaveClicked,
     isDeleted,
-    setIsDeleted,
     user,
+    currentMessage,
+    currentEmojis,
+    hasFile,
+    handleDownloadFile,
+    dropDownSelected,
+    setDropDownSelected,
+    selectedMessageOptions,
+    handleMessageOptionSelection,
+    handleEmojiOptionSelection,
+    setDropDownEmojiSelected,
+    dropDownEmojiSelected,
   } = useMessageView(message);
+  const navigate = useNavigate();
 
   return (
-    <div className='message right_padding'>
-      <div className='messageBy'>{message.messageBy}</div>
-      {!isEditing ? (
-        <div className={isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>{editingText}</div>
-      ) : (
-        <div className='messageTextEdit'>
-          <button
-            className='messageTextEditCodeStyleButton'
-            onClick={() => setIsCodeStyle(!isCodeStyle)}>
-            {'<Code> Style'}
-          </button>
-          <textarea
-            className={isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'}
-            placeholder='New Message...'
-            value={editingText}
-            onChange={e => setEditingText(e.target.value)}
-          />
-          <button
-            className='messageTextEditSaveButton'
-            onClick={() => setSaveClicked(!saveClicked)}>
-            Save
-          </button>
+    <div className='messageContainer'>
+      <div className='message right_padding'>
+        <div className='message-main'>
+          <div className='messageByContents'>
+            <div
+              className={message.messageBy === user.username ? 'messageBySelf' : 'messageByOther'}
+              onClick={e => {
+                e.stopPropagation();
+                navigate(`/account/${message.messageBy}`);
+              }}>
+              {message.messageBy}
+            </div>
+            <div>{!isDeleted && Object.values(currentEmojis).join('  ')}</div>
+          </div>
+          {!isEditing ? (
+            <div className={message.isCodeStyle ? 'messageTextCodeStyle' : 'messageText'}>
+              {editingText}
+            </div>
+          ) : (
+            <div className='messageTextEdit'>
+              <textarea
+                className={
+                  message.isCodeStyle ? 'messageTextEditBoxCodeStyle' : 'messageTextEditBox'
+                }
+                placeholder='New Message...'
+                value={editingText}
+                onChange={e => setEditingText(e.target.value)}
+              />
+              <button
+                className='messageTextEditSaveButton'
+                onClick={() => setSaveClicked(!saveClicked)}>
+                Save
+              </button>
+            </div>
+          )}
+          <div
+            className='messageDate'
+            style={{ color: message.views.includes(user.username) ? 'black' : 'red' }}>
+            {getMetaData(new Date(message.messageDateTime))}
+            <div className='messageDate-data-above'>
+              Read:{' '}
+              {currentMessage.views
+                ?.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .join(', ')}
+            </div>
+            <div className='messageDate-data-below'>
+              Not Read:{' '}
+              {currentMessage.messageTo
+                .filter(username => !currentMessage.views?.includes(username))
+                .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                .join(', ')}
+            </div>
+          </div>
         </div>
-      )}
-      {/* <div className='codeStyle'>{message.messageText}</div> */}
-      {/* <textarea
-        className='messageText'
-        placeholder='New Message...'
-        value={message.messageText}
-        // onChange={e => setMessageText(e.target.value)}
-      /> */}
-      {user.username === message.messageBy ? (
-        <button
-          className='editMessageButton'
-          disabled={isEditing}
-          onClick={() => setIsEditing(!isEditing)}>
-          Edit
-        </button>
-      ) : (
-        <div className='editMessageButton'></div>
-      )}
-      {user.username === message.messageBy ? (
-        <button
-          className='deleteMessageButton'
-          disabled={isDeleted}
-          onClick={() => setIsDeleted(true)}>
-          Delete
-        </button>
-      ) : (
-        <div className='deleteMessageButton'></div>
-      )}
-      <div className='messageDate'>{getMetaData(new Date(message.messageDateTime))}</div>
+
+        <div className='downloadableFile'>
+          {hasFile && !isDeleted ? (
+            <div>
+              {' '}
+              <button onClick={handleDownloadFile}>{`Download 📎`}</button>{' '}
+            </div>
+          ) : null}
+        </div>
+        <div className='dropDownEmoji'>
+          {!isDeleted && (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                onClick={() => {
+                  setDropDownEmojiSelected(!dropDownEmojiSelected);
+                  setDropDownSelected(false);
+                }}
+                style={{
+                  padding: '10px',
+                  borderRadius: '5px',
+                  border: '1px solid #ccc',
+                  background: '#e8e8e8',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                Emoji
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownEmojiSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    display: 'flex',
+                    position: 'absolute',
+                    padding: '10px',
+                    background: '#fff',
+                  }}>
+                  {['👍', '👎 ', '❤️', '😃', '😢', '🙏'].map((option, index) => (
+                    <li
+                      key={index}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => handleEmojiOptionSelection(option)}>
+                      {option}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          )}
+        </div>
+        <div className='dropDown'>
+          {!isDeleted && message.messageBy === user.username ? (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              {/* Dropdown Button */}
+              <button
+                onClick={() => {
+                  setDropDownSelected(!dropDownSelected);
+                  setDropDownEmojiSelected(false);
+                }}
+                style={{
+                  display: 'flex',
+                  padding: '10px',
+                  borderRadius: '5px',
+                  border: '1px solid #ccc',
+                  background: '#e8e8e8',
+                  cursor: 'pointer',
+                }}
+                disabled={isDeleted}>
+                &#x22EE;
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropDownSelected ? (
+                <ul
+                  className='dropDownContents'
+                  style={{
+                    display: 'flex',
+                    position: 'absolute',
+                    padding: '10px',
+                    background: '#fff',
+                  }}>
+                  {['Edit', 'Delete'].map((option, index) => (
+                    <li
+                      key={index}
+                      style={{
+                        padding: '10px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        border: '1px solid black',
+                      }}
+                      onClick={() => handleMessageOptionSelection(option)}>
+                      {option}
+                      {selectedMessageOptions.includes(option) && (
+                        <span style={{ color: 'green', marginLeft: '10px' }}>✔️</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 };

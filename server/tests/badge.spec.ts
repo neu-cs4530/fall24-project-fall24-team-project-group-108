@@ -59,6 +59,15 @@ describe('GET /allBadges', () => {
 
     expect(response.status).toBe(200);
   });
+
+  it('should return a 500 error when there is an internal server error', async () => {
+    jest.spyOn(util, 'getAllBadges').mockRejectedValue(new Error('Internal server error'));
+
+    const response = await supertest(app).get('/badge/allBadges');
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Internal server error');
+  });
 });
 
 describe('GET /byUser/:username', () => {
@@ -205,5 +214,57 @@ describe('POST /addBadge', () => {
     const response = await supertest(app).post('/badge/addBadge').send(invalidBadge);
 
     expect(response.status).toBe(400);
+  });
+});
+
+describe('GET /getBadgeDetails', () => {
+  afterEach(async () => {
+    await mongoose.connection.close();
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+  });
+
+  it('should return badge category and tier details for a valid username', async () => {
+    const mockUsername = 'user1';
+    const mockBadgeDetails = { category: 'answers', tier: 'silver' };
+    jest.spyOn(util, 'getBadgeCategoryAndTierByUsername').mockResolvedValue(mockBadgeDetails);
+
+    const response = await supertest(app).get(`/badge/getBadgeDetails?username=${mockUsername}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockBadgeDetails);
+  });
+
+  it('should return a 400 error if the username is not provided', async () => {
+    const response = await supertest(app).get('/badge/getBadgeDetails');
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('Username is required');
+  });
+
+  it('should return a 404 error if the badge details are not found for the username', async () => {
+    const mockUsername = 'userNotFound';
+    jest
+      .spyOn(util, 'getBadgeCategoryAndTierByUsername')
+      .mockResolvedValue({ error: 'User not found' });
+
+    const response = await supertest(app).get(`/badge/getBadgeDetails?username=${mockUsername}`);
+
+    expect(response.status).toBe(404);
+    expect(response.text).toBe('User not found');
+  });
+
+  it('should return a 500 error if there is an internal error while fetching badge details', async () => {
+    const mockUsername = 'user1';
+    jest
+      .spyOn(util, 'getBadgeCategoryAndTierByUsername')
+      .mockRejectedValue(new Error('Internal server error'));
+
+    const response = await supertest(app).get(`/badge/getBadgeDetails?username=${mockUsername}`);
+
+    expect(response.status).toBe(500);
+    expect(response.text).toBe('Error retrieving badge details: Internal server error');
   });
 });

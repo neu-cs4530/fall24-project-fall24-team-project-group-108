@@ -27,14 +27,11 @@ const useModApplicationPage = () => {
         const apps = res.length;
         setNumApps(apps);
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching applications:', error);
         setErr('Error Fetching Applications');
       }
     };
 
-    // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
+    fetchData().catch();
   }, []);
 
   /**

@@ -5,15 +5,20 @@ const BadgePage = () => {
   const { BadgeCategorySection, filterBadgesByCategory } = useBadgePage();
 
   return (
-    <div className='badge-page'>
-      <div className='page-title'>All Badges</div>
-      <BadgeCategorySection
-        title='Questions'
-        filteredBadges={filterBadgesByCategory('questions')}
-      />
-      <BadgeCategorySection title='Answers' filteredBadges={filterBadgesByCategory('answers')} />
-      <BadgeCategorySection title='Comments' filteredBadges={filterBadgesByCategory('comments')} />
-      <BadgeCategorySection title='Votes' filteredBadges={filterBadgesByCategory('votes')} />
+    <div className='page-background'>
+      <div className='badge-page'>
+        <div className='page-title'>All Badges</div>
+        <BadgeCategorySection
+          title='QUESTIONS'
+          filteredBadges={filterBadgesByCategory('questions')}
+        />
+        <BadgeCategorySection title='ANSWERS' filteredBadges={filterBadgesByCategory('answers')} />
+        <BadgeCategorySection
+          title='COMMENTS'
+          filteredBadges={filterBadgesByCategory('comments')}
+        />
+        <BadgeCategorySection title='VOTES' filteredBadges={filterBadgesByCategory('votes')} />
+      </div>
     </div>
   );
 };

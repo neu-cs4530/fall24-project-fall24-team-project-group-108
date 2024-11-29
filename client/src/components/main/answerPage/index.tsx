@@ -20,7 +20,6 @@ const AnswerPage = () => {
   const {
     questionID,
     question,
-    numAnswers,
     handleNewComment,
     handleNewAnswer,
     handleReportDecision,
@@ -32,6 +31,12 @@ const AnswerPage = () => {
   if (!question) {
     return null;
   }
+
+  if (question.isRemoved === true) {
+    navigate('/home');
+  }
+
+  const numAnswers = question.answers.filter(a => a.isRemoved === false).length;
 
   /**
    * Function to handle navigation to the "Report" page.
@@ -47,49 +52,49 @@ const AnswerPage = () => {
   };
 
   return (
-    <>
-      <VoteComponent question={question} />
-      <AnswerHeader ansCount={numAnswers} title={question.title} />
-      <QuestionBody
-        views={question.views.length}
-        text={question.text}
-        askby={question.askedBy}
-        meta={getMetaData(new Date(question.askDateTime))}
-        handleReport={() =>
-          handleReport(question._id, 'question', question.text, question.askedBy, questionID)
-        }
-        handleRemove={() => handleReportDecision(question, 'question')}
-        isReported={wasQReported(question)}
-      />
-      <CommentSection
-        comments={question.comments}
-        handleAddComment={(comment: Comment) => handleNewComment(comment, 'question', questionID)}
-      />
-      {question.answers
-        .filter(ans => !ans.isRemoved)
-        .map((a, idx) => (
-          <AnswerView
-            key={idx}
-            text={a.text}
-            ansBy={a.ansBy}
-            meta={getMetaData(new Date(a.ansDateTime))}
-            comments={a.comments}
-            handleAddComment={(comment: Comment) => handleNewComment(comment, 'answer', a._id)}
-            handleReport={() => handleReport(a._id, 'answer', a.text, a.ansBy, question._id)}
-            handleRemove={() => handleReportDecision(a, 'answer')}
-            isReported={wasAnsReported(a)}
-            answer={a}
-            question={question}
-          />
-        ))}
-      <button
-        className='bluebtn ansButton'
-        onClick={() => {
-          handleNewAnswer();
-        }}>
-        Answer Question
-      </button>
-    </>
+    <div className='page-background'>
+      <div className='answer-bubble'>
+        <VoteComponent question={question} />
+        <AnswerHeader ansCount={numAnswers} title={question.title} />
+        <QuestionBody
+          views={question.views.length}
+          text={question.text}
+          askby={question.askedBy}
+          meta={getMetaData(new Date(question.askDateTime))}
+          handleReport={() =>
+            handleReport(question._id, 'question', question.text, question.askedBy, questionID)
+          }
+          handleRemove={() => handleReportDecision(question, 'question')}
+          isReported={wasQReported(question)}
+        />
+        <CommentSection
+          comments={question.comments}
+          handleAddComment={(comment: Comment) => handleNewComment(comment, 'question', questionID)}
+        />
+        {question.answers
+          .filter(ans => !ans.isRemoved)
+          .map((a, idx) => (
+            <AnswerView
+              key={idx}
+              text={a.text}
+              ansBy={a.ansBy}
+              meta={getMetaData(new Date(a.ansDateTime))}
+              comments={a.comments}
+              handleAddComment={(comment: Comment) => handleNewComment(comment, 'answer', a._id)}
+              handleReport={() => handleReport(a._id, 'answer', a.text, a.ansBy, question._id)}
+              handleRemove={() => handleReportDecision(a, 'answer')}
+              isReported={wasAnsReported(a)}
+            />
+          ))}
+        <button
+          className='bluebtn ansButton'
+          onClick={() => {
+            handleNewAnswer();
+          }}>
+          Answer Question
+        </button>
+      </div>
+    </div>
   );
 };
 

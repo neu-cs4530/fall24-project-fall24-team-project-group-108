@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@mui/material';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import SendIcon from '@mui/icons-material/Send';
-import PsychologyAltIcon from '@mui/icons-material/PsychologyAlt';
-import ThumbsUpDownIcon from '@mui/icons-material/ThumbsUpDown';
 import { Badge } from '../types';
 import useUserContext from './useUserContext';
 import getAllBadges from '../services/badgeService';
@@ -13,6 +8,30 @@ import BadgeHover from '../components/main/badgePage/badgeHover';
 
 export type BadgeCategory = 'answers' | 'questions' | 'votes' | 'comments';
 export type BadgeTier = 'bronze' | 'silver' | 'gold';
+
+// maps badge category to its svg icon
+export const iconMap: { [badgeKey in BadgeCategory]: { [tierKey in BadgeTier]: string } } = {
+  answers: {
+    bronze: '/badges/answers/helper.svg',
+    silver: '/badges/answers/guide.svg',
+    gold: '/badges/answers/sage.svg',
+  },
+  questions: {
+    bronze: '/badges/questions/curious.svg',
+    silver: '/badges/questions/inquirer.svg',
+    gold: '/badges/questions/investigator.svg',
+  },
+  votes: {
+    bronze: '/badges/votes/voter.svg',
+    silver: '/badges/votes/critic.svg',
+    gold: '/badges/votes/curator.svg',
+  },
+  comments: {
+    bronze: '/badges/comments/observer.svg',
+    silver: '/badges/comments/commentator.svg',
+    gold: '/badges/comments/debater.svg',
+  },
+};
 
 /**
  * Custom hook for managing the state and logic of an account page.
@@ -42,9 +61,8 @@ const useBadgePage = () => {
       try {
         const res = await getAllBadges();
         setBadges(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -64,9 +82,8 @@ const useBadgePage = () => {
         );
 
         setBadgeStats(stats);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -79,25 +96,11 @@ const useBadgePage = () => {
     count: number;
   }
 
-  // maps badge tier to its icon color
-  const tierColors: { [key in BadgeTier]: string } = {
-    bronze: '#cd7f32',
-    silver: '#c0c0c0',
-    gold: '#ffd700',
-  };
-
-  // maps badge category to its icon image
-  const iconMap: { [key in BadgeCategory]: JSX.Element } = {
-    answers: <PsychologyAltIcon sx={{ fontSize: '50px' }} />,
-    questions: <SendIcon sx={{ fontSize: '50px' }} />,
-    votes: <ThumbsUpDownIcon sx={{ fontSize: '50px' }} />,
-    comments: <QuestionAnswerIcon sx={{ fontSize: '50px' }} />,
-  };
-
-  // determine which badgeIcon to display based on its category and tier
+  // Function to return the correct badge svg
   const getBadgeIcon = (badgeType: BadgeCategory, tier: BadgeTier) => {
-    const color = tierColors[tier];
-    return React.cloneElement(iconMap[badgeType], { style: { color } });
+    const iconPath = iconMap[badgeType][tier];
+
+    return <img src={iconPath} alt={`Badge`} style={{ width: '100px', height: '136px' }} />;
   };
 
   // navigate to the specific badge name if clicked
@@ -128,7 +131,7 @@ const useBadgePage = () => {
             const count = categoryStats ? categoryStats.count : 0; // Get the count for the category
 
             return (
-              <Card
+              <div
                 key={badge.name}
                 className='badge-item'
                 onMouseEnter={() => setHoveredBadge(badge.name)}
@@ -137,7 +140,7 @@ const useBadgePage = () => {
                 <div className='badge-icon'>
                   {getBadgeIcon(badge.category as BadgeCategory, badge.tier as BadgeTier)}
                 </div>
-                <h3 className='badge-name'>{badge.name}</h3>
+                <p className='badge-name'>{badge.name}</p>
                 {hoveredBadge === badge.name && (
                   <BadgeHover
                     badge={badge}
@@ -145,7 +148,7 @@ const useBadgePage = () => {
                     count={count} // Ensure count is a number here
                   />
                 )}
-              </Card>
+              </div>
             );
           })
         )}

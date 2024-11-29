@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { getTagCountMap } from '../models/application';
 import TagModel from '../models/tags';
-import TagAnswerCountModel from '../models/tagAnswerCounts';
+import LeaderboardModel from '../models/leaderboards';
 
 const tagController = () => {
   const router: Router = express.Router();
@@ -70,26 +70,29 @@ const tagController = () => {
     try {
       const { tagName } = req.params;
 
-      // find the tagid of the tag with the given name
       const tag = await TagModel.findOne({ name: tagName }).exec();
       if (!tag) {
         res.status(404).send(`Tag not found for name: ${tagName}`);
         return;
       }
 
-      // find all TagAnswerCounts
-      const tagAnswerCounts = await TagAnswerCountModel.find({ tag: tag._id })
-        .sort({ count: -1 }) //  descending order
+      // Find all leaderboard entries sorted
+      const leaderboardEntries = await LeaderboardModel.find({ tag: tag._id })
+        .sort({ position: 1 })
         .populate('user', 'username')
         .exec();
 
-      res.status(200).json(tagAnswerCounts);
+      if (leaderboardEntries.length === 0) {
+        res.status(404).send(`No leaderboard entries found for tag: ${tagName}`);
+        return;
+      }
+
+      res.status(200).json(leaderboardEntries);
     } catch (err) {
       res.status(500).send(`Error when fetching tag leaderboard: ${(err as Error).message}`);
     }
   };
 
-  // Add appropriate HTTP verbs and their endpoints to the router.
   router.get('/getTagsWithQuestionNumber', getTagsWithQuestionNumber);
   router.get('/getTagByName/:name', getTagByName);
   router.get('/getLeaderboard/:tagName', getLeaderboard);

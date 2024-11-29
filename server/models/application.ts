@@ -26,6 +26,8 @@ import {
   Correspondence,
   MessageResponse,
   CorrespondenceResponse,
+  Notification,
+  FakeSOSocket,
 } from '../types';
 import AnswerModel from './answers';
 import QuestionModel from './questions';
@@ -39,6 +41,8 @@ import ModApplicationModel from './modApplication';
 import BadgeProgressModel from './badgeProgresses';
 import TagAnswerCountModel from './tagAnswerCounts';
 import UserReportModel from './userReport';
+import NotificationModel from './notifications';
+import LeaderboardModel from './leaderboards';
 
 /**
  * Parses tags from a search string.
@@ -346,6 +350,127 @@ export const updateUserModStatus = async (username: string): Promise<UserRespons
 };
 
 /**
+ * Updates a user to switch their doNotDisturb field.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const updateDoNotDisturb = async (username: string): Promise<UserResponse> => {
+  try {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      { username },
+      [
+        {
+          $set: {
+            doNotDisturb: {
+              $cond: {
+                if: { $eq: ['$doNotDisturb', null] },
+                then: true, // Set to true if null
+                else: { $not: '$doNotDisturb' }, // Otherwise, toggle
+              },
+            },
+          },
+        },
+      ],
+      { new: true },
+    );
+
+    if (!updatedUser) {
+      throw new Error(`Failed to fetch and populate a user`);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    return { error: `Error when fetching and populating a document: ${(error as Error).message}` };
+  }
+};
+
+/**
+ * Gets a user's dnd field.
+ *
+ * @param username - The username of the user being fetched.
+ * @returns {UserResponse} - The updated user object or error if an error occurred.
+ */
+export const getDoNotDisturbStatus = async (username: string): Promise<boolean> => {
+  try {
+    const user = await UserModel.findOne({ username }, { doNotDisturb: 1 });
+
+    if (!user) {
+      throw new Error(`User with username "${username}" not found.`);
+    }
+
+    return user.doNotDisturb ?? false;
+  } catch (error) {
+    throw new Error(`Error when fetching user document: ${(error as Error).message}`);
+  }
+};
+
+/**
+ * Updates a user's profile picture.
+ *
+ * @param username - The username of the user being updated in the db.
+ * @param badgeName - The badge icon for their profile picture.
+ * @returns {User} - The updated user object.
+ */
+export const updateUserProfilePicture = async (
+  username: string,
+  badgeName: string,
+): Promise<UserResponse> => {
+  try {
+    // find the badge
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' };
+    }
+
+    // find the user
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // update and save
+    user.profileIcon = badge.name;
+    await user.save();
+    return user;
+  } catch (err: unknown) {
+    return { error: 'Failed to update user profile picture' };
+  }
+};
+
+/**
+ * Gets a badge's category and tier based off of its name.
+ * @param badgeName - The badge name.
+ */
+export const getBadgeCategoryAndTierByUsername = async (
+  username: string,
+): Promise<{ category?: string; tier?: string; error?: string }> => {
+  try {
+    // find the user
+    const user = await UserModel.findOne({ username });
+    if (!user) {
+      return { error: 'User not found' };
+    }
+
+    // extract the profile icon
+    const badgeName = user.profileIcon;
+    if (!badgeName) {
+      return { error: 'Profile icon not set for the user' };
+    }
+
+    // find the badge
+    const badge = await BadgeModel.findOne({ name: badgeName });
+    if (!badge) {
+      return { error: 'Badge not found' };
+    }
+
+    return { category: badge.category, tier: badge.tier };
+  } catch (err: unknown) {
+    return { error: 'Failed to retrieve badge category and tier' };
+  }
+};
+
+/**
  * Updates a specificed moderator application from the db's status.
  *
  * @param username - the username of the user's application being deleted
@@ -406,27 +531,36 @@ export const getQuestionsByOrder = async (order: OrderType): Promise<Question[]>
   }
 };
 
-//  * Retrieves messages from the database, ordered by the specified criteria.
+//  * Retrieves all messages from the database
 //  *
-//  * @param {OrderType} order - The order type to filter the messages
-//  *
-//  * @returns {Promise<Message[]>} - Promise that resolves to a list of ordered messages
+//  * @returns {Promise<Message[]>} - Promise that resolves to a list of all messages
 //  */
-export const getMessagesByOrder = async (order: OrderType): Promise<Message[]> => {
+export const getAllMessages = async (): Promise<Message[]> => {
   const mlist = await MessageModel.find();
   return mlist;
 };
 /**
- * Retrieves correspondences from the database, ordered by the specified criteria.
+ * Retrieves correspondences from the database
  *
- *
- * @returns {Promise<Correspondence[]>} - Promise that resolves to a list of ordered correspondences
+ * @returns {Promise<Correspondence[]>} - Promise that resolves to a list correspondences
  */
-export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => {
+export const getAllCorrespondences = async (): Promise<Correspondence[]> => {
   const clist = await CorrespondenceModel.find().populate([
     { path: 'messages', model: MessageModel },
   ]);
   return clist;
+};
+/**
+ * Retrieves a list of all users in the db in alphabetical order
+ *
+ * @returns {Promise<User[]>} - Promise that resolves to a list of users
+ */
+export const getAllUsers = async (): Promise<User[]> => {
+  const ulist = await UserModel.find();
+  ulist.sort((user1, user2) =>
+    user1.username.toLowerCase().localeCompare(user2.username.toLowerCase()),
+  );
+  return ulist;
 };
 /**
  * Retrieves questions from the database that were answered by the given user.
@@ -438,13 +572,42 @@ export const getCorrespondencesByOrder = async (): Promise<Correspondence[]> => 
 export const filterQuestionsByAnswerer = async (answerer: string): Promise<Question[]> => {
   try {
     // find all answers from the given user
-    const alist = await AnswerModel.find({ ansBy: answerer });
+    const alist = await AnswerModel.find({ ansBy: answerer, isRemoved: false });
 
     // find all questions that are linked to the answers
     const answerIds = alist.map(answer => answer._id);
     const qlist = await QuestionModel.find({ answers: { $in: answerIds } });
 
     return qlist;
+  } catch (error) {
+    return [];
+  }
+};
+
+/**
+ * Retrieves questions from the database that were commented on by the given user.
+ *
+ * @param string commenter - The commenter to filter the questions by
+ *
+ * @returns {Promise<Question[]>} - Promise that resolves to a list of filtered questions
+ */
+export const filterQuestionsByCommenter = async (commenter: string): Promise<Question[]> => {
+  try {
+    const clist = await CommentModel.find({ commentBy: commenter });
+
+    const commentIds = clist.map(comment => comment._id);
+    const qCommentsList = await QuestionModel.find({ comments: { $in: commentIds } });
+    const alist = await AnswerModel.find({ comments: { $in: commentIds } });
+    const answerIds = alist.map(answer => answer._id);
+    const qAnswerCommentsList = await QuestionModel.find({ answers: { $in: answerIds } });
+    const qlist = [...qCommentsList, ...qAnswerCommentsList];
+    const qlistIds = qlist.map(q => q._id.toString());
+    const qlistNoDuplicates = qlist.filter((q, idx) => qlistIds.indexOf(q._id.toString()) === idx);
+    qlistNoDuplicates.sort(
+      (a, b) => new Date(b.askDateTime).getTime() - new Date(a.askDateTime).getTime(),
+    );
+
+    return qlistNoDuplicates;
   } catch (error) {
     return [];
   }
@@ -589,7 +752,7 @@ export const fetchAndIncrementQuestionViewsById = async (
  * Fetches a message by its ID and increments its view count.
  *
  * @param {string} mid - The ID of the message to fetch.
- * @param {string} username - The username of the user requesting the message.
+ * @param {string} username - The username of the user who is now viewing the message
  *
  * @returns {Promise<MessageResponse | null>} - Promise that resolves to the fetched message
  *          with incremented views, null if the message is not found, or an error message.
@@ -614,7 +777,7 @@ export const fetchAndIncrementMessageViewsById = async (
  * Fetches a correspondence by its ID and increments its view count.
  *
  * @param {string} cid - The ID of the correspondence to fetch.
- * @param {string} username - The username of the user requesting the correspondence.
+ * @param {string} username - The username of the user who is now viewing the correspondence
  *
  * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence
  *          with incremented views, null if the correspondence is not found, or an error message.
@@ -631,7 +794,26 @@ export const fetchAndIncrementCorrespondenceViewsById = async (
     );
     return c;
   } catch (error) {
-    return { error: 'Error when fetching and updating a message' };
+    return { error: 'Error when fetching and updating a correspondence' };
+  }
+};
+
+/**
+ * Fetches a correspondence by its ID
+ *
+ * @param {string} cid - The ID of the correspondence to fetch.
+ *
+ * @returns {Promise<CorrespondenceResponse | null>} - Promise that resolves to the fetched correspondence,
+ *                                           null if the correspondence is not found, or an error message.
+ */
+export const fetchCorrespondenceById = async (
+  cid: string,
+): Promise<CorrespondenceResponse | null> => {
+  try {
+    const c = await CorrespondenceModel.findOne({ _id: new ObjectId(cid) });
+    return c;
+  } catch (error) {
+    return { error: 'Error when fetching a correspondence' };
   }
 };
 
@@ -859,10 +1041,6 @@ export const processTags = async (tags: Tag[]): Promise<Tag[]> => {
 
     return processedTags;
   } catch (error: unknown) {
-    // Log the error for debugging purposes
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    // eslint-disable-next-line no-console
-    console.log('An error occurred while adding tags:', errorMessage);
     return [];
   }
 };
@@ -1015,8 +1193,7 @@ export const addMessageToCorrespondence = async (
     }
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
-      { $push: { messages: { $each: [message._id] } } },
-      // { $push: { messages: { $each: [message._id], $position: 0 } } },
+      { $push: { messages: { $each: [message._id] } }, $set: { views: message.views } },
       { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
@@ -1044,6 +1221,7 @@ export const updateCorrespondenceById = async (
     const result = await CorrespondenceModel.findOneAndUpdate(
       { _id: cid },
       { $set: { messageMembers: [...updatedMessageMembers] } },
+      { new: true },
     ).populate([{ path: 'messages', model: MessageModel }]);
     if (result === null) {
       throw new Error('Error when updating correspondence');
@@ -1051,6 +1229,154 @@ export const updateCorrespondenceById = async (
     return result;
   } catch (error) {
     return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string} username - A username to add or remove to the userTyping list
+ * @param {boolean} push - A boolean representing if we should add (push) or pull from the dataset
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const updateCorrespondenceUserTypingByIdNames = async (
+  cid: string,
+  username: string,
+  push: boolean,
+): Promise<CorrespondenceResponse> => {
+  try {
+    if (push) {
+      const result = await CorrespondenceModel.findOneAndUpdate(
+        { _id: cid },
+        { $addToSet: { userTyping: username } },
+        { new: true },
+      ).populate([{ path: 'messages', model: MessageModel }]);
+      if (result === null) {
+        throw new Error('Error when updating correspondence');
+      }
+      return result;
+    }
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $pull: { userTyping: username } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a correspondence for the given id.
+ *
+ * @param {string} cid - The ID of the correspondence to update
+ * @param {string} username - The username to add to the people who have viewed the competition
+ *
+ * @returns Promise<CorrespondenceResponse> - The updated correspondence or an error message
+ */
+export const updateCorrespondenceViewsById = async (
+  cid: string,
+  username: string,
+): Promise<CorrespondenceResponse> => {
+  try {
+    const result = await CorrespondenceModel.findOneAndUpdate(
+      { _id: cid },
+      { $push: { views: username } },
+      { new: true },
+    ).populate([{ path: 'messages', model: MessageModel }]);
+    if (result === null) {
+      throw new Error('Error when updating correspondence');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating correspondence' };
+  }
+};
+
+/**
+ * Updates a message for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} username - The username to add to the people who have viewed the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageViewsById = async (
+  mid: string,
+  username: string,
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $addToSet: { views: username } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating message');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating message' };
+  }
+};
+
+/**
+ * Updates a message with the updated emojis for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {Map} emojis - A map where each key is a user, and each value is their corresponding emoji reaction for the message
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageEmojisById = async (
+  mid: string,
+  emojis: { [key: string]: string },
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { emojiTracker: { ...emojis } } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating messages emojis');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating messages emojis' };
+  }
+};
+
+/**
+ * Updates a message with the updated isDeleted value for the given id.
+ *
+ * @param {string} mid - The ID of the message to update
+ * @param {string} isDeleted - A boolean describing whether or not the message is deleted
+ *
+ * @returns Promise<MessageResponse> - The updated message or an error message
+ */
+export const updateMessageIsDeletedById = async (
+  mid: string,
+  isDeleted: boolean,
+): Promise<MessageResponse> => {
+  try {
+    const result = await MessageModel.findOneAndUpdate(
+      { _id: mid },
+      { $set: { isDeleted } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating messages isDeleted');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating messages isDeleted' };
   }
 };
 
@@ -1084,8 +1410,6 @@ export const updateMessageById = async (
     if (!updatedCorrespondenceWithMessage) {
       return { error: 'Error when retrieving updated correspondence' };
     }
-
-    // console.log(updatedCorrespondenceWithMessage);
 
     return updatedCorrespondenceWithMessage;
   } catch (error) {
@@ -1426,16 +1750,50 @@ export const getQuestionByAnswerId = async (aid: string): Promise<Question | nul
 };
 
 /**
+
+ * Saves a new badge notification to the database.
+ *
+ * @param {string} username - The username of the user who earned the badge
+ * @param {Comment} comment - The name of the badge that was earned
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+const saveBadgeNotification = async (
+  username: string,
+  badgeName: string,
+): Promise<Notification> => {
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'badge',
+    caption: `Congrats! You earned the ${badgeName} badge `,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/account/${username}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
  * Updates the badgeProgress for a user and a given category.
  *
  * @param {string} username - The username to update
  * @param {category} ans - The category of badge to update
+ * @param {FakeSocket} socket - The socket to emit notifications
  *
  * @returns Promise<BadgeProgressResponse> - The updated badgeProgress or an error message
  */
 export const updateBadgeProgress = async (
   username: string,
   category: string,
+  socket: FakeSOSocket,
 ): Promise<BadgeProgressResponse> => {
   try {
     const badgeProgresses = await BadgeProgressModel.find({ user: username, category });
@@ -1463,16 +1821,23 @@ export const updateBadgeProgress = async (
           badgeProgress.currentValue += 1;
           await badgeProgress.save();
 
-          // if the user just acquired the badge,
-          // add them to the badge's list
+          // if the user just acquired the badge
           if (badgeProgress.currentValue === badgeProgress.targetValue) {
             const user = await UserModel.findOne({ username });
             if (user) {
-              await BadgeModel.findOneAndUpdate(
+              // add them to the badge's list of users who earned it
+              const badge = await BadgeModel.findOneAndUpdate(
                 { _id: badgeProgress.badge },
                 { $addToSet: { users: user._id } },
                 { new: true },
               );
+
+              if (badge) {
+                // send them a notification
+                const savedNotification = await saveBadgeNotification(username, badge.name);
+
+                socket.emit('notificationUpdate', savedNotification);
+              }
             }
           }
           return badgeProgress;
@@ -1497,36 +1862,293 @@ export const updateBadgeProgress = async (
 export const updateTagAnswers = async (
   username: string,
   qid: string,
+  socket: FakeSOSocket,
 ): Promise<TagAnswerCountResponse> => {
   try {
-    // all tags associated with the question
+    // Fetch the question
     const question = await QuestionModel.findById(qid).exec();
     if (!question) {
       return { error: 'Question not found' };
     }
 
+    // For each tag of this questino
     const updatePromises = question.tags.map(async tagId => {
-      const tagAnswerCount = await TagAnswerCountModel.findOne({
+      let tagAnswerCount = await TagAnswerCountModel.findOne({
         user: username,
         tag: tagId,
       }).exec();
 
       if (tagAnswerCount) {
-        // if it exists, update the count
+        // If tagcount exists, update the count
         tagAnswerCount.count += 1;
-        return tagAnswerCount.save();
+      } else {
+        // If not, create a new one
+        tagAnswerCount = await TagAnswerCountModel.create({
+          tag: tagId,
+          user: username,
+          count: 1,
+        });
       }
-      // create a new TagAnswerCount
-      return TagAnswerCountModel.create({
-        tag: tagId,
-        user: username,
-        count: 1,
+
+      await tagAnswerCount.save();
+
+      // Find all sorted TagAnswerCounts for this tag
+      const leaderboardEntries = await TagAnswerCountModel.find({ tag: tagId })
+        .sort({ count: -1 })
+        .exec();
+
+      // Loop through all the leaderboard entries and update positions
+      const leaderboardPromises = leaderboardEntries.map(async (entry, index) => {
+        const leaderboardEntry = await LeaderboardModel.findOne({
+          user: entry.user,
+          tag: tagId,
+        }).exec();
+
+        const oldPosition = leaderboardEntry?.position ?? null;
+        const newPosition = index + 1;
+
+        if (leaderboardEntry) {
+          // If leaderboard entry exists
+          leaderboardEntry.position = index + 1;
+          leaderboardEntry.count = entry.count;
+        } else {
+          // Create a new leaderboard entry if it doesn't exist
+          await LeaderboardModel.create({
+            user: entry.user,
+            tag: tagId,
+            position: index + 1,
+            count: entry.count,
+          });
+        }
+
+        await leaderboardEntry?.save();
+
+        // If position changed, notify the user
+        if (oldPosition !== null && oldPosition !== newPosition) {
+          const tag = await TagModel.findById(tagId).exec();
+          const tagName = tag?.name || 'Unknown Tag';
+
+          const notification: Notification = {
+            user: Array.isArray(entry.user) ? entry.user[0] : entry.user,
+            type: 'leaderboard',
+            caption: `Your position on the ${tagName} leaderboard changed from ${oldPosition} to ${newPosition}`,
+            read: false,
+            createdAt: new Date(),
+            redirectUrl: `/tags/${tagName}`,
+          };
+
+          // Save the notification and emit it via socket
+          const savedNotification = await NotificationModel.create(notification);
+          if (savedNotification) {
+            socket.emit('notificationUpdate', savedNotification);
+          }
+        }
       });
+
+      await Promise.all(leaderboardPromises);
     });
 
     await Promise.all(updatePromises);
+
     return question;
   } catch (error) {
     return { error: 'Error when updating tag progress' };
   }
+};
+
+/**
+ * Saves a new answer notification to the database.
+ *
+ * @param {string} qid - The id of the question related to the answer
+ * @param {Answer} answer - The answer info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved answer, or an error message if the save failed
+ */
+export const saveAnswerNotification = async (
+  qid: string,
+  ansInfo: Answer,
+): Promise<Notification> => {
+  // find the user to alert about their question being answered
+  const question = await QuestionModel.findById(qid).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // create the notification for the question author
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'answer',
+    caption: `${ansInfo.ansBy} answered your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // save the notification to the db
+  const savedNotification = await NotificationModel.create(notification);
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment question notification to the database.
+ *
+ * @param {string} id - The id of the question related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveQuestionCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  // if its a question, notify the question author
+  const question = await QuestionModel.findById(id).exec();
+  if (!question) {
+    throw new Error('Question not found');
+  }
+
+  const authorUsername = question.askedBy;
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your question`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${id}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new comment answer notification to the database.
+ *
+ * @param {string} id - The id of the answer related to the comment
+ * @param {Comment} comment - The comment info related to the notification
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed
+ */
+export const saveAnswerCommentNotification = async (
+  id: string,
+  comment: Comment,
+): Promise<Notification> => {
+  const answer = await AnswerModel.findById(id).exec();
+  if (!answer) {
+    throw new Error('Answer not found');
+  }
+
+  // Find the question
+  const answerQuestion = await QuestionModel.findOne({
+    answers: new ObjectId(id),
+  }).exec();
+
+  if (!answerQuestion) {
+    throw new Error('Question not found for the answer');
+  }
+
+  const authorUsername = answer.ansBy;
+  const qid = answerQuestion._id.toString();
+
+  // Create the notification
+  const notification: Notification = {
+    user: authorUsername,
+    type: 'comment',
+    caption: `${comment.commentBy} commented on your answer`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: `/question/${qid}`,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new moderator application notification to the database.
+ *
+ * @param {string} username - The username of the user who applied.
+ * @param {boolean} accepted - True if the application was accepted, false otherwise.
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed.
+ */
+export const saveModApplicationNotification = async (
+  username: string,
+  accepted: boolean,
+): Promise<Notification> => {
+  const status = accepted
+    ? 'accepted! Please log out and log back in to unlock moderator privileges!'
+    : 'rejected, you can always reapply!';
+  const url = accepted ? `/` : `modApplication`;
+
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'application',
+    caption: `Your application to become a moderator was ${status}`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: url,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new report resolved notification to the database.
+ *
+ * @param {UserReport} report - The report info related to the notification.
+ * @param {string} qid - The  question id of the reported question/answer.
+ * @param {boolean} isRemoved - true if the post was removed, false otherwise.
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed.
+ */
+export const reportResolvedNotification = async (
+  report: UserReport,
+  qid: string,
+  isRemoved: boolean,
+): Promise<Notification> => {
+  const username = report.reportBy;
+  const captionMsg = isRemoved
+    ? 'accepted by a moderator, and the post is now removed!'
+    : 'dismissed by a moderator, the reported post was not taken down.';
+  const url = isRemoved ? `home` : `/question/${qid}`;
+
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'report',
+    caption: `Your report was ${captionMsg}`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: url,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
 };

@@ -1,7 +1,24 @@
 .question {
   display: flex;
   flex-direction: row;
-  border-top: #000000 1px dashed;
+  border-top: #8b8b8b 1px solid;
+  margin-left: 4%;
+  margin-right: 4%;
+}
+
+.profile-hover-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10; /* Ensure the hover appears above other content */
+  visibility: hidden; /* Hide by default */
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.profile-hover-container.show {
+  visibility: visible;
+  opacity: 1; /* Make visible when hover state is true */
 }
 
 .postStats {
@@ -42,7 +59,7 @@
 }
 
 .question_author {
-  color: red;
+  color: #64ade1;
 }
 
 .question_author:hover {

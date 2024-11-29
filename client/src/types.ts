@@ -4,6 +4,14 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
 
 /**
  * Represents a user in the application.
+ * - _id: the id of the user (optional field)
+ * - username: the username of the user
+ * - password: the password of the user
+ * - isModerator: boolean indicating if the user is a moderator
+ * - badges: A list of badges the user has earned
+ * - profileIcon:  A string detailing their current profile icon (optional field)
+ * - infractions: A list of infractions the user has sustained
+ * - doNotDisturb: boolean indicating if the user has turned on dnd (optional field)
  */
 export interface User {
   _id?: string;
@@ -11,11 +19,17 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: string;
   infractions: string[];
+  doNotDisturb?: boolean;
 }
 
 /**
- * Represents a mod application.
+ * Interface representing a ModApplication document, which contains:
+ * - _id - The unique identifier for the question. Optional field.
+ * - username - The user who created the application.
+ * - applicationText - The additional imformation provided by the applicant.
+ * - status - The current status of the moderator application.
  */
 export interface ModApplication {
   _id?: string;
@@ -57,7 +71,7 @@ export interface Comment {
 /**
  * Interface represents a report.
  *
- * text - The text of the comment.
+ * text - The text of the report.
  * reportBy - Username of the author of the report.
  * reportDateTime - Time at which the comment was created.
  * status - Current status of the report.
@@ -177,6 +191,27 @@ export interface Question {
 }
 
 /**
+ * Interface representing the structure of a Notification object.
+ *
+ * - _id - The unique identifier for the notif.
+ * - user - The user receiving the notification.
+ * - type - The type of notification it is.
+ * - caption - The caption of the notification.
+ * - read - Whether or not the notification was read.
+ * - createdAt - When the notification was made.
+ * - redirectUrl - The url to go to when the notification is clicked.
+ */
+export interface Notification {
+  _id?: string;
+  user: string;
+  type: 'question' | 'answer' | 'comment' | 'badge' | 'leaderboard' | 'message';
+  caption: string;
+  read: boolean;
+  createdAt: Date;
+  redirectUrl: string;
+}
+
+/**
  * Interface representing tag counts for the leaderboard.
  *
  * - user - The username.
@@ -191,10 +226,17 @@ export interface TagCounts {
 /**
  * Interface representing the structure of a Message object.
  *
+ * - _id - The unique identifier for the message. Optional field.
  * - messageText - The content of the message
  * - messageDateTime - The date and time the message was sent
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
+ * - views - A list of usernames of users who have viewed the message
+ * - isCodeStyle - A boolean describing whether or not the message contains a code cell
+ * - fileName - The name of the file given. Optional field.
+ * - fileData - A Unit8Array describing the contents of the file. Optional field
+ * - emojiTracker - A map where each key is a user, and each value is their corresponding emoji reaction for the message. Optional Field
+ * - isDeleted - A boolean describing whether or not the message has been deleted
  */
 export interface Message {
   _id?: string;
@@ -202,8 +244,12 @@ export interface Message {
   messageDateTime: Date;
   messageBy: string;
   messageTo: string[];
-  views?: string[];
+  views: string[];
   isCodeStyle: boolean;
+  fileName?: string;
+  fileData?: number[];
+  emojiTracker?: { [key: string]: string };
+  isDeleted: boolean;
 }
 
 /**
@@ -211,12 +257,15 @@ export interface Message {
  *
  * - messages - A list of all Messages sent between the users in messsageMembers
  * - messageMembers - A list of usernames of users involved in the messages
+ * - views - A list of people who have viewed the correspondence at its most recent update
+ * - userTyping - A list of users who are currently writing a message on the correspondence
  */
 export interface Correspondence {
   _id?: string;
   messages: Message[];
   messageMembers: string[];
-  views?: string[];
+  views: string[];
+  userTyping: string[];
 }
 
 /**
@@ -283,4 +332,5 @@ export interface ServerToClientEvents {
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
+  notificationUpdate: (notification: Notification) => void;
 }

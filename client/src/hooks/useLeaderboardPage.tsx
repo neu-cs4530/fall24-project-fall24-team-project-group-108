@@ -11,7 +11,7 @@ import { TagCounts } from '../types';
 const useLeaderboardPage = () => {
   const { tid } = useParams();
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
   const navigate = useNavigate();
   const [countList, setCountList] = useState<TagCounts[]>([]);
 
@@ -38,9 +38,8 @@ const useLeaderboardPage = () => {
       try {
         const res = await getLeaderboardUsers(tid as string); // Fetch data from API
         setCountList(res); // Set response data to state
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error); // Handle error
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 

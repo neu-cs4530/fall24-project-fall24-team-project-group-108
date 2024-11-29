@@ -13,7 +13,6 @@ import MessageView from './message';
 const MessagePage = () => {
   useBan();
   const {
-    user,
     correspondenceList,
     titleText,
     selectedCorrespondence,
@@ -25,69 +24,149 @@ const MessagePage = () => {
     handleUpdateCorrespondence,
     isCodeStyle,
     setIsCodeStyle,
+    user,
+    handleUploadedFile,
+    uploadedFileErr,
+    pendingMessageSend,
+    getUpdatedCorrespondence,
+    handleBackButton,
   } = useMessagePage();
 
   return (
-    <>
-      <MessageHeader titleText={titleText} ccnt={correspondenceList.length} />
-      <div id='horizontal-div'>
-        <div id='correspondence_list' className='correspondence_list'>
-          {correspondenceList.map((correspondence, idx) => (
-            <CorrespondenceView
-              correspondence={correspondence}
-              onClickHandler={handleSelectCorrespondence}
-              key={idx}
-            />
-          ))}
-        </div>
-        <div id='selected_correspondence' className='selected_correspondence'>
-          {selectedCorrespondence ? null : 'Please Select a Correspondence'}
+    <div className='page-background'>
+      <div className='message-bubble'>
+        <MessageHeader titleText={titleText} ccnt={correspondenceList.length} />
+        <div id='horizontal-div'>
+          {!selectedCorrespondence ? (
+            <div id='correspondence_list' className='correspondence_list'>
+              {correspondenceList.length >= 1 &&
+                correspondenceList
+                  .sort(
+                    (a, b) =>
+                      (b.messages.length > 0
+                        ? new Date(b.messages[b.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()) -
+                      (a.messages.length > 0
+                        ? new Date(a.messages[a.messages.length - 1].messageDateTime).getTime()
+                        : new Date().getTime()),
+                  )
+                  .map((correspondence, idx) => (
+                    <CorrespondenceView
+                      correspondence={correspondence}
+                      username={user.username}
+                      onClickHandler={handleSelectCorrespondence}
+                      key={idx}
+                    />
+                  ))}
+            </div>
+          ) : null}
+
           {selectedCorrespondence ? (
-            <button
-              className='bluebtn updateMembersButton'
-              onClick={() => {
-                handleUpdateCorrespondence();
-              }}>
-              Add/Delete Correspondence Members
-            </button>
+            <div className='selected_correspondence_top'>
+              {
+                <button
+                  className='backToCorrespondences'
+                  onClick={() => {
+                    handleBackButton();
+                  }}>
+                  &larr; Back
+                </button>
+              }
+              {
+                <button
+                  className='bluebtn updateMembersButton'
+                  onClick={() => {
+                    handleUpdateCorrespondence();
+                  }}>
+                  Add Members
+                </button>
+              }
+            </div>
           ) : null}
-          <div id='message_list'>
-            {selectedCorrespondenceMessages.length > 0
-              ? selectedCorrespondenceMessages.map((message, idx) => (
+          {selectedCorrespondence ? (
+            <div id='selected_correspondence' className='selected_correspondence'>
+              <div id='message_list'>
+                {selectedCorrespondenceMessages.map((message, idx) => (
                   <MessageView message={message} key={idx} />
-                ))
-              : 'No Messages Yet'}
-          </div>
-          <div id='selected_correspondence_bottom' className='selected_correspondence_bottom'>
-            {selectedCorrespondence ? (
-              <button className='code-style-button' onClick={() => setIsCodeStyle(!isCodeStyle)}>
-                {'<Code> Style'}
-              </button>
-            ) : null}
-            {selectedCorrespondence ? (
-              <textarea
-                placeholder='New Message...'
-                value={messageText}
-                onChange={e => setMessageText(e.target.value)}
-                className={isCodeStyle ? 'message-textarea-code' : 'message-textarea'}
-              />
-            ) : null}
-            {selectedCorrespondence ? (
-              <button className='send-message-button' onClick={handleSendMessage}>
-                Send Message
-              </button>
-            ) : null}
-          </div>
-          {messageText !== '' ? (
-            <pre>
-              <code id='user-typing' className='user-typing'>
-                {user.username} is typing...
-              </code>
-            </pre>
+                ))}
+              </div>
+              {selectedCorrespondence.userTyping.length > 0 ? (
+                // <pre>
+                <div id='user-typing' className='user-typing'>
+                  Typing: {selectedCorrespondence.userTyping.join(', ')}
+                </div>
+              ) : (
+                <div id='user-typing' className='user-typing' style={{ color: 'white' }}>
+                  {' _ '}
+                </div>
+              )}
+              <div id='selected_correspondence_bottom' className='selected_correspondence_bottom'>
+                {
+                  <textarea
+                    placeholder='New Message...'
+                    value={messageText}
+                    onChange={e => {
+                      setMessageText(e.target.value);
+                      getUpdatedCorrespondence(e.target.value);
+                    }}
+                    className={isCodeStyle ? 'message-textarea-code' : 'message-textarea'}
+                  />
+                }
+                {
+                  <button
+                    className='code-style-button'
+                    onClick={() => setIsCodeStyle(!isCodeStyle)}>
+                    {'<Code> Style'}
+                    {isCodeStyle}
+                  </button>
+                }
+                {
+                  <button
+                    className='send-message-button'
+                    onClick={handleSendMessage}
+                    disabled={pendingMessageSend}>
+                    Send Message
+                  </button>
+                }
+              </div>
+            </div>
           ) : null}
         </div>
+        {selectedCorrespondence ? (
+          <div id='file_uploader' className='file_uploader'>
+            {
+              <div>
+                <input
+                  type='file'
+                  accept='.pdf,.jpg,.jpeg'
+                  onChange={event => (event.target.files ? handleUploadedFile(event.target) : null)}
+                />
+              </div>
+            }
+          </div>
+        ) : null}
+        {selectedCorrespondence ? (
+          <div id='file_uploader_text' className='file_uploader_text'>
+            {
+              <div>
+                <span id='errorMessage'>pdfs, jpgs, jpegs -- (25 KB Max)</span>
+              </div>
+            }
+          </div>
+        ) : null}
+        {selectedCorrespondence ? (
+          <div id='file_uploader_text' className='file_uploader_text'>
+            {
+              <div>
+                <span id='errorMessage' style={{ color: 'red' }}>
+                  {uploadedFileErr}
+                </span>
+              </div>
+            }
+          </div>
+        ) : null}
       </div>
-    </>
+    </div>
   );
 };
 

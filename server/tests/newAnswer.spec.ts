@@ -7,6 +7,7 @@ import * as util from '../models/application';
 const saveAnswerSpy = jest.spyOn(util, 'saveAnswer');
 const addAnswerToQuestionSpy = jest.spyOn(util, 'addAnswerToQuestion');
 const popDocSpy = jest.spyOn(util, 'populateDocument');
+const saveAnswerNotificationSpy = jest.spyOn(util, 'saveAnswerNotification');
 
 describe('POST /addAnswer', () => {
   afterEach(async () => {
@@ -17,9 +18,11 @@ describe('POST /addAnswer', () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
   });
 
-  it('should add a new answer to the question', async () => {
+  it('should add a new answer to the question and handle notifications', async () => {
     const validQid = new mongoose.Types.ObjectId();
     const validAid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
+
     const mockReqBody = {
       qid: validQid,
       ans: {
@@ -41,6 +44,19 @@ describe('POST /addAnswer', () => {
       isRemoved: false,
       endorsed: false,
     };
+
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUser',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'question',
+      message: 'A new answer has been added to your question.',
+      createdAt: new Date(),
+    };
+
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
 
     addAnswerToQuestionSpy.mockResolvedValueOnce({
@@ -60,20 +76,16 @@ describe('POST /addAnswer', () => {
     });
 
     popDocSpy.mockResolvedValueOnce({
-      _id: validQid,
-      title: 'This is a test question',
-      text: 'This is a test question',
-      tags: [],
-      askedBy: 'dummyUserId',
-      askDateTime: new Date('2024-06-03'),
-      views: [],
-      upVotes: [],
-      downVotes: [],
-      answers: [mockAnswer],
+      _id: validAid,
+      text: 'This is a test answer',
+      ansBy: 'dummyUserId',
+      ansDateTime: new Date('2024-06-03'),
       comments: [],
       reports: [],
       isRemoved: false,
     });
+
+    saveAnswerNotificationSpy.mockResolvedValueOnce(mockNotification);
 
     const response = await supertest(app).post('/answer/addAnswer').send(mockReqBody);
 
@@ -86,6 +98,11 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+    });
+
+    expect(saveAnswerNotificationSpy).toHaveBeenCalledWith(validQid.toString(), {
+      ...mockReqBody.ans,
+      ansDateTime: mockReqBody.ans.ansDateTime.toISOString(),
     });
   });
 

@@ -19,10 +19,7 @@ const BadgesTab = ({ user, handleClick, userBadges, navigate }: BadgesTabProps) 
 
   return (
     <div className='badge_tab'>
-      <div className='all_badges_link' onClick={() => handleClick()}>
-        See all badges &gt;
-      </div>
-      <h1 className='page-title'>All Badges Earned By {user}:</h1>
+      <div className='page_title'>Badges earned by {user}:</div>
 
       <BadgeCategorySection
         title='Questions'
@@ -44,6 +41,9 @@ const BadgesTab = ({ user, handleClick, userBadges, navigate }: BadgesTabProps) 
         badges={filterBadgesByCategory(userBadges, 'votes')}
         navigate={navigate}
       />
+      <div className='all_badges_link' onClick={() => handleClick()}>
+        See all badges &gt;
+      </div>
     </div>
   );
 };

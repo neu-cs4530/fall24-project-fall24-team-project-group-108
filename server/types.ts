@@ -93,6 +93,7 @@ export interface Tag {
  * - isModerator - the current state of the user's moderator status.
  * - badges - The badges obtained by the user.
  * - infractions - A list of answer/question id's that were removed by moderators
+ * - doNotDisturb - Whether or not the user is on dnd.
  */
 export interface User {
   _id?: ObjectId;
@@ -100,7 +101,9 @@ export interface User {
   password: string;
   isModerator: boolean;
   badges: Badge[];
+  profileIcon?: string;
   infractions: string[];
+  doNotDisturb?: false;
 }
 
 /**
@@ -123,6 +126,28 @@ export interface MakeUserModeratorRequest extends Request {
   body: {
     username: string;
   };
+}
+
+/**
+ * Interface extending the request body when getting a user's dnd status:
+ * - username - The user.
+ */
+export interface GetUserStatusRequest extends Request {
+  params: {
+    username: string;
+  };
+}
+
+/**
+ * Interface extending the request body when updating a profile icon in the db:
+ * - username - The user being updated.
+ * - badgeName - The badge being used as a profile icon.
+ */
+export interface UpdateProfileIconRequest extends Request {
+  body: {
+    username: string;
+    badgeName: string;
+  }
 }
 
 /**
@@ -168,7 +193,7 @@ export interface AddModApplicationRequest extends Request {
 
 /**
  * Interface extending the request body when deleting a ModApplication to the database which contains:
- * - id - The id of the moderator application in the datbase
+ * - id - The id of the moderator application in the database
  * - username - The user whose application is being deleted.
  * - accepted - True if the moderator application was accepted, false otherwise.
  */
@@ -232,6 +257,74 @@ export interface Question {
   isRemoved: boolean;
 }
 
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - username - The name of the user who will be added or removed to the userTyping array of the correspondence
+ *  - push - A boolean determining if the user should be added (pushed) to the userTyping array or not
+ */
+ export interface UpdateCorrespondenceUserTypingRequestNames extends Request {
+  body: {
+    cid: string;
+    username: string;
+    push: boolean
+  };
+}
+
+/**
+ * Interface for the request body when updating a correspondence's userTyping value.
+ * - body - The correspondence ID and the new contents of the correspondence
+ *  - cid - the unique identifier of the correspondence
+ *  - username - the username who is typing or null if no one is typing
+ */
+ export interface UpdateCorrespondenceViewsRequest extends Request {
+  body: {
+    cid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - username - the username who has just viewed the message
+ */
+ export interface UpdateMessageViewsRequest extends Request {
+  body: {
+    mid: string;
+    username: string;
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - emojis - a dictionary where each key is a username, and each value is their chosen emoji
+ */
+ export interface UpdateMessageEmojisRequest extends Request {
+  body: {
+    mid: string;
+    emojis: {[key: string]: string};
+  };
+}
+
+/**
+ * Interface for the request body when updating a message's views value.
+ * - body - The correspondence ID and the new contents of the message
+ *  - mid - the unique identifier of the message
+ *  - isDeleted - a boolean describing whether or not the current message is deleted
+ */
+ export interface UpdateMessageIsDeletedRequest extends Request {
+  body: {
+    mid: string;
+    isDeleted: boolean;
+  };
+}
+
 /**
  * Interface representing the structure of a Message object.
  *
@@ -241,6 +334,11 @@ export interface Question {
  * - messageBy - The username of the user who sent the message
  * - messageTo - A list of usernames of users who the message was sent to
  * - views - A list of usernames of users who have viewed the message
+ * - isCodeStyle - A boolean describing whether or not the message contains a code cell
+ * - fileName - The name of the file given. Optional field.
+ * - fileData - A Unit8Array describing the contents of the file. Optional field
+ * - emojiTracker - A map where each key is a user, and each value is their corresponding emoji reaction for the message. Optional Field
+ * - isDeleted - A boolean describing whether or not the message has been deleted
  */
  export interface Message {
   _id?: string,
@@ -248,24 +346,54 @@ export interface Question {
   messageDateTime: Date,
   messageBy: string,
   messageTo: string[],
-  views?: string[],
+  views: string[],
   isCodeStyle: boolean,
+  fileName?: string,
+  fileData?: number[],
+  emojiTracker?: { [key: string]: string },
+  isDeleted: boolean,
 }
 
 /**
  * Interface representing the structure of a Correspondence object.
  *
- * - _id - The unique identifier for the correspondence. Optional field.
  * - messages - A list of all Messages sent between the users in messsageMembers
  * - messageMembers - A list of usernames of users involved in the messages
- * - views - A list of usernames of users who have viewed the correspondence
+ * - views - A list of people who have viewed the correspondence at its most recent update
+ * - userTyping - A list of users who are currently writing a message on the correspondence
  */
 export interface Correspondence {
   _id?: string,
   messages: Message[],
   messageMembers: string[],
-  views?: string[]
+  views: string[],
+  userTyping: string[]
 }
+
+
+/**
+ * Interface representing the structure of a Notification object.
+ *
+ * - user - The user receiving the notification.
+ * - type - The type of notification it is.
+ * - caption - The caption of the notification.
+ * - read - Whether or not the notification was read.
+ * - createdAt - When the notification was made.
+ * - redirectUrl - The url to go to when the notification is clicked.
+ */
+export interface Notification {
+  user: string,
+  type: string,
+  caption: string,
+  read: boolean,
+  createdAt: Date,
+  redirectUrl: string
+}
+
+/**
+ * Type representing the possible responses for an Notification-related operation.
+ */
+export type NotificationResponse = Notification | { error: string };
 
 /**
  * Type representing the possible responses for a Question-related operation.
@@ -307,6 +435,17 @@ export interface FindQuestionByAswerer extends Request {
     answeredBy: string;
   };
 }
+
+/**
+ * Interface for the request query to find questions with a comment by the given user
+ * - commentBy - The username of the user whose comments we are looking for
+ */
+export interface FindQuestionByCommenter extends Request {
+  params: {
+    commentBy: string;
+  };
+}
+
 
 /**
  * Interface for the request parameters when finding a question by its ID.
@@ -532,8 +671,23 @@ export interface Badge {
  */
 export interface TagAnswerCount {
   _id?: ObjectId;
-  user: User;
+  user: string;
   tag: Tag;
+  count: number;
+}
+
+/**
+ * Interface representing a Leaderboard, which contains:
+ * - `user`: The id of the user
+ * - `tag`: The id of the tag being ranked
+ * - `position`: The position of the user in the leaderboard for the given tag
+ * - `count`: The number of answers the user has for this tag (used for ranking)
+ */
+export interface Leaderboard {
+  _id?: ObjectId;
+  user: string;
+  tag: Tag;
+  position: number;
   count: number;
 }
 
@@ -671,17 +825,22 @@ export interface AnswerUpdatePayload {
  */
  export interface FindMessageRequest extends Request {
   query: {
-    order: OrderType;
     askedBy: string;
   };
 }
 
 /**
- * Interface for the request query to find correspondences using a search string, which contains:
- * - order - The order in which to sort the correspondences
- * - askedBy - The username of the user who asked the correspondences
+ * Interface for the request query to find correspondences, which contains no arguments
  */
  export interface FindCorrespondenceRequest extends Request {
+  query: {
+  };
+}
+
+/**
+ * Interface for the request query to find all users in the db, which contains no arguments
+ */
+ export interface GetUserRequest extends Request {
   query: {
   };
 }
@@ -690,6 +849,7 @@ export interface AnswerUpdatePayload {
 /**
  * Interface for the request parameters when finding a message by its ID.
  * - mid - The unique identifier of the message.
+ * - username - The name of the user who has just viewed the message
  */
 export interface FindMessageByIdRequest extends Request {
   params: {
@@ -706,6 +866,17 @@ export interface FindMessageByIdRequest extends Request {
  * - cid - The unique identifier of the correspondence.
  */
 export interface FindCorrespondenceByIdRequest extends Request {
+  params: {
+    cid: string;
+  };
+}
+
+/**
+ * Interface for the request parameters when finding a correspondence by its ID.
+ * - cid - The unique identifier of the correspondence.
+ * - username - The name of the user to add to the views
+ */
+export interface FindCorrespondenceByIdWithViewsRequest extends Request {
   params: {
     cid: string;
   };
@@ -755,9 +926,10 @@ export interface ServerToClientEvents {
   voteUpdate: (vote: VoteUpdatePayload) => void;
   commentUpdate: (comment: CommentUpdatePayload) => void;
   messageUpdate: (message: MessageResponse) => void;
-  correspondenceUpdate: (message: CorrespondenceResponse) => void;
+  correspondenceUpdate: (correspondence: CorrespondenceResponse) => void;
   modApplicationUpdate: (update: ModApplicationResponse) => void;
   userReportsUpdate: (update: UserReportUpdatePayload) => void;
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
+  notificationUpdate: (notification: NotificationResponse) => void;
 }

@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom';
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
-import { Answer, Comment, Question } from '../../../../types';
 import AnswerEndorsement from '../../AnswerEndorsement';
-
+import ProfileHover from '../../accountPage/profileHover';
+import useAnswerView from '../../../../hooks/useAnswerView';
 import useModStatus from '../../../../hooks/useModStatus';
+import { Answer, Comment, Question } from '../../../../types';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -58,29 +58,27 @@ const AnswerView = ({
   handleRemove,
   isReported,
 }: AnswerProps) => {
+  const { isHovered, iconDetails, handleAuthorClick, setIsHovered, handleHoverEnter, badges } =
+    useAnswerView(ansBy);
   const { moderatorStatus } = useModStatus();
-  const navigate = useNavigate();
-
-  /**
-   * Function to navigate to the specified user profile based on the user ID.
-   */
-  const handleAuthorClick = () => {
-    navigate(`/account/${ansBy}`); // Assuming you have an ID for the author
-  };
 
   return (
     <div className='answer right_padding'>
       <div id='answerText' className='answerText'>
         {handleHyperlink(text)}
       </div>
+      <div className={`profile-hover-container ${isHovered ? 'show' : ''}`}>
+        <ProfileHover user={ansBy} iconData={iconDetails} badges={badges} />
+      </div>
       <div className='answerAuthor'>
-        <div className='answer_author'>{ansBy}</div>
         <div
           className='answer_author'
           onClick={e => {
             e.stopPropagation(); // prevent triggering the parent div's click event
             handleAuthorClick();
-          }}>
+          }}
+          onMouseEnter={handleHoverEnter}
+          onMouseLeave={() => setIsHovered(false)}>
           {ansBy}
         </div>
         <div className='answer_question_meta'>{meta}</div>

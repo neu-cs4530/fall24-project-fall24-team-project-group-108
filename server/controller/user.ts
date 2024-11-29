@@ -1,6 +1,22 @@
 import express, { Response } from 'express';
-import { AddUserRequest, FindUserRequest, MakeUserModeratorRequest } from '../types';
-import { addUser, findUser, updateUserModStatus } from '../models/application';
+import {
+  AddUserRequest,
+  FindUserRequest,
+  GetUserStatusRequest,
+  MakeUserModeratorRequest,
+  GetUserRequest,
+  User,
+  UpdateProfileIconRequest,
+} from '../types';
+import {
+  addUser,
+  findUser,
+  getDoNotDisturbStatus,
+  updateDoNotDisturb,
+  getAllUsers,
+  updateUserProfilePicture,
+  updateUserModStatus,
+} from '../models/application';
 
 export const userController = () => {
   const router = express.Router();
@@ -111,9 +127,102 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Changes the dnd status of a given user If updating the doNotDisturb field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const toggleDoNotDisturb = async (
+    req: MakeUserModeratorRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username } = req.body;
+    try {
+      const updatedUser = await updateDoNotDisturb(username);
+      res.json(updatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user moderator status: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user moderator status`);
+      }
+    }
+  };
+
+  /**
+   * Gets the dnd status of a given user. If getting the doNotDisturb field fails, the HTTP response status is updated.
+   *
+   * @param req - the MakeUserModeratorRequest containing the user data.
+   * @param res - The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getDoNotDisturb = async (req: GetUserStatusRequest, res: Response): Promise<void> => {
+    const { username } = req.params;
+    try {
+      const updatedUser = await getDoNotDisturbStatus(username);
+      res.json(updatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user moderator status: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user moderator status`);
+      }
+    }
+  };
+
+  const updateProfilePicture = async (
+    req: UpdateProfileIconRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username, badgeName } = req.body;
+    try {
+      const populatedUser = await updateUserProfilePicture(username, badgeName);
+      if (populatedUser && 'error' in populatedUser) {
+        throw new Error(populatedUser.error);
+      }
+
+      res.json(populatedUser);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when updating user profile picture: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when updating user profile picture`);
+      }
+    }
+  };
+
+  /**
+   * Retrieves a list of all users in the db
+   * Error if there is a problem retrieving any of the users
+   *
+   * @param res The HTTP response object used to send back list of users ordered alphabetically
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const getUsers = async (req: GetUserRequest, res: Response): Promise<void> => {
+    try {
+      const ulist: User[] = await getAllUsers();
+      res.json(ulist);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when fetching list of users: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when fetching list of users`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
+  router.get('/getUsers', getUsers);
   router.post('/createUser', createUser);
+  router.get('/doNotDisturb/:username', getDoNotDisturb);
   router.post('/makeUserModerator', makeUserModerator);
+  router.post('/doNotDisturb', toggleDoNotDisturb);
+  router.post('/updatePicture', updateProfilePicture);
 
   return router;
 };

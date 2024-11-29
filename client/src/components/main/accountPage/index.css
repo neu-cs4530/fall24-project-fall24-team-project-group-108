@@ -1,24 +1,42 @@
 
-.profilePageContainer {
+.backgroundContainer {
 background-color: #f2f2f2;
-height: 100%;
-width: 100%;
+height: 90%;
+width: 92%;
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-direction: row;
+padding-left: 4%;
+padding-right: 4%;
+}
+
+.rightBubble {
+background-color: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+height: 75%;
+width: 68%;
+}
+
+.stickyTabs {
+position: sticky;
+top: 0; 
+z-index: 999; 
+background-color: #64ade1; 
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+color: white;
+}
+  
+.leftBubble {
+background-color: white;
+border-radius: 12px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+height: 75%;
+width: 30%;
 display: flex;
 flex-direction: column;
-}
-
-.profileHeader {
-height: 15%;
-display: flex;
-flex-direction: row;
-justify-content: space-between;
-padding-top: 3%;
-}
-
-.profileHeaderInfo {
-display: flex;
-flex-direction: row;
-margin-left: 5%;
+align-items: center;
 }
 
 .profileHeaderUsername {
@@ -35,13 +53,28 @@ font-weight: bold;
 .profileHeaderUsername div:last-child {
 padding-top: 2%;
 color: #858585;
+margin-bottom: 10%;
 }
 
-.profileHeaderButtons {
-margin-right: 5%;
-display: flex;
-flex-direction: row;
-gap: 3%;
-height: 25%;
+.profileTabs {
+max-height: 90%;  
+overflow-y: auto;  
 }
 
+.profilePicture {
+    margin-top: 35%;
+    margin-bottom: 4%;
+}
+
+.stickyTabs .MuiTab-root {
+    color: white; 
+    font-weight: normal; 
+  }
+  
+
+.stickyTabs .MuiTab-root.Mui-selected {
+color: white;
+font-weight: bold; 
+border-bottom: 4px solid rgb(61, 106, 222);
+}
+  
