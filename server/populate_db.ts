@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
+import bcrypt from 'bcrypt';
 import { Answer, Badge, Comment, Question, Tag, User, UserReport } from './types';
 import {
   Q1_DESC,
@@ -376,9 +377,11 @@ async function userCreate(
     infractions == null
   )
     throw new Error('Invalid User Format');
+
+  const hashedPassword = await bcrypt.hash(password, 5);
   const userDetail: User = {
     username: username,
-    password: password,
+    password: hashedPassword,
     isModerator: isModerator,
     badges: badges,
     infractions: infractions,
