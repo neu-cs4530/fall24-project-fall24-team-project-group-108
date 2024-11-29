@@ -26,13 +26,18 @@ const NotificationsTab = ({
   toggleDnd,
   dnd,
 }: NotificationsTabProps) => {
-  const { activeTab, handleTabChange, unreadNotifications, readNotifications } =
-    useNotificationsTab({
-      handleUpdate,
-      initialReadNotifications,
-      initialUnreadNotifications,
-      handleClick,
-    });
+  const {
+    activeTab,
+    handleTabChange,
+    unreadNotifications,
+    readNotifications,
+    handleNotificationClick,
+  } = useNotificationsTab({
+    handleUpdate,
+    initialReadNotifications,
+    initialUnreadNotifications,
+    handleClick,
+  });
 
   return (
     <div className='notifications-dropdown'>
@@ -64,7 +69,10 @@ const NotificationsTab = ({
                       href='#'
                       onClick={e => {
                         e.preventDefault();
-                        handleClick(`account/${notification.caption.split(' ')[0]}`);
+                        handleNotificationClick(
+                          notification,
+                          `account/${notification.caption.split(' ')[0]}`,
+                        );
                       }}
                       className='notification-link username-link'>
                       {notification.caption.split(' ')[0]}{' '}
@@ -73,7 +81,7 @@ const NotificationsTab = ({
                       href='#'
                       onClick={e => {
                         e.preventDefault();
-                        handleClick(notification.redirectUrl);
+                        handleNotificationClick(notification, notification.redirectUrl);
                       }}
                       className='notification-link content-link'>
                       {notification.caption.split(' ').slice(1).join(' ')}
@@ -84,7 +92,7 @@ const NotificationsTab = ({
                     href='#'
                     onClick={e => {
                       e.preventDefault();
-                      handleClick(notification.redirectUrl);
+                      handleNotificationClick(notification, notification.redirectUrl);
                     }}
                     className='notification-link'>
                     {notification.caption}

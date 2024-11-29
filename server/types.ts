@@ -176,7 +176,7 @@ export interface AddModApplicationRequest extends Request {
 
 /**
  * Interface extending the request body when deleting a ModApplication to the database which contains:
- * - id - The id of the moderator application in the datbase
+ * - id - The id of the moderator application in the database
  * - username - The user whose application is being deleted.
  * - accepted - True if the moderator application was accepted, false otherwise.
  */

@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import AnswerModel from './models/answers';
 import QuestionModel from './models/questions';
 import TagModel from './models/tags';
-import { Answer, Comment, Question, Tag, UserReport } from './types';
+import { Answer, Badge, Comment, Question, Tag, User, UserReport } from './types';
 import {
   Q1_DESC,
   Q1_TXT,
@@ -53,6 +53,8 @@ import {
 } from './data/posts_strings';
 import CommentModel from './models/comments';
 import UserReportModel from './models/userReport';
+import UserModel from './models/users';
+import BadgeModel from './models/badges';
 
 // Pass URL of your mongoDB instance as first argument(e.g., mongodb://127.0.0.1:27017/fake_so)
 const userArgs = process.argv.slice(2);
@@ -66,6 +68,124 @@ mongoose.connect(mongoDB);
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+/**
+ * Creates badge data.
+ */
+const badgesData = [
+  {
+    name: "Helper",
+    description: "Answer 5 questions.",
+    category: "answers",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Guide",
+    description: "Answer 15 questions.",
+    category: "answers",
+    targetValue: 15,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Sage",
+    description: "Answer 25 questions.",
+    category: "answers",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Curious",
+    description: "Ask 5 questions.",
+    category: "questions",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Inquirer",
+    description: "Ask 10 questions.",
+    category: "questions",
+    targetValue: 15,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Investigator",
+    description: "Ask 25 questions.",
+    category: "questions",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Observer",
+    description: "Leave 5 comments.",
+    category: "comments",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Commentator",
+    description: "Leave 10 comments.",
+    category: "comments",
+    targetValue: 10,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Debater",
+    description: "Leave 20 comments.",
+    category: "comments",
+    targetValue: 20,
+    tier: "gold",
+    users: []
+  },
+  {
+    name: "Voter",
+    description: "Cast 5 votes",
+    category: "votes",
+    targetValue: 5,
+    tier: "bronze",
+    users: []
+  },
+  {
+    name: "Critic",
+    description: "Cast 10 votes",
+    category: "votes",
+    targetValue: 10,
+    tier: "silver",
+    users: []
+  },
+  {
+    name: "Curator",
+    description: "Cast 25 votes",
+    category: "votes",
+    targetValue: 25,
+    tier: "gold",
+    users: []
+  }
+];
+
+/**
+ * Creates new Badge documents in the database.
+ *
+ * @param badges An array of badge data to be inserted.
+ * @returns A Promise that resolves once all badges have been created.
+ * @throws An error if the badge creation fails.
+ */
+async function badgeCreate(badges: { name: string, description: string, category: string, targetValue: number, tier: string }[]): Promise<void> {
+  for (const badge of badges) {
+    if (badge.name === '' || badge.description === '' || badge.category === '' || badge.targetValue < 1 || !badge.tier) {
+      throw new Error('Invalid Badge Format');
+    }
+    await BadgeModel.create(badge);
+  }
+}
 
 /**
  * Creates a new Tag document in the database.
@@ -228,6 +348,47 @@ async function questionCreate(
 }
 
 /**
+ * Creates an original User document in the database.
+ *
+ * @param username Name of the user.
+ * @param password Password to login created by the user.
+ * @param isModerator The current state of the user's moderator status.
+ * @param badges The badges obtained by the user.
+ * @param infractions A list of answer/question id's that were removed by moderators
+ * @param doNotDisturb Whether or not the user is on dnd.
+ * @returns A Promise that resolves to the created User document.
+ * @throws An error if any of the parameters are invalid.
+ */
+async function userCreate(
+  username: string,
+  password: string,
+  isModerator: boolean,
+  badges: Badge[],
+  infractions: string[],
+  profileIcon?: string,
+  doNotDisturb?: false,
+): Promise<User> {
+  if (
+    username === '' ||
+    password === '' ||
+    isModerator === null ||
+    badges == null ||
+    infractions == null
+  )
+    throw new Error('Invalid User Format');
+  const userDetail: User = {
+    username: username,
+    password: password,
+    isModerator: isModerator,
+    badges: badges,
+    infractions: infractions,
+    profileIcon: profileIcon,
+    doNotDisturb: doNotDisturb,
+  };
+  return await UserModel.create(userDetail);
+}
+
+/**
  * Populates the database with predefined data.
  * Logs the status of the operation to the console.
  */
@@ -279,6 +440,20 @@ const populate = async () => {
     const c10 = await commentCreate(C10_TEXT, 'abhi3241', new Date('2023-02-10T11:24:30'));
     const c11 = await commentCreate(C11_TEXT, 'Joji John', new Date('2023-03-18T01:02:15'));
     const c12 = await commentCreate(C12_TEXT, 'abaya', new Date('2023-04-10T14:28:01'));
+
+    await userCreate('hamkalo', 'Password1!', false, [], []);
+    await userCreate('azad', 'Password1!', false, [], []);
+    await userCreate('abaya', 'Password1!', false, [], []);
+    await userCreate('alia', 'Password1!', false, [], []);
+    await userCreate('sana', 'Password1!', false, [], []);
+    await userCreate('abhi3241', 'Password1!', false, [], []);
+    await userCreate('mackson3332', 'Password1!', false, [], []);
+    await userCreate('ihba001', 'Password1!', false, [], []);
+    await userCreate('Joji John', 'Password1!', false, [], []);
+    await userCreate('saltyPeter', 'Password1!', false, [], []);
+    await userCreate('monkeyABC', 'Password1!', false, [], []);
+    await userCreate('elephantCDE', 'Password1!', false, [], []);
+    await userCreate('Moderator', 'Password1!', true, [], []);
 
     const a1 = await answerCreate(
       A1_TXT,
@@ -379,6 +554,8 @@ const populate = async () => {
       [r6],
       false,
     );
+
+    await badgeCreate(badgesData);
 
     console.log('Database populated');
   } catch (err) {

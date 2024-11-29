@@ -10,6 +10,7 @@ const addReportSpy = jest.spyOn(util, 'addReport');
 const popDocSpy = jest.spyOn(util, 'populateDocument');
 const fetchUnresolvedReportsSpy = jest.spyOn(util, 'fetchUnresolvedReports');
 const updateReportStatusSpy = jest.spyOn(util, 'updateReportStatus');
+const reportResolvedNotificationSpy = jest.spyOn(util, 'reportResolvedNotification');
 
 const simplifyQuestion = (question: Question) => ({
   ...question,
@@ -442,9 +443,10 @@ describe('POST /updateReportStatus', () => {
   afterAll(async () => {
     await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
   });
-  it('should remove post and set report status to removed', async () => {
+  it('should remove question and set report status to removed', async () => {
     const validQid = new mongoose.Types.ObjectId();
     const validRid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
 
     const mockReport: UserReport = {
       _id: validRid,
@@ -478,6 +480,19 @@ describe('POST /updateReportStatus', () => {
       isRemoved: true,
     };
 
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUserId',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'report',
+      message: 'report.',
+      createdAt: new Date(),
+    };
+
+    reportResolvedNotificationSpy.mockResolvedValueOnce(mockNotification);
     saveReportSpy.mockResolvedValueOnce(mockReport);
     updateReportStatusSpy.mockResolvedValueOnce({
       ...mockQuestion,
@@ -496,6 +511,7 @@ describe('POST /updateReportStatus', () => {
     const validQid = new mongoose.Types.ObjectId();
     const validAid = new mongoose.Types.ObjectId();
     const validRid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
 
     const mockReport: UserReport = {
       _id: validRid,
@@ -523,6 +539,19 @@ describe('POST /updateReportStatus', () => {
       isRemoved: true,
     };
 
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUserId',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'report',
+      message: 'report.',
+      createdAt: new Date(),
+    };
+
+    reportResolvedNotificationSpy.mockResolvedValueOnce(mockNotification);
     saveReportSpy.mockResolvedValueOnce(mockReport);
     updateReportStatusSpy.mockResolvedValueOnce({
       ...mockAns,
@@ -539,6 +568,7 @@ describe('POST /updateReportStatus', () => {
   it('should dismiss reports and not remove question', async () => {
     const validQid = new mongoose.Types.ObjectId();
     const validRid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
 
     const mockReport: UserReport = {
       _id: validRid,
@@ -572,6 +602,19 @@ describe('POST /updateReportStatus', () => {
       isRemoved: false,
     };
 
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUserId',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'report',
+      message: 'report.',
+      createdAt: new Date(),
+    };
+
+    reportResolvedNotificationSpy.mockResolvedValueOnce(mockNotification);
     saveReportSpy.mockResolvedValueOnce(mockReport);
     updateReportStatusSpy.mockResolvedValueOnce({
       ...mockQuestion,
@@ -586,6 +629,64 @@ describe('POST /updateReportStatus', () => {
   });
 
   it('should dismiss reports and not remove answer', async () => {
+    const validQid = new mongoose.Types.ObjectId();
+    const validAid = new mongoose.Types.ObjectId();
+    const validRid = new mongoose.Types.ObjectId();
+    const validNotifId = new mongoose.Types.ObjectId();
+
+    const mockReport: UserReport = {
+      _id: validRid,
+      text: 'This is a test report',
+      reportBy: 'dummyUserId',
+      reportDateTime: new Date('2024-06-03'),
+      status: 'unresolved',
+    };
+
+    const mockAns: Answer = {
+      _id: validAid,
+      text: 'This is a test question',
+      ansBy: 'dummyUserId',
+      ansDateTime: new Date('2024-06-03'),
+      comments: [],
+      reports: [mockReport],
+      isRemoved: false,
+    };
+
+    const mockReqBody = {
+      reportedPost: mockAns,
+      qid: validQid.toString(),
+      postid: validAid.toString(),
+      type: 'answer',
+      isRemoved: false,
+    };
+
+    const mockNotification = {
+      _id: validNotifId,
+      user: 'dummyUserId',
+      caption: 'caption',
+      redirectUrl: 'url',
+      read: false,
+      qid: validQid.toString(),
+      type: 'report',
+      message: 'report.',
+      createdAt: new Date(),
+    };
+
+    reportResolvedNotificationSpy.mockResolvedValueOnce(mockNotification);
+    saveReportSpy.mockResolvedValueOnce(mockReport);
+    updateReportStatusSpy.mockResolvedValueOnce({
+      ...mockAns,
+      isRemoved: false,
+      reports: [{ ...mockReport, status: 'dismissed' }],
+    });
+    const response = await supertest(app).post('/userReport/resolveReport').send(mockReqBody);
+
+    expect(response.status).toBe(200);
+    expect(response.body.isRemoved).toBe(false);
+    expect(response.body.reports[0].status).toEqual('dismissed');
+  });
+
+  it('should return an error if there is an error saving notification', async () => {
     const validQid = new mongoose.Types.ObjectId();
     const validAid = new mongoose.Types.ObjectId();
     const validRid = new mongoose.Types.ObjectId();
@@ -616,6 +717,7 @@ describe('POST /updateReportStatus', () => {
       isRemoved: false,
     };
 
+    reportResolvedNotificationSpy.mockRejectedValueOnce(new Error('error'));
     saveReportSpy.mockResolvedValueOnce(mockReport);
     updateReportStatusSpy.mockResolvedValueOnce({
       ...mockAns,
@@ -624,9 +726,7 @@ describe('POST /updateReportStatus', () => {
     });
     const response = await supertest(app).post('/userReport/resolveReport').send(mockReqBody);
 
-    expect(response.status).toBe(200);
-    expect(response.body.isRemoved).toBe(false);
-    expect(response.body.reports[0].status).toEqual('dismissed');
+    expect(response.status).toBe(500);
   });
 
   it('should return an error when a mongoDB operation fails with an Error', async () => {

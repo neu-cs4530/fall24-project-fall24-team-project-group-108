@@ -2021,3 +2021,78 @@ export const saveAnswerCommentNotification = async (
   }
   return savedNotification;
 };
+
+/**
+ * Saves a new moderator application notification to the database.
+ *
+ * @param {string} username - The username of the user who applied.
+ * @param {boolean} accepted - True if the application was accepted, false otherwise.
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed.
+ */
+export const saveModApplicationNotification = async (
+  username: string,
+  accepted: boolean,
+): Promise<Notification> => {
+  const status = accepted
+    ? 'accepted! Please log out and log back in to unlock moderator privileges!'
+    : 'rejected, you can always reapply!';
+  const url = accepted ? `/` : `modApplication`;
+
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'application',
+    caption: `Your application to become a moderator was ${status}`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: url,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};
+
+/**
+ * Saves a new report resolved notification to the database.
+ *
+ * @param {UserReport} report - The report info related to the notification.
+ * @param {string} qid - The  question id of the reported question/answer.
+ * @param {boolean} isRemoved - true if the post was removed, false otherwise.
+ *
+ * @returns {Promise<Notification>} - The saved notif, or an error message if the save failed.
+ */
+export const reportResolvedNotification = async (
+  report: UserReport,
+  qid: string,
+  isRemoved: boolean,
+): Promise<Notification> => {
+  const username = report.reportBy;
+  const captionMsg = isRemoved
+    ? 'accepted by a moderator, and the post is now removed!'
+    : 'dismissed by a moderator, the reported post was not taken down.';
+  const url = isRemoved ? `home` : `/question/${qid}`;
+
+  // Create the notification
+  const notification: Notification = {
+    user: username,
+    type: 'report',
+    caption: `Your report was ${captionMsg}`,
+    read: false,
+    createdAt: new Date(),
+    redirectUrl: url,
+  };
+
+  // Save the notification to the DB
+  const savedNotification = await NotificationModel.create(notification);
+
+  if ('error' in savedNotification) {
+    throw new Error(savedNotification.error as string);
+  }
+  return savedNotification;
+};

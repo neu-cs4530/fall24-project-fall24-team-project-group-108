@@ -41,8 +41,9 @@ const useNotificationsTab = ({
    * handles actions after clicking on an unread notification
    *
    * @param notification the notification being read
+   * @param url redirect url
    */
-  const handleNotificationClick = async (notification: Notification) => {
+  const handleNotificationClick = async (notification: Notification, url: string) => {
     try {
       // Mark the notification as read
       await markNotificationAsRead(notification._id as string);
@@ -53,8 +54,8 @@ const useNotificationsTab = ({
       handleUpdate(notification);
 
       // Navigate to the notification URL
-      handleClick(notification.redirectUrl);
-    } catch (e) {
+      handleClick(url);
+    } catch (error) {
       throw new Error('Error fetching data');
     }
   };

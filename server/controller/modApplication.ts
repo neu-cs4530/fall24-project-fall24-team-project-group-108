@@ -5,7 +5,12 @@ import {
   ModApplication,
   UpdateModApplicationStatusRequest,
 } from '../types';
-import { addModApplication, fetchModApplications, updateAppStatus } from '../models/application';
+import {
+  addModApplication,
+  fetchModApplications,
+  saveModApplicationNotification,
+  updateAppStatus,
+} from '../models/application';
 
 export const modApplicationController = (socket: FakeSOSocket) => {
   const router = express.Router();
@@ -112,6 +117,15 @@ export const modApplicationController = (socket: FakeSOSocket) => {
     const { id, username, accepted } = req.body;
     try {
       const updated = await updateAppStatus(id, username, accepted);
+
+      // create the notification in the db
+      const savedNotification = await saveModApplicationNotification(username, accepted);
+
+      if ('error' in savedNotification) {
+        throw new Error(savedNotification.error as string);
+      }
+
+      socket.emit('notificationUpdate', savedNotification);
       res.json(updated);
     } catch (err: unknown) {
       if (err instanceof Error) {
