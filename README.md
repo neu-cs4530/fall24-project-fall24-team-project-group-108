@@ -95,7 +95,13 @@ The frontend should now open in your default browser at `http://localhost:3000`.
 
 ## Explore CodeScout
 
-With both the frontend and backend running, you can explore the CodeScout platform by navigating to `http://localhost:3000` in your browser. The application is now configured for local use with the ability to do the following (and more!):
+With both the frontend and backend running, you can explore the CodeScout platform by navigating to `http://localhost:3000` in your browser. 
+
+Note: If you would like to login as a moderator and apporve other moderators, login using:
+- username: Moderator
+- password: Password1!
+
+The application is now configured for local use with the ability to do the following (and more!):
 
 - Create an account with username, password, and profile picture.
 - Report inappropriate questions/answers.
