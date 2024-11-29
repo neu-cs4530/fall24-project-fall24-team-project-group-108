@@ -61,14 +61,12 @@ const useReportReviewPage = () => {
         setAllReports(mergedReports);
         const reportedQAns = mergedReports.length;
         setNumReports(reportedQAns);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching reports:', error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
-    // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
+    fetchData().catch();
   }, [ansReports, qReports]);
 
   const handleReportDecision = async (

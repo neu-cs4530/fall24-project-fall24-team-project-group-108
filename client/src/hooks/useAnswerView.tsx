@@ -34,8 +34,6 @@ const useAnswerView = (ansBy: string) => {
         tier: (details.tier as BadgeTier) || 'Unknown Tier',
       };
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to fetch details for user: ${user}`, error);
       return null;
     }
   };
@@ -48,8 +46,6 @@ const useAnswerView = (ansBy: string) => {
       const res = await fetchBadgesByUser(user);
       return res;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
       return [];
     }
   };

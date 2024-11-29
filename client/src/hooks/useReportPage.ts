@@ -58,9 +58,8 @@ const useReportPage = () => {
       setText('');
       setReportErr('');
       navigate(`/question/${targetLink}`);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error adding report:', error);
+    } catch (e) {
+      throw new Error('Error handling report');
     }
   };
 

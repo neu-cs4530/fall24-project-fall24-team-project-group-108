@@ -434,8 +434,6 @@ export const updateUserProfilePicture = async (
     await user.save();
     return user;
   } catch (err: unknown) {
-    // eslint-disable-next-line no-console
-    console.error(err);
     return { error: 'Failed to update user profile picture' };
   }
 };
@@ -468,8 +466,6 @@ export const getBadgeCategoryAndTierByUsername = async (
 
     return { category: badge.category, tier: badge.tier };
   } catch (err: unknown) {
-    // eslint-disable-next-line no-console
-    console.error(err);
     return { error: 'Failed to retrieve badge category and tier' };
   }
 };
@@ -1889,9 +1885,6 @@ export const updateTagAnswers = async (
           const savedNotification = await NotificationModel.create(notification);
           if (savedNotification) {
             socket.emit('notificationUpdate', savedNotification);
-          } else {
-            // eslint-disable-next-line no-console
-            console.error('Notification is undefined or invalid:', savedNotification);
           }
         }
       });

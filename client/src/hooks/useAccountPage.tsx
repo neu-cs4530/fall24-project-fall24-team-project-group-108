@@ -79,9 +79,8 @@ const useAccountPage = () => {
       try {
         const res = await getQuestionsByFilter('newest', '', sentUser);
         setQlist(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -92,9 +91,8 @@ const useAccountPage = () => {
       try {
         const res = await getQuestionByAnswerer(sentUser);
         setAlist(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -105,9 +103,8 @@ const useAccountPage = () => {
       try {
         const res = await getQuestionByCommenter(sentUser);
         setClist(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -118,9 +115,8 @@ const useAccountPage = () => {
       try {
         const res = await fetchBadgesByUser(sentUser as string);
         setBadgeList(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -135,8 +131,6 @@ const useAccountPage = () => {
           tier: (details.tier as BadgeTier) || 'Unknown Tier',
         });
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to fetch details for profile icon: ${sentUser}`, error);
         setCurrentDetails(null);
       }
     };

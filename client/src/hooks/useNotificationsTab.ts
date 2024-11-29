@@ -54,9 +54,8 @@ const useNotificationsTab = ({
 
       // Navigate to the notification URL
       handleClick(notification.redirectUrl);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to mark notification as read:', error);
+    } catch (e) {
+      throw new Error('Error fetching data');
     }
   };
 
