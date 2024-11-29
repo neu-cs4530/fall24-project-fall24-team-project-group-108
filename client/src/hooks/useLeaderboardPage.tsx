@@ -38,9 +38,8 @@ const useLeaderboardPage = () => {
       try {
         const res = await getLeaderboardUsers(tid as string); // Fetch data from API
         setCountList(res); // Set response data to state
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error); // Handle error
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 

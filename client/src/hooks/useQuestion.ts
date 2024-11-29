@@ -36,8 +36,6 @@ const useQuestion = (q: Question) => {
         tier: (details.tier as BadgeTier) || 'Unknown Tier',
       };
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to fetch details for user: ${user}`, error);
       return null; // Return null in case of an error
     }
   };
@@ -50,8 +48,6 @@ const useQuestion = (q: Question) => {
       const res = await fetchBadgesByUser(user);
       return res;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.log(error);
       return [];
     }
   };

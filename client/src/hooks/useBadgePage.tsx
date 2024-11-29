@@ -61,9 +61,8 @@ const useBadgePage = () => {
       try {
         const res = await getAllBadges();
         setBadges(res || []);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 
@@ -83,9 +82,8 @@ const useBadgePage = () => {
         );
 
         setBadgeStats(stats);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.log(error);
+      } catch (e) {
+        throw new Error('Error fetching data');
       }
     };
 

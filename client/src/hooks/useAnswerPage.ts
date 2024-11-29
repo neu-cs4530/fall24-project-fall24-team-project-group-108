@@ -63,9 +63,8 @@ const useAnswerPage = () => {
 
       // update the user's progress towards comment related badges
       await updateBadgeProgress(user.username, 'comments');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error adding comment:', error);
+    } catch (e) {
+      throw new Error('Error fetching data');
     }
   };
 
@@ -110,13 +109,11 @@ const useAnswerPage = () => {
         const res = await getQuestionById(questionID, user.username);
         setQuestion(res || null);
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching question:', error);
+        throw new Error('Error fetching data');
       }
     };
 
-    // eslint-disable-next-line no-console
-    fetchData().catch(e => console.log(e));
+    fetchData().catch();
   }, [questionID, user.username]);
 
   useEffect(() => {

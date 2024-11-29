@@ -95,7 +95,6 @@ const badgeController = (socket: FakeSOSocket) => {
       const badges: Badge[] = await getBadgesByUser(username);
       res.status(200).json(badges);
     } catch (error) {
-      // eslint-disable-next-line no-console
       res.status(500).json({ message: 'Internal server error' });
     }
   };
@@ -114,7 +113,6 @@ const badgeController = (socket: FakeSOSocket) => {
       const users: string[] = await getBadgeUsers(badgeName);
       res.status(200).json(users);
     } catch (error) {
-      // eslint-disable-next-line no-console
       res.status(500).json({ message: 'Internal server error' });
     }
   };
