@@ -269,12 +269,32 @@ const useAnswerPage = () => {
       }
     };
 
+    /**
+     * Function to handle endorsement updates for an answer.
+     *
+     * @param aid - The unique id of the answer.
+     * @param endorsed - The updated endorsement status.
+     */
+    const handleEndorsementUpdate = ({ aid, endorsed }: { aid: string; endorsed: boolean }) => {
+      setQuestion(prevQuestion =>
+        prevQuestion
+          ? {
+              ...prevQuestion,
+              answers: prevQuestion.answers.map(ans =>
+                ans._id === aid ? { ...ans, endorsed } : ans,
+              ),
+            }
+          : prevQuestion,
+      );
+    };
+
     socket.on('answerUpdate', handleAnswerUpdate);
     socket.on('viewsUpdate', handleViewsUpdate);
     socket.on('commentUpdate', handleCommentUpdate);
     socket.on('voteUpdate', handleVoteUpdate);
     socket.on('removePostUpdate', handleRemovePostUpdate);
     socket.on('reportDismissedUpdate', handleReportDismissedUpdate);
+    socket.on('endorsementUpdate', handleEndorsementUpdate);
 
     return () => {
       socket.off('answerUpdate', handleAnswerUpdate);
@@ -283,6 +303,7 @@ const useAnswerPage = () => {
       socket.off('voteUpdate', handleVoteUpdate);
       socket.off('removePostUpdate', handleRemovePostUpdate);
       socket.off('reportDismissedUpdate', handleReportDismissedUpdate);
+      socket.off('endorsementUpdate', handleEndorsementUpdate);
     };
   }, [questionID, socket, navigate]);
 

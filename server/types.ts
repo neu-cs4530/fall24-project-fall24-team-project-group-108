@@ -932,4 +932,5 @@ export interface ServerToClientEvents {
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
   notificationUpdate: (notification: NotificationResponse) => void;
+  endorsementUpdate: (data: { aid: string; endorsed: boolean }) => void;
 }

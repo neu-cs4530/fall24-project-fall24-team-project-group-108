@@ -114,6 +114,9 @@ const answerController = (socket: FakeSOSocket) => {
         throw new Error(updatedAnswer.error as string);
       }
 
+      // Emit the endorsement update
+      socket.emit('endorsementUpdate', { aid, endorsed });
+
       res.json(updatedAnswer);
     } catch (error) {
       res.status(500).json({ message: 'Error updating endorsement' });
