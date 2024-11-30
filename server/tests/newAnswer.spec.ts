@@ -99,6 +99,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     });
 
     expect(saveAnswerNotificationSpy).toHaveBeenCalledWith(validQid.toString(), {
