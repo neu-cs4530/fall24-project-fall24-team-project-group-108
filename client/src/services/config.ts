@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 /**
  * Function to handle successful responses

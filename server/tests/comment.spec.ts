@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { app } from '../app';
 import * as util from '../models/application';
+import { Question } from '../types';
 
 const saveCommentSpy = jest.spyOn(util, 'saveComment');
 const addCommentSpy = jest.spyOn(util, 'addComment');

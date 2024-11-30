@@ -653,6 +653,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {

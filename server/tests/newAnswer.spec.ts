@@ -83,6 +83,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     });
 
     saveAnswerNotificationSpy.mockResolvedValueOnce(mockNotification);
@@ -205,7 +206,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
-      endorsed: false,
+      endorsed: false, // Ensure endorsed field is present
     };
 
     saveAnswerSpy.mockResolvedValueOnce(mockAnswer);
@@ -235,7 +236,7 @@ describe('POST /addAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
-      endorsed: false,
+      endorsed: false, // Ensure endorsed field is present
     };
 
     const mockQuestion = {

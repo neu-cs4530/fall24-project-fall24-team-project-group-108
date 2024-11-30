@@ -25,7 +25,7 @@ describe('PATCH /endorseAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
-      endorsed: false,
+      endorsed: false, // Ensure endorsed field is present
     };
 
     endorseAnswerSpy.mockImplementation(async (aid, endorsed) => ({ ...mockAnswer, endorsed }));
@@ -62,7 +62,7 @@ describe('PATCH /endorseAnswer', () => {
       comments: [],
       reports: [],
       isRemoved: false,
-      endorsed: false,
+      endorsed: false, // Ensure endorsed field is present
     };
 
     endorseAnswerSpy.mockImplementation(async (aid, endorsed) => ({ ...mockAnswer, endorsed }));

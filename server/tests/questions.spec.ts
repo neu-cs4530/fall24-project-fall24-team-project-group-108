@@ -26,7 +26,7 @@ const ans1: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
-  endorsed: false,
+  endorsed: false, // Ensure endorsed field is present
 };
 
 const ans2: Answer = {
@@ -37,7 +37,7 @@ const ans2: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
-  endorsed: false,
+  endorsed: false, // Ensure endorsed field is present
 };
 
 const ans3: Answer = {
@@ -48,7 +48,7 @@ const ans3: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
-  endorsed: false,
+  endorsed: false, // Ensure endorsed field is present
 };
 
 const ans4: Answer = {
@@ -59,7 +59,7 @@ const ans4: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
-  endorsed: false,
+  endorsed: false, // Ensure endorsed field is present
 };
 
 const MOCK_QUESTIONS: Question[] = [

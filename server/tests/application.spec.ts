@@ -159,6 +159,7 @@ const ans5: Answer = {
   comments: [],
   reports: [],
   isRemoved: false,
+  endorsed: false,
 };
 
 const QUESTIONS: Question[] = [
@@ -3009,6 +3010,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
 
         const expectedNotification = {
@@ -3070,6 +3072,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
 
         // Mock QuestionModel to return null
@@ -3096,6 +3099,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
 
         // Mock the database calls
@@ -3122,6 +3126,7 @@ describe('application module', () => {
           comments: [],
           reports: [],
           isRemoved: false,
+          endorsed: false,
         };
 
         // Mock the database calls
