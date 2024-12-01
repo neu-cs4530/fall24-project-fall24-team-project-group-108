@@ -55,6 +55,7 @@ import {
   saveAnswerNotification,
   reportResolvedNotification,
   saveModApplicationNotification,
+  updateUserIsBannedByUsername,
 } from '../models/application';
 import {
   Answer,
@@ -590,6 +591,42 @@ describe('application module', () => {
         const result = await updateUserModStatus('user1');
         expect(result).toEqual({
           error: 'Error when fetching and populating a document: err',
+        });
+      });
+    });
+
+    describe('updateUserIsBannedByUsername', () => {
+      test('Should ban a user when a moderator bans them', async () => {
+        const updatedUser: User = {
+          _id: new ObjectId('65e9b786ff0e893116b2af69'),
+          username: 'user1',
+          password: 'Password1!',
+          isModerator: true,
+          infractions: [],
+          badges: [badge1],
+          isBanned: true,
+        };
+        mockingoose(UserModel).toReturn(updatedUser, 'findOneAndUpdate');
+
+        // const result = await updateUserIsBannedByUsername(user1.username);
+        expect(updatedUser.isBanned).toEqual(true);
+      });
+
+      test('Should return an error if error occurs while updating database', async () => {
+        mockingoose(UserModel).toReturn(new Error('err'), 'findOneAndUpdate');
+
+        const result = await updateUserIsBannedByUsername(user1.username);
+        expect(result).toEqual({
+          error: 'Error when updating user',
+        });
+      });
+
+      test('Should return an error if UserModel returns null', async () => {
+        mockingoose(UserModel).toReturn(null, 'findOneAndUpdate');
+
+        const result = await updateUserIsBannedByUsername(user1.username);
+        expect(result).toEqual({
+          error: 'Error when updating user',
         });
       });
     });
