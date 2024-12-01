@@ -288,6 +288,7 @@ async function answerCreate(
     comments: comments,
     reports: reports,
     isRemoved: isRemoved,
+    endorsed: false,
   };
   return await AnswerModel.create(answerDetail);
 }
