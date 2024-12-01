@@ -130,6 +130,11 @@ const useMessagePage = () => {
    * @param correspondence The correspondence the user has selected
    */
   const handleSelectCorrespondence = async (correspondence: Correspondence): Promise<void> => {
+    const updatedCorrespondence = await updateCorrespondenceUserTypingByIdNames(
+      correspondence?._id || '',
+      user.username,
+      false,
+    );
     if (selectedCorrespondence) {
       // Update views for currently selected correspondence and all messages within
       if (!selectedCorrespondence.views?.includes(user.username)) {
@@ -139,10 +144,10 @@ const useMessagePage = () => {
       // for message, push user.username onto views
       handleMessageViewsUpdate();
     }
-    setSelectedCorrespondence(correspondence);
-    setSelectedCorrespondenceId(correspondence._id || '');
-    setCurrentUserTyping([...correspondence.userTyping]);
-    setSelectedCorrespondenceMessages([...correspondence.messages]);
+    setSelectedCorrespondence(updatedCorrespondence);
+    setSelectedCorrespondenceId(updatedCorrespondence._id || '');
+    setCurrentUserTyping([...updatedCorrespondence.userTyping]);
+    setSelectedCorrespondenceMessages([...updatedCorrespondence.messages]);
   };
 
   /**
