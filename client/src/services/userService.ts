@@ -109,13 +109,29 @@ const getDoNotDisturb = async (username: string): Promise<boolean> => {
  * @param username - The username of the user being edited.
  * @param badgeName - The badge they are updating their profile picture to.
  *
- * @returns the User object with an updated isModerator field.
+ * @returns the User object with an updated profile picture
  */
 const changeProfilePicture = async (username: string, badgeName: string): Promise<User> => {
   const data = { username, badgeName };
   const res = await api.post(`${USER_API_URL}/updatePicture`, data);
   if (res.status !== 200) {
     throw new Error('Error while updating user profile picture');
+  }
+  return res.data;
+};
+
+/**
+ * Bans the given user
+ *
+ * @param username - The username of the user being banned.
+ *
+ * @returns the User object with an updated isBanned field
+ */
+const updateUserIsBanned = async (username: string): Promise<User> => {
+  const data = { username };
+  const res = await api.post(`${USER_API_URL}/updateUserIsBanned`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while banning user');
   }
   return res.data;
 };
@@ -128,4 +144,5 @@ export {
   getDoNotDisturb,
   getUsers,
   changeProfilePicture,
+  updateUserIsBanned,
 };

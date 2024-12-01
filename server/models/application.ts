@@ -249,6 +249,27 @@ export const addUser = async (user: User): Promise<User | null> => {
 };
 
 /**
+ * Finds a user's database object from their username
+ *
+ * @param username - The input username.
+ *
+ * @returns {Promise<User | null>} - The existing user, or `null` if an error occurred
+ */
+export const findUserByUsername = async (username: string): Promise<User | null> => {
+  try {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
+  } catch (err) {
+    return null;
+  }
+};
+
+/**
  * Authenticates a user by checking their input username and password and checking the database for it.
  *
  * @param username - The input username.
@@ -1202,6 +1223,31 @@ export const addMessageToCorrespondence = async (
     return result;
   } catch (error) {
     return { error: 'Error when adding message to correspondence' };
+  }
+};
+
+/**
+ * Updates a user's isBanned attribute
+ *
+ * @param {string} username - The username of the user to ban
+ *
+ * @returns Promise<UserResponse> - The updated user or an error message
+ */
+export const updateUserIsBannedByUsername = async (
+  username: string,
+): Promise<UserResponse> => {
+  try {
+    const result = await UserModel.findOneAndUpdate(
+      { username: username },
+      { $set: { isBanned: true } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new Error('Error when updating user');
+    }
+    return result;
+  } catch (error) {
+    return { error: 'Error when updating user' };
   }
 };
 

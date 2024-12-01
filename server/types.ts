@@ -94,6 +94,7 @@ export interface Tag {
  * - badges - The badges obtained by the user.
  * - infractions - A list of answer/question id's that were removed by moderators
  * - doNotDisturb - Whether or not the user is on dnd.
+ * - isBanned - boolean determining if the user has been banned.
  */
 export interface User {
   _id?: ObjectId;
@@ -104,6 +105,7 @@ export interface User {
   profileIcon?: string;
   infractions: string[];
   doNotDisturb?: false;
+  isBanned?: boolean;
 }
 
 /**
@@ -497,6 +499,16 @@ export interface AddCorrespondenceRequest extends Request {
   body: {
     cid: string;
     updatedMessageMembers: string[];
+  };
+}
+/**
+ * Interface for the request body when banning a user
+ * - body - 
+ *  - username - the name of the user to ban
+ */
+ export interface UpdateUserIsBannedRequest extends Request {
+  body: {
+    username: string;
   };
 }
 

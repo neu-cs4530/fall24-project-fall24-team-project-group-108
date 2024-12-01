@@ -29,6 +29,7 @@ const userSchema: Schema = new Schema(
     profileIcon: { type: String, required: false },
     infractions: [{ type: String }],
     doNotDisturb: { type: Boolean, default: false },
+    isBanned: { type: Boolean },
   },
   { collection: 'User' },
 );
