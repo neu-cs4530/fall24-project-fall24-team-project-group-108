@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Buffer } from 'buffer';
 import useUserContext from './useUserContext';
 import { Correspondence, Message } from '../types';
@@ -49,6 +49,13 @@ const useMessagePage = () => {
   const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
   const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
   const [pendingMessageSend, setPendingMessageSend] = useState<boolean>(false);
+  const selectedCorrespondenceRef = useRef(selectedCorrespondence);
+  const usernameRef = useRef(user.username);
+
+  useEffect(() => {
+    selectedCorrespondenceRef.current = selectedCorrespondence;
+    usernameRef.current = user.username;
+  }, [selectedCorrespondence, user.username]);
 
   const handleUpdateCorrespondence = async () => {
     await updateCorrespondenceUserTypingByIdNames(
@@ -63,6 +70,22 @@ const useMessagePage = () => {
     const pageTitle = 'All Messages';
 
     setTitleText(pageTitle);
+  }, []);
+
+  useEffect(() => {
+    const handleRemoveUserTyping = async () => {
+      if (selectedCorrespondenceRef.current) {
+        await updateCorrespondenceUserTypingByIdNames(
+          selectedCorrespondenceRef.current?._id || '',
+          usernameRef.current,
+          false,
+        );
+      }
+    };
+
+    return () => {
+      handleRemoveUserTyping();
+    };
   }, []);
 
   useEffect(() => {
