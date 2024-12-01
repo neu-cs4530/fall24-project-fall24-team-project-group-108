@@ -26,6 +26,7 @@ export type BadgeTier = 'bronze' | 'silver' | 'gold';
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Object IDs of comments that have been added to the answer by users, or comments themselves if populated
+ * - endorsed - Boolean for if an answer is endorsed or not
  * - reports - An array of reports associated with the answer.
  * - isRemoved - True if a mod removed answer, otherwise false.
  */
@@ -35,6 +36,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[] | ObjectId[];
+  endorsed: boolean
   reports: UserReport[];
   isRemoved: boolean;
 }
@@ -48,6 +50,21 @@ export interface AnswerRequest extends Request {
   body: {
     qid: string;
     ans: Answer;
+  };
+}
+
+/**
+ * Interface extending the request body when endorsing an answer, which contains
+ * - qid - The unique identifier of the question being endorsed
+ * - aid - The unique identifier of the answer being endorsed
+ * - endorsed - Whether the question is being endorsed or unendorsed
+ * - user - The user making the endorsement request
+ */
+export interface EndorseRequest extends Request {
+  body: {
+    qid: string;
+    aid: string;
+    endorsed: boolean;
   };
 }
 
@@ -915,4 +932,5 @@ export interface ServerToClientEvents {
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
   notificationUpdate: (notification: NotificationResponse) => void;
+  endorsementUpdate: (data: { aid: string; endorsed: boolean }) => void;
 }

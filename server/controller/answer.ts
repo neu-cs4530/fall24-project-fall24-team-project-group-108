@@ -1,9 +1,10 @@
 import express, { Response } from 'express';
-import { Answer, AnswerRequest, AnswerResponse, FakeSOSocket } from '../types';
+import { Answer, AnswerRequest, AnswerResponse, EndorseRequest, FakeSOSocket } from '../types';
 import {
   addAnswerToQuestion,
   populateDocument,
   saveAnswer,
+  endorseAnswer,
   saveAnswerNotification,
 } from '../models/application';
 
@@ -94,8 +95,37 @@ const answerController = (socket: FakeSOSocket) => {
     }
   };
 
-  // add appropriate HTTP verbs and their endpoints to the router.
+  /**
+   * Updates the current endorsed status of an answer. If successful, the answer has it's endorsed status updated
+   * If there is an error, the HTTP response's status is updated.
+   *
+   * @param req The EndorseRequest object containing the answer ID and the endorsed status.
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateEndorsement = async (req: EndorseRequest, res: Response): Promise<void> => {
+    try {
+      const { aid, endorsed } = req.body;
+
+      const updatedAnswer = await endorseAnswer(aid, endorsed);
+
+      if ('error' in updatedAnswer) {
+        throw new Error(updatedAnswer.error as string);
+      }
+
+      // Emit the endorsement update
+      socket.emit('endorsementUpdate', { aid, endorsed });
+
+      res.json(updatedAnswer);
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating endorsement' });
+    }
+  };
+
+  // Add appropriate HTTP verbs and their endpoints to the router.
   router.post('/addAnswer', addAnswer);
+  router.patch('/endorseAnswer', updateEndorsement);
 
   return router;
 };

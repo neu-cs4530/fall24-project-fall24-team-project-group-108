@@ -37,6 +37,8 @@ describe('POST /addComment', () => {
       text: 'This is a test comment',
       commentBy: 'dummyUserId',
       commentDateTime: new Date('2024-06-03'),
+      isRemoved: false,
+      endorsed: false,
     };
 
     const mockNotification = {
@@ -61,6 +63,7 @@ describe('POST /addComment', () => {
       comments: [mockComment._id],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     });
 
     popDocSpy.mockResolvedValueOnce({
@@ -71,6 +74,7 @@ describe('POST /addComment', () => {
       comments: [mockComment],
       reports: [],
       isRemoved: false,
+      endorsed: false,
     });
 
     saveAnswerCommentNotificationSpy.mockResolvedValueOnce(mockNotification);
@@ -264,6 +268,8 @@ describe('POST /addComment', () => {
       text: 'This is a test comment',
       commentBy: 'dummyUserId',
       commentDateTime: new Date('2024-06-03'),
+      isRemoved: false,
+      endorsed: false,
     };
 
     saveCommentSpy.mockResolvedValueOnce(mockComment);
@@ -295,6 +301,8 @@ describe('POST /addComment', () => {
       text: 'This is a test comment',
       commentBy: 'dummyUserId',
       commentDateTime: new Date('2024-06-03'),
+      isRemoved: false,
+      endorsed: false,
     };
 
     const mockQuestion = {

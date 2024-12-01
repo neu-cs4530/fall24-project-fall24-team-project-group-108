@@ -27,6 +27,8 @@ const ans1 = {
   ansBy: 'answer1_user',
   ansDateTime: '2024-06-09',
   comments: [],
+  isRemoved: false,
+  endorsed: false,
 };
 
 const ans2 = {
@@ -35,6 +37,8 @@ const ans2 = {
   ansBy: 'answer2_user',
   ansDateTime: '2024-06-10',
   comments: [],
+  isRemoved: false,
+  endorsed: false,
 };
 
 const ans3 = {
@@ -43,6 +47,8 @@ const ans3 = {
   ansBy: 'answer3_user',
   ansDateTime: '2024-06-11',
   comments: [],
+  isRemoved: false,
+  endorsed: false,
 };
 
 const ans4 = {
@@ -51,6 +57,8 @@ const ans4 = {
   ansBy: 'answer4_user',
   ansDateTime: '2024-06-14',
   comments: [],
+  isRemoved: false,
+  endorsed: false,
 };
 
 const MOCK_QUESTIONS = [

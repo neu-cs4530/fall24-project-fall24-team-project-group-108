@@ -1,10 +1,11 @@
 import { handleHyperlink } from '../../../../tool';
 import CommentSection from '../../commentSection';
 import './index.css';
+import AnswerEndorsement from '../../AnswerEndorsement';
 import ProfileHover from '../../accountPage/profileHover';
 import useAnswerView from '../../../../hooks/useAnswerView';
 import useModStatus from '../../../../hooks/useModStatus';
-import { Comment } from '../../../../types';
+import { Answer, Comment, Question } from '../../../../types';
 
 /**
  * Interface representing the props for the AnswerView component.
@@ -14,6 +15,7 @@ import { Comment } from '../../../../types';
  * - meta Additional metadata related to the answer.
  * - comments An array of comments associated with the answer.
  * - handleAddComment Callback function to handle adding a new comment.
+ * - answer An answer to a question
  * - handleReport Callback function to handle adding a new report.
  * - isReported True if user already reported answer.
  */
@@ -23,6 +25,8 @@ interface AnswerProps {
   meta: string;
   comments: Comment[];
   handleAddComment: (comment: Comment) => void;
+  answer: Answer;
+  question: Question;
   handleReport: () => void;
   handleRemove: () => void;
   isReported: boolean;
@@ -37,6 +41,7 @@ interface AnswerProps {
  * @param meta Additional metadata related to the answer.
  * @param comments An array of comments associated with the answer.
  * @param handleAddComment Function to handle adding a new comment.
+ * @param answer An answer to a question
  * @param handleReport Function to handle adding a new report.
  * @param handleRemove Function to remove an answer.
  * @param isReported True if user already reported answer.
@@ -47,6 +52,8 @@ const AnswerView = ({
   meta,
   comments,
   handleAddComment,
+  answer,
+  question,
   handleReport,
   handleRemove,
   isReported,
@@ -75,6 +82,7 @@ const AnswerView = ({
           {ansBy}
         </div>
         <div className='answer_question_meta'>{meta}</div>
+        <AnswerEndorsement answer={answer} questionID={question._id || ''} />
       </div>
       <CommentSection comments={comments} handleAddComment={handleAddComment} />
       {isReported ? (

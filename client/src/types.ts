@@ -125,6 +125,7 @@ export interface VoteData {
  * - ansBy - The username of the user who wrote the answer
  * - ansDateTime - The date and time when the answer was created
  * - comments - Comments associated with the answer.
+ * - endorsed - Answer is endorsed by a user
  * - reports - UserReports associated with the answer.
  * - isRemoved - True if a mod has removed Answer from view.
  */
@@ -134,6 +135,7 @@ export interface Answer {
   ansBy: string;
   ansDateTime: Date;
   comments: Comment[];
+  endorsed: boolean;
   reports: UserReport[];
   isRemoved: boolean;
 }
@@ -331,4 +333,5 @@ export interface ServerToClientEvents {
   removePostUpdate: (update: RemovePostUpdatePayload) => void;
   reportDismissedUpdate: (update: ReportDismissedUpdatePayload) => void;
   notificationUpdate: (notification: Notification) => void;
+  endorsementUpdate: (data: { aid: string; endorsed: boolean }) => void;
 }

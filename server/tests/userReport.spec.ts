@@ -141,6 +141,7 @@ describe('POST /addReport', () => {
       comments: [],
       reports: [mockUserReport],
       isRemoved: false,
+      endorsed: false,
     } as Answer);
 
     popDocSpy.mockResolvedValueOnce({
@@ -151,6 +152,7 @@ describe('POST /addReport', () => {
       comments: [],
       reports: [mockUserReport],
       isRemoved: false,
+      endorsed: false,
     } as Answer);
 
     const response = await supertest(app).post('/userReport/addReport').send(mockReqBody);
@@ -529,6 +531,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {
@@ -650,6 +653,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {
@@ -707,6 +711,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {
@@ -750,6 +755,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {
@@ -788,6 +794,7 @@ describe('POST /updateReportStatus', () => {
       comments: [],
       reports: [mockReport],
       isRemoved: false,
+      endorsed: false,
     };
 
     const mockReqBody = {
@@ -859,6 +866,7 @@ describe('GET /getUnresolvedReport', () => {
     comments: [],
     reports: [],
     isRemoved: false,
+    endorsed: false,
   };
 
   const ans2 = {
@@ -869,6 +877,7 @@ describe('GET /getUnresolvedReport', () => {
     comments: [],
     reports: [],
     isRemoved: false,
+    endorsed: false,
   };
 
   const ans3 = {
@@ -879,6 +888,7 @@ describe('GET /getUnresolvedReport', () => {
     comments: [],
     reports: [r1, r2, r3],
     isRemoved: false,
+    endorsed: false,
   };
 
   const ans4 = {
@@ -889,6 +899,7 @@ describe('GET /getUnresolvedReport', () => {
     comments: [],
     reports: [r1, r2],
     isRemoved: false,
+    endorsed: false,
   };
 
   const mockQuestions = [

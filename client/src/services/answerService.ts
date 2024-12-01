@@ -20,4 +20,21 @@ const addAnswer = async (qid: string, ans: Answer): Promise<Answer> => {
   return res.data;
 };
 
-export default addAnswer;
+/**
+ * Function to endorse an answer.
+ *
+ * @param qid - The ID of the question to which the answer belongs.
+ * @param aid - The ID of the answer to endorse.
+ * @param endorsed - Whether that question is endorsed or not.
+ * @throws Error if there is an issue endorsing the answer.
+ */
+const endorseAnswer = async (aid: string, endorsed: boolean) => {
+  const data = { aid, endorsed };
+  const res = await api.patch(`${ANSWER_API_URL}/endorseAnswer`, data);
+  if (res.status !== 200) {
+    throw new Error('Error while endorsing the answer');
+  }
+  return res.data;
+};
+
+export { addAnswer, endorseAnswer };
