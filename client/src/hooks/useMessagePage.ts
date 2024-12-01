@@ -49,8 +49,14 @@ const useMessagePage = () => {
   const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
   const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
   const [pendingMessageSend, setPendingMessageSend] = useState<boolean>(false);
+  const [navigateAway, setNavigateAway] = useState<boolean>(false);
 
-  const handleUpdateCorrespondence = () => {
+  const handleUpdateCorrespondence = async () => {
+    await updateCorrespondenceUserTypingByIdNames(
+      selectedCorrespondence?._id || '',
+      user.username,
+      false,
+    );
     navigate(`/update/correspondence/${selectedCorrespondence?._id}`);
   };
 
