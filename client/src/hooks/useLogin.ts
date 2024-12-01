@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ChangeEvent, useState } from 'react';
 import useLoginContext from './useLoginContext';
-import { authenticateUser } from '../services/userService';
+import { authenticateUser, getUsers } from '../services/userService';
+import { User } from '../types';
 
 /**
  * Custom hook to handle login input and submission.
@@ -59,6 +60,14 @@ const useLogin = () => {
     event.preventDefault();
     if (isBanned) {
       setLoginErr('You have been temporarily banned.');
+      return;
+    }
+
+    const dbUsers = await getUsers();
+    const currentUserArray = dbUsers.filter(dbUser => dbUser.username === username) as User[];
+    if (currentUserArray.length > 0 && currentUserArray[0].isBanned) {
+      setIsBanned(true);
+      setLoginErr(`You have been banned`);
       return;
     }
 

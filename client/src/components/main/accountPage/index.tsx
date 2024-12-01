@@ -28,6 +28,9 @@ const AccountPage = () => {
     currentDetails,
     renderProfilePicture,
     setCurrentDetails,
+    currentUserIsModerator,
+    banUser,
+    sentUserIsBanned,
   } = useAccountPage();
 
   return (
@@ -44,6 +47,11 @@ const AccountPage = () => {
           {userLoggedIn && (
             <Button variant='contained' onClick={() => setEditModalOpen(true)}>
               Set Picture
+            </Button>
+          )}
+          {currentUserIsModerator && !userLoggedIn && (
+            <Button variant='contained' disabled={sentUserIsBanned} onClick={() => banUser()}>
+              Ban User
             </Button>
           )}
         </div>

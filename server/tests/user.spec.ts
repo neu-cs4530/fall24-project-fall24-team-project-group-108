@@ -7,6 +7,7 @@ import { User } from '../types';
 const addUserSpy = jest.spyOn(util, 'addUser');
 const updateUserModStatusSpy = jest.spyOn(util, 'updateUserModStatus');
 const findUserSpy = jest.spyOn(util, 'findUser');
+const updateUserIsBannedByUsernameSpy = jest.spyOn(util, 'updateUserIsBannedByUsername');
 
 describe('GET /authenticateUser', () => {
   afterEach(async () => {
@@ -264,5 +265,63 @@ describe('POST /makeUserModerator', () => {
     const response = await supertest(app).post('/user/makeUserModerator').send(mockReqBody);
     expect(response.status).toBe(500);
     expect(response.text).toEqual('Error when updating user moderator status');
+  });
+});
+
+describe('POST /updateUserIsBanned', () => {
+  afterEach(async () => {
+    await mongoose.connection.close(); // Ensure the connection is properly closed
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect(); // Ensure mongoose is disconnected after all tests
+  });
+
+  it('should make a user banned if a moderator bans them', async () => {
+    const validUId = new mongoose.Types.ObjectId();
+
+    const mockUser: User = {
+      _id: validUId,
+      username: 'user1',
+      password: 'Password1!',
+      isModerator: true,
+      infractions: [],
+      badges: [],
+      isBanned: true,
+    };
+
+    const mockReqBody = {
+      username: 'user1',
+    };
+
+    updateUserIsBannedByUsernameSpy.mockResolvedValueOnce(mockUser);
+
+    const response = await supertest(app).post('/user/updateUserIsBanned').send(mockReqBody);
+    expect(response.status).toBe(200);
+    expect(response.body.isBanned).toEqual(true);
+  });
+
+  it('should return an error if mongoDB operations fail', async () => {
+    const mockReqBody = {
+      username: 'user1',
+    };
+
+    updateUserModStatusSpy.mockRejectedValueOnce(new Error('err'));
+
+    const response = await supertest(app).post('/user/updateUserIsBanned').send(mockReqBody);
+    expect(response.status).toBe(500);
+    expect(response.text).toContain('Error when saving user');
+  });
+
+  it('should return an error if mongoDB operations fail', async () => {
+    const mockReqBody = {
+      username: 'user1',
+    };
+
+    updateUserModStatusSpy.mockRejectedValueOnce('err');
+
+    const response = await supertest(app).post('/user/updateUserIsBanned').send(mockReqBody);
+    expect(response.status).toBe(500);
+    expect(response.text).toContain('Error when saving user');
   });
 });

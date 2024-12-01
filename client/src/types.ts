@@ -12,6 +12,7 @@ export type FakeSOSocket = Socket<ServerToClientEvents>;
  * - profileIcon:  A string detailing their current profile icon (optional field)
  * - infractions: A list of infractions the user has sustained
  * - doNotDisturb: boolean indicating if the user has turned on dnd (optional field)
+ * - isBanned: boolean determining if the user has been banned
  */
 export interface User {
   _id?: string;
@@ -22,6 +23,7 @@ export interface User {
   profileIcon?: string;
   infractions: string[];
   doNotDisturb?: boolean;
+  isBanned?: boolean;
 }
 
 /**

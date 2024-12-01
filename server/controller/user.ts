@@ -7,6 +7,7 @@ import {
   GetUserRequest,
   User,
   UpdateProfileIconRequest,
+  UpdateUserIsBannedRequest,
 } from '../types';
 import {
   addUser,
@@ -16,6 +17,7 @@ import {
   getAllUsers,
   updateUserProfilePicture,
   updateUserModStatus,
+  updateUserIsBannedByUsername,
 } from '../models/application';
 
 export const userController = () => {
@@ -216,6 +218,37 @@ export const userController = () => {
     }
   };
 
+  /**
+   * Updates the given user's is banned value
+   * If saving the user fails, the HTTP response status is updated.
+   *
+   * @param req The AddCorrespondenceRequest object containing the correspondence id and updated message members
+   * @param res The HTTP response object used to send back the result of the operation.
+   *
+   * @returns A Promise that resolves to void.
+   */
+  const updateUserIsBanned = async (
+    req: UpdateUserIsBannedRequest,
+    res: Response,
+  ): Promise<void> => {
+    const { username } = req.body;
+    try {
+      const result = await updateUserIsBannedByUsername(username);
+
+      if ('error' in result) {
+        throw new Error(result.error);
+      }
+
+      res.json(result);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        res.status(500).send(`Error when saving user: ${err.message}`);
+      } else {
+        res.status(500).send(`Error when saving user`);
+      }
+    }
+  };
+
   router.get('/authenticateUser', authenticateUser);
   router.get('/getUsers', getUsers);
   router.post('/createUser', createUser);
@@ -223,6 +256,7 @@ export const userController = () => {
   router.post('/makeUserModerator', makeUserModerator);
   router.post('/doNotDisturb', toggleDoNotDisturb);
   router.post('/updatePicture', updateProfilePicture);
+  router.post('/updateUserIsBanned', updateUserIsBanned);
 
   return router;
 };

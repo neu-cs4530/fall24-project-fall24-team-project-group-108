@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import useUserContext from './useUserContext';
-import { Answer, Badge, Question } from '../types';
+import { Answer, Badge, Question, User } from '../types';
 import {
   getQuestionByAnswerer,
   getQuestionByCommenter,
@@ -14,6 +14,7 @@ import QuestionsTab from '../components/main/accountPage/questionsTab';
 import AnswersTab from '../components/main/accountPage/answersTab';
 import BadgesTab from '../components/main/accountPage/badgesTab';
 import CommentsTab from '../components/main/accountPage/commentsTab';
+import { getUsers, updateUserIsBanned } from '../services/userService';
 
 export interface ProfileIconDetails {
   category: BadgeCategory | null;
@@ -51,6 +52,13 @@ const useAccountPage = () => {
   const [badgeList, setBadgeList] = useState<Badge[]>([]);
   const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
   const [currentDetails, setCurrentDetails] = useState<ProfileIconDetails | null>(null);
+  const [currentUserIsModerator, setCurrentUserIsModerator] = useState<boolean>(false);
+  const [sentUserIsBanned, setSentUserIsBanned] = useState<boolean>(false);
+  const sentUserRef = useRef(sentUser);
+
+  useEffect(() => {
+    sentUserRef.current = sentUser;
+  }, [sentUser]);
 
   // determine if the profile being viewed is for the currently logged in user
   let userLoggedIn: boolean;
@@ -64,11 +72,35 @@ const useAccountPage = () => {
     setValue(newValue);
   };
 
+  useEffect(() => {
+    const initUserAttributes = async () => {
+      const dbUsers = await getUsers();
+
+      const currentUserObject = dbUsers.filter(
+        dbUser => dbUser.username === user.username,
+      )[0] as User;
+      setCurrentUserIsModerator(currentUserObject.isModerator);
+
+      const sentUserObject = dbUsers.filter(
+        dbUser => dbUser.username === sentUserRef.current,
+      )[0] as User;
+      setSentUserIsBanned(sentUserObject.isBanned ? sentUserObject.isBanned : false);
+    };
+    initUserAttributes();
+  }, [user.username]);
+
   /**
    * Function to navigate to the badge page.
    */
   const handleAuthorClick = () => {
     navigate(`/badges`);
+  };
+
+  const banUser = async () => {
+    if (sentUser) {
+      await updateUserIsBanned(sentUser);
+      setSentUserIsBanned(true);
+    }
   };
 
   useEffect(() => {
@@ -222,6 +254,9 @@ const useAccountPage = () => {
     renderProfilePicture,
     renderTabContent,
     setCurrentDetails,
+    currentUserIsModerator,
+    banUser,
+    sentUserIsBanned,
   };
 };
 
