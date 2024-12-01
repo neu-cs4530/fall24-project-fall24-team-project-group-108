@@ -1,6 +1,4 @@
 import './index.css';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { FaCheck } from 'react-icons/fa';
 import useAnswerEndorsement from '../../../hooks/useAnswerEndorsement';
 import { Answer } from '../../../types';
 
@@ -33,11 +31,7 @@ const AnswerEndorsement = ({ answer, questionID }: AnswerEndorsementProps) => {
           {endorse ? 'Unendorse Answer' : 'Endorse Answer'}
         </button>
       )}
-      {endorse && (
-        <div className='endorsed-marker'>
-          <FaCheck className='checkmark-icon' /> {}
-        </div>
-      )}
+      {endorse && <div className='endorsed-marker'>{'✅'}</div>}
     </div>
   );
 };
