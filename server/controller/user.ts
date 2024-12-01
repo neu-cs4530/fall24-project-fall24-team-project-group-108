@@ -7,7 +7,7 @@ import {
   GetUserRequest,
   User,
   UpdateProfileIconRequest,
-  UpdateUserIsBannedRequest
+  UpdateUserIsBannedRequest,
 } from '../types';
 import {
   addUser,
@@ -17,7 +17,7 @@ import {
   getAllUsers,
   updateUserProfilePicture,
   updateUserModStatus,
-  updateUserIsBannedByUsername
+  updateUserIsBannedByUsername,
 } from '../models/application';
 
 export const userController = () => {

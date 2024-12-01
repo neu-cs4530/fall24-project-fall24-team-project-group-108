@@ -1233,12 +1233,10 @@ export const addMessageToCorrespondence = async (
  *
  * @returns Promise<UserResponse> - The updated user or an error message
  */
-export const updateUserIsBannedByUsername = async (
-  username: string,
-): Promise<UserResponse> => {
+export const updateUserIsBannedByUsername = async (username: string): Promise<UserResponse> => {
   try {
     const result = await UserModel.findOneAndUpdate(
-      { username: username },
+      { username },
       { $set: { isBanned: true } },
       { new: true },
     );
