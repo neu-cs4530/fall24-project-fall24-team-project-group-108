@@ -249,27 +249,6 @@ export const addUser = async (user: User): Promise<User | null> => {
 };
 
 /**
- * Finds a user's database object from their username
- *
- * @param username - The input username.
- *
- * @returns {Promise<User | null>} - The existing user, or `null` if an error occurred
- */
-export const findUserByUsername = async (username: string): Promise<User | null> => {
-  try {
-    const user = await UserModel.findOne({ username });
-
-    if (!user) {
-      return null;
-    }
-
-    return user;
-  } catch (err) {
-    return null;
-  }
-};
-
-/**
  * Authenticates a user by checking their input username and password and checking the database for it.
  *
  * @param username - The input username.
