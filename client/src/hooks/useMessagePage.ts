@@ -49,7 +49,6 @@ const useMessagePage = () => {
   const [uploadedFileErr, setUploadedFileErr] = useState<string>('');
   const [currentUserTyping, setCurrentUserTyping] = useState<string[]>([]);
   const [pendingMessageSend, setPendingMessageSend] = useState<boolean>(false);
-  const [navigateAway, setNavigateAway] = useState<boolean>(false);
 
   const handleUpdateCorrespondence = async () => {
     await updateCorrespondenceUserTypingByIdNames(
